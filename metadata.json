@@ -1,0 +1,8 @@
+{
+  "name": "4thRemix Apartment Management System v3.0 ",
+  "description": "Complete Apartment Management ERP System for residential apartment complexes in Bangladesh with BDT (৳) currency, NESCO electricity billing, advance accounting, and tenant portals.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ma Babar Doa Apartment Complex - Management System</title>
+    <meta name="description" content="Ma Babar Doa Apartment Complex ERP - 72/32 M Rahman Nursing College Road, City Bypass, Horogram Purbopara, Dingadoba Rajshahi-6201." />
+    <meta property="og:title" content="Ma Babar Doa Apartment Complex - Management System" />
+    <meta property="og:description" content="Ma Babar Doa Apartment Complex ERP - 72/32 M Rahman Nursing College Road, City Bypass, Horogram Purbopara, Dingadoba Rajshahi-6201." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Container Environment WebSocket Error Suppressor for Vite HMR -->
+    <script>
+      (function() {
+        // Suppress unhandled rejection and error events from Vite HMR WebSockets
+        window.addEventListener('unhandledrejection', function(event) {
+          var reason = event.reason;
+          var msg = (reason && (reason.message || String(reason))) || '';
+          if (msg.includes('WebSocket') || msg.includes('ws://') || msg.includes('wss://')) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+          }
+        }, true);
+
+        window.addEventListener('error', function(event) {
+          var msg = event.message || '';
+          if (msg.includes('WebSocket') || msg.includes('[vite] failed to connect to websocket')) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+          }
+        }, true);
+
+        // Intercept native WebSocket to prevent Vite client from throwing closed without opened
+        var NativeWebSocket = window.WebSocket;
+        if (NativeWebSocket) {
+          window.WebSocket = function(url, protocols) {
+            var urlStr = String(url || '');
+            // Only intercept local/vite HMR connections; let Supabase or external connections pass through
+            if (urlStr.includes('supabase.co')) {
+              return new NativeWebSocket(url, protocols);
+            }
+            if (urlStr.includes('vite') || urlStr.includes('ais-dev') || urlStr.includes('localhost') || urlStr.includes('run.app') || !protocols) {
+              var dummy = new EventTarget();
+              dummy.readyState = 3; // CLOSED
+              dummy.send = function() {};
+              dummy.close = function() {};
+              dummy.onopen = null;
+              dummy.onclose = null;
+              dummy.onerror = null;
+              dummy.onmessage = null;
+              return dummy;
+            }
+            return new NativeWebSocket(url, protocols);
+          };
+          window.WebSocket.prototype = NativeWebSocket.prototype;
+        }
+      })();
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Cedarville+Cursive&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-slate-50 text-slate-900 antialiased font-sans selection:bg-blue-600 selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
