@@ -21,7 +21,7 @@ import {
 import { UserProfile, AppDatabaseState, SecurityCredentials } from '../types';
 import { COMPLEX_CONFIG } from '../lib/complexConfig';
 import { getMonthName } from '../lib/nescoTariff';
-import { getLast11Digits, compareFlatIdSerial } from '../lib/storage';
+import { getLast11Digits, compareFlatIdSerial, getCurrentActiveBillingPeriod } from '../lib/storage';
 
 interface Props {
   profiles: UserProfile[];
@@ -81,20 +81,25 @@ export const LoginPage: React.FC<Props> = ({
   const getFlatInfo = (flatId: string) => {
     const cleanId = flatId.toLowerCase().trim();
     const unit = data.units.find((u) => u.flatId.toLowerCase().trim() === cleanId);
+    const activePeriod = getCurrentActiveBillingPeriod(data);
 
-    // Primary source of truth: ledger item for the currently selected month & year
+    // Primary source of truth: ledger item for the current active billing month
     const currentLedger = data.ledgerItems.find(
       (item) =>
         item.flatId.toLowerCase().trim() === cleanId &&
-        item.month === data.selectedMonth &&
-        item.year === data.selectedYear
+        item.month === activePeriod.month &&
+        item.year === activePeriod.year
     );
+
+    // Latest ledger item fallback (sorted descending, NEVER older previous months)
+    const latestLedger = [...data.ledgerItems]
+      .filter((item) => item.flatId.toLowerCase().trim() === cleanId)
+      .sort((a, b) => (b.year * 12 + b.month) - (a.year * 12 + a.month))[0];
 
     // Active tenant from synced data.tenants
     const activeTenant = data.tenants.find(
       (t) => t.flatId.toLowerCase().trim() === cleanId && t.status === 'active'
     );
-    const anyLedger = currentLedger || data.ledgerItems.find((item) => item.flatId.toLowerCase().trim() === cleanId);
     const tenant = activeTenant || data.tenants.find((t) => t.flatId.toLowerCase().trim() === cleanId);
 
     const isOwner =
@@ -105,8 +110,8 @@ export const LoginPage: React.FC<Props> = ({
 
     const rawResidentName =
       currentLedger?.tenantName?.trim() ||
+      latestLedger?.tenantName?.trim() ||
       activeTenant?.fullName?.trim() ||
-      anyLedger?.tenantName?.trim() ||
       tenant?.fullName?.trim() ||
       '';
 
@@ -123,14 +128,15 @@ export const LoginPage: React.FC<Props> = ({
       ? 'Vacant Flat'
       : rawResidentName;
 
-    const defaultPhone =
+    const rawPhone =
       currentLedger?.tenantPhone?.trim() ||
+      latestLedger?.tenantPhone?.trim() ||
       activeTenant?.phone?.trim() ||
-      anyLedger?.tenantPhone?.trim() ||
       tenant?.phone?.trim() ||
       '01700-000000';
 
-    const last11Digits = getLast11Digits(defaultPhone);
+    const last11Digits = getLast11Digits(rawPhone);
+    const defaultPhone = last11Digits.length === 11 ? last11Digits : rawPhone;
 
     const isOccupied = !isVacant;
     const isEligibleForTenantLogin = Boolean(!isOwner && !isVacant && rawResidentName);

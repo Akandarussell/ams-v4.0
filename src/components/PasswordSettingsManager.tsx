@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { AppDatabaseState, SecurityCredentials } from '../types';
 import { COMPLEX_CONFIG } from '../lib/complexConfig';
-import { getLast11Digits, compareFlatIdSerial } from '../lib/storage';
+import { getLast11Digits, compareFlatIdSerial, getCurrentActiveBillingPeriod } from '../lib/storage';
 import { exportAllCredentialsToExcel } from '../lib/exportCredentials';
 
 interface Props {
@@ -79,21 +79,33 @@ export const PasswordSettingsManager: React.FC<Props> = ({
     }, 3500);
   };
 
-  // Helper to get tenant info for a flat
+  // Helper to get tenant info for a flat strictly from the current active billing month
   const getFlatResidentInfo = (flatId: string) => {
-    // Current month ledger item
+    const cleanId = flatId.toLowerCase().trim();
+    const activePeriod = getCurrentActiveBillingPeriod(data);
+
+    // Current active billing month ledger item
     const ledgerItem = data.ledgerItems.find(
       (item) =>
-        item.flatId === flatId &&
-        item.month === data.selectedMonth &&
-        item.year === data.selectedYear
+        item.flatId.toLowerCase().trim() === cleanId &&
+        item.month === activePeriod.month &&
+        item.year === activePeriod.year
     );
-    // Fallback to latest ledger item for that flat if none in current month
-    const anyLedger = ledgerItem || data.ledgerItems.find((item) => item.flatId === flatId);
-    const tenant = data.tenants.find((t) => t.flatId === flatId);
 
-    const name = ledgerItem?.tenantName || anyLedger?.tenantName || tenant?.fullName || 'Vacant / Unassigned';
-    const phone = ledgerItem?.tenantPhone || anyLedger?.tenantPhone || tenant?.phone || '01700-000000';
+    // Fallback to latest ledger item for that flat (sorted descending, NEVER older previous months)
+    const latestLedger = [...data.ledgerItems]
+      .filter((item) => item.flatId.toLowerCase().trim() === cleanId)
+      .sort((a, b) => (b.year * 12 + b.month) - (a.year * 12 + a.month))[0];
+
+    const activeTenant = data.tenants.find(
+      (t) => t.flatId.toLowerCase().trim() === cleanId && t.status === 'active'
+    );
+    const anyTenant = activeTenant || data.tenants.find((t) => t.flatId.toLowerCase().trim() === cleanId);
+
+    const name = ledgerItem?.tenantName || latestLedger?.tenantName || anyTenant?.fullName || 'Vacant / Unassigned';
+    const rawPhone = ledgerItem?.tenantPhone || latestLedger?.tenantPhone || anyTenant?.phone || '01700-000000';
+    const defaultDigits = getLast11Digits(rawPhone);
+    const phone = defaultDigits.length === 11 ? defaultDigits : rawPhone;
 
     return { name, phone };
   };

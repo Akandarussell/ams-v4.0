@@ -31,6 +31,7 @@ import {
   Maximize2,
   Minimize2,
   KeyRound,
+  Wallet,
 } from 'lucide-react';
 import {
   AppDatabaseState,
@@ -62,6 +63,7 @@ import { exportAllCredentialsToExcel } from '../lib/exportCredentials';
 import { ManualLedgerEntryModal } from './ManualLedgerEntryModal';
 import { ExcelImportModal } from './ExcelImportModal';
 import { NescoBillGeneratorModal } from './NescoBillGeneratorModal';
+import { RecordPaymentModal } from './RecordPaymentModal';
 
 interface Props {
   data: AppDatabaseState;
@@ -69,7 +71,7 @@ interface Props {
     flatId: string,
     amount: number,
     method: PaymentMethod,
-    category: 'Combined' | 'Flat Rent' | 'Electricity' | 'Parking' | 'Godown',
+    category: 'Combined' | 'Flat Rent' | 'Electricity' | 'Parking' | 'Godown' | 'Advance',
     transactionId?: string,
     notes?: string
   ) => void;
@@ -382,11 +384,13 @@ export const MainLedger: React.FC<Props> = ({
   };
 
   // Modals
-  const [paymentModalItem, setPaymentModalItem] = useState<MonthlyLedgerItem | null>(null);
-  const [payAmount, setPayAmount] = useState<number>(0);
-  const [payMethod, setPayMethod] = useState<PaymentMethod>('bKash');
-  const [payTxnId, setPayTxnId] = useState<string>('');
-  const [payNotes, setPayNotes] = useState<string>('');
+  const [isRecordPaymentModalOpen, setIsRecordPaymentModalOpen] = useState(false);
+  const [recordPaymentItem, setRecordPaymentItem] = useState<MonthlyLedgerItem | null>(null);
+
+  const openRecordPaymentModal = (item?: MonthlyLedgerItem | null) => {
+    setRecordPaymentItem(item || null);
+    setIsRecordPaymentModalOpen(true);
+  };
 
   const [adjustModalItem, setAdjustModalItem] = useState<MonthlyLedgerItem | null>(null);
   const [adjustAmount, setAdjustAmount] = useState<number>(0);
@@ -579,17 +583,7 @@ export const MainLedger: React.FC<Props> = ({
 
   // Open Payment Modal
   const openPaymentModal = (item: MonthlyLedgerItem) => {
-    setPaymentModalItem(item);
-    setPayAmount(item.totalDue > 0 ? item.totalDue : item.totalPayable);
-    setPayMethod('bKash');
-    setPayTxnId('');
-    setPayNotes('');
-  };
-
-  const handleConfirmPayment = () => {
-    if (!paymentModalItem || payAmount <= 0) return;
-    onRecordPayment(paymentModalItem.flatId, payAmount, payMethod, 'Combined', payTxnId, payNotes);
-    setPaymentModalItem(null);
+    openRecordPaymentModal(item);
   };
 
   // Open Adjust from Advance Modal
@@ -858,17 +852,27 @@ export const MainLedger: React.FC<Props> = ({
 
           {/* Manual Entry Button for Owners and Managers */}
           {(userRole === 'manager' || userRole === 'owner') && (
-            <button
-              onClick={() => {
-                setItemToEditManual(null);
-                setIsManualModalOpen(true);
-              }}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-xs"
-              title="Add or update ledger data manually"
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span>+ Add / Edit Ledger Data Manually</span>
-            </button>
+            <>
+              <button
+                onClick={() => openRecordPaymentModal(null)}
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-xs"
+                title="Record rent, electricity, or advance collection"
+              >
+                <Wallet className="w-4 h-4 text-emerald-200" />
+                <span>Record Payment</span>
+              </button>
+              <button
+                onClick={() => {
+                  setItemToEditManual(null);
+                  setIsManualModalOpen(true);
+                }}
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-xs"
+                title="Add or update ledger data manually"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span>+ Add / Edit Ledger Data Manually</span>
+              </button>
+            </>
           )}
 
           {/* Sync / Save to Supabase Button */}
@@ -945,7 +949,7 @@ export const MainLedger: React.FC<Props> = ({
             </button>
 
             <button
-              onClick={() => exportAllCredentialsToExcel(data, { blockFilter: selectedBlockFilter !== 'all' ? selectedBlockFilter : undefined })}
+              onClick={() => exportAllCredentialsToExcel(data, { blockFilter: blockFilter !== 'all' ? blockFilter : undefined })}
               className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white text-xs font-bold rounded-xl transition-all shadow-xs cursor-pointer"
               title="1-Click export all flat IDs and login passwords for tenants and authority accounts (.xlsx)"
             >
@@ -1463,17 +1467,27 @@ export const MainLedger: React.FC<Props> = ({
                             </span>
                           </div>
                           {(userRole === 'manager' || userRole === 'owner') && (
-                            <button
-                              onClick={() => {
-                                setItemToEditManual(item);
-                                setIsManualModalOpen(true);
-                              }}
-                              title="Edit this ledger record manually"
-                              className="px-1.5 py-0.5 bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-700 rounded text-[10px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
-                            >
-                              <Edit3 className="w-3 h-3" />
-                              <span>Edit</span>
-                            </button>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => {
+                                  setItemToEditManual(item);
+                                  setIsManualModalOpen(true);
+                                }}
+                                title="Edit this ledger record manually"
+                                className="px-1.5 py-0.5 bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-700 rounded text-[10px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                              >
+                                <Edit3 className="w-3 h-3" />
+                                <span>Edit</span>
+                              </button>
+                              <button
+                                onClick={() => openRecordPaymentModal(item)}
+                                title="Record payment collection for this flat"
+                                className="px-1.5 py-0.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                              >
+                                <Wallet className="w-3 h-3 text-emerald-600" />
+                                <span>Pay</span>
+                              </button>
+                            </div>
                           )}
                         </div>
                       </td>
@@ -1569,7 +1583,7 @@ export const MainLedger: React.FC<Props> = ({
                             {rentStatus}
                           </span>
                         )}
-                        {rentStatus === 'Paid' && item.flatRent > 0 && (
+                        {rentStatus === 'Paid' && item.flatRent > 0 ? (
                           <div className="mt-1">
                             <button
                               onClick={() => handleGenerateRentReceipt(item)}
@@ -1580,7 +1594,18 @@ export const MainLedger: React.FC<Props> = ({
                               <span>Generate Receipt</span>
                             </button>
                           </div>
-                        )}
+                        ) : (userRole === 'manager' || userRole === 'owner') && rentStatus !== 'N/A' && rentStatus !== 'Adjusted' && item.flatRent > 0 ? (
+                          <div className="mt-1">
+                            <button
+                              onClick={() => openRecordPaymentModal(item)}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded text-[10px] font-bold transition-colors cursor-pointer"
+                              title="Record Flat Rent Payment"
+                            >
+                              <Wallet className="w-3 h-3 text-emerald-600" />
+                              <span>Pay Rent</span>
+                            </button>
+                          </div>
+                        ) : null}
                       </td>
 
                       {/* 7. Electricity Bill Status & Receipt */}
@@ -1626,7 +1651,7 @@ export const MainLedger: React.FC<Props> = ({
                                   {getPostpaidElectricityPeriod(data.selectedMonth, data.selectedYear).monthName.slice(0, 3)} Bill
                                 </span>
                               )}
-                              {elecStatus === 'Paid' && item.electricityBill > 0 && (
+                              {elecStatus === 'Paid' && item.electricityBill > 0 ? (
                                 <div className="mt-1">
                                   <button
                                     onClick={() => handleGenerateElectricityReceipt(item)}
@@ -1637,7 +1662,18 @@ export const MainLedger: React.FC<Props> = ({
                                     <span>Generate Receipt</span>
                                   </button>
                                 </div>
-                              )}
+                              ) : (userRole === 'manager' || userRole === 'owner') && elecStatus !== 'N/A' && item.electricityBill > 0 ? (
+                                <div className="mt-1">
+                                  <button
+                                    onClick={() => openRecordPaymentModal(item)}
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded text-[10px] font-bold transition-colors cursor-pointer"
+                                    title="Record Electricity Bill Payment"
+                                  >
+                                    <Wallet className="w-3 h-3 text-amber-600" />
+                                    <span>Pay Bill</span>
+                                  </button>
+                                </div>
+                              ) : null}
                             </>
                           );
                         })()}
@@ -1972,103 +2008,23 @@ export const MainLedger: React.FC<Props> = ({
       </div>
 
       {/* RECORD PAYMENT MODAL */}
-      {paymentModalItem && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 border border-slate-200">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <span className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-                  <PlusCircle className="w-5 h-5" />
-                </span>
-                <div>
-                  <h3 className="font-bold text-slate-900 text-base">Record Payment</h3>
-                  <p className="text-xs text-slate-500">
-                    Flat {paymentModalItem.flatId} &bull; {paymentModalItem.tenantName}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setPaymentModalItem(null)}
-                className="text-slate-400 hover:text-slate-600"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="mt-4 space-y-3.5 text-xs">
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between font-mono">
-                <div>
-                  <span className="text-slate-500">Total Payable:</span>
-                  <p className="font-bold text-slate-900">{formatBDT(paymentModalItem.totalPayable)}</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-slate-500">Current Due:</span>
-                  <p className="font-bold text-rose-600">{formatBDT(paymentModalItem.totalDue)}</p>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-slate-700 font-semibold mb-1">
-                  Payment Amount (BDT / ৳) *
-                </label>
-                <input
-                  type="number"
-                  value={payAmount}
-                  onChange={(e) => setPayAmount(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-hidden text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-700 font-semibold mb-1">
-                  Payment Method *
-                </label>
-                <select
-                  value={payMethod}
-                  onChange={(e) => setPayMethod(e.target.value as PaymentMethod)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
-                >
-                  <option value="Cash">Cash Handover</option>
-                  <option value="bKash">bKash MFS</option>
-                  <option value="Nagad">Nagad MFS</option>
-                  <option value="Rocket">Rocket (DBBL)</option>
-                  <option value="Bank Transfer">Bank Deposit / EFT</option>
-                </select>
-              </div>
-
-              {payMethod !== 'Cash' && (
-                <div>
-                  <label className="block text-slate-700 font-semibold mb-1">
-                    Transaction ID / Reference (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. BK98214AA or IBBL-CHQ-1049"
-                    value={payTxnId}
-                    onChange={(e) => setPayTxnId(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
-                  />
-                </div>
-              )}
-            </div>
-
-            <div className="mt-6 pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
-              <button
-                onClick={() => setPaymentModalItem(null)}
-                className="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-50 cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmPayment}
-                className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition-colors cursor-pointer"
-              >
-                Confirm Payment & Generate Receipt
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <RecordPaymentModal
+        isOpen={isRecordPaymentModalOpen}
+        onClose={() => {
+          setIsRecordPaymentModalOpen(false);
+          setRecordPaymentItem(null);
+        }}
+        data={data}
+        initialItem={recordPaymentItem}
+        selectedMonth={filterMonth}
+        selectedYear={filterYear}
+        userRole={userRole}
+        assignedBlock={assignedBlock}
+        currentUser={currentUser}
+        onSaveLedgerItem={onSaveLedgerItem}
+        onRecordPayment={onRecordPayment}
+        onViewReceipt={onViewReceipt}
+      />
 
       {/* ADJUST FROM ADVANCE MODAL */}
       {adjustModalItem && (() => {

@@ -269,7 +269,7 @@ export default function App() {
     flatId: string,
     amount: number,
     method: PaymentMethod,
-    category: 'Combined' | 'Flat Rent' | 'Electricity' | 'Parking' | 'Godown',
+    category: 'Combined' | 'Flat Rent' | 'Electricity' | 'Parking' | 'Godown' | 'Advance' = 'Combined',
     transactionId?: string,
     notes?: string
   ) => {
@@ -2689,6 +2689,7 @@ export default function App() {
                 data={data}
                 onViewReceipt={setActiveReceipt}
                 onSaveLedgerItem={handleSaveLedgerItem}
+                onRecordPayment={handleRecordPayment}
                 onCopyPreviousMonthLedger={handleCopyPreviousMonthLedger}
                 onUpdateMonthYear={handleUpdateMonthYear}
                 onImportLedgerData={handleImportLedgerData}

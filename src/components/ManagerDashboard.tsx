@@ -17,6 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Database,
+  Server,
   PlusCircle,
   KeyRound,
   Download,

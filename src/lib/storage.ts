@@ -154,24 +154,24 @@ export const INITIAL_UNITS: Unit[] = [
 
 export const INITIAL_TENANTS: Tenant[] = [
   // Block A
-  { id: 't-a1', unitId: 'u-a1', flatId: 'A1', blockName: 'Block A', fullName: 'SHOJIB', phone: '01647800995', nidNumber: '19842691234567891', email: 'shojib.a1@gmail.com', entryDate: '2024-11-01', emergencyContact: '01647800995', status: 'active' },
-  { id: 't-a2', unitId: 'u-a2', flatId: 'A2', blockName: 'Block A', fullName: 'ABDULLAH AL MAMUN', phone: '8801310085876', nidNumber: '19902692345678902', email: 'mamun.a2@gmail.com', entryDate: '2026-05-01', emergencyContact: '8801310085876', status: 'active' },
-  { id: 't-a3', unitId: 'u-a3', flatId: 'A3', blockName: 'Block A', fullName: 'MD. SHARIFUL', phone: '8801760800335', nidNumber: '19882693456789013', email: 'shariful.a3@gmail.com', entryDate: '2024-07-01', emergencyContact: '8801760800335', status: 'active' },
-  { id: 't-a4', unitId: 'u-a4', flatId: 'A4', blockName: 'Block A', fullName: 'SABIN', phone: '8801704027951', nidNumber: '19922694567890124', email: 'sabin.a4@gmail.com', entryDate: '2025-08-01', emergencyContact: '8801704027951', status: 'active' },
+  { id: 't-a1', unitId: 'u-a1', flatId: 'A1', blockName: 'Block A', fullName: 'MD. MANIK (ZEON PHARMA)', phone: '01705356537', nidNumber: '19882691234567890', email: 'a1.resident@mbdapartment.com', entryDate: '2026-10-01', emergencyContact: '01705356537', status: 'active' },
+  { id: 't-a2', unitId: 'u-a2', flatId: 'A2', blockName: 'Block A', fullName: 'ABDULLAH AL MAMUN', phone: '01762598361', nidNumber: '19902692345678902', email: 'mamun.a2@gmail.com', entryDate: '2026-05-01', emergencyContact: '01762598361', status: 'active' },
+  { id: 't-a3', unitId: 'u-a3', flatId: 'A3', blockName: 'Block A', fullName: 'MD. SHARIFUL', phone: '01760800335', nidNumber: '19882693456789013', email: 'shariful.a3@gmail.com', entryDate: '2024-07-01', emergencyContact: '01760800335', status: 'active' },
+  { id: 't-a4', unitId: 'u-a4', flatId: 'A4', blockName: 'Block A', fullName: 'SABIN', phone: '01704027951', nidNumber: '19922694567890124', email: 'sabin.a4@gmail.com', entryDate: '2025-08-01', emergencyContact: '01704027951', status: 'active' },
   { id: 't-a5', unitId: 'u-a5', flatId: 'A5', blockName: 'Block A', fullName: 'MD. RASHED', phone: '01717623061', nidNumber: '19852695678901235', email: 'rashed.a5@gmail.com', entryDate: '2025-08-01', emergencyContact: '01717623061', status: 'active' },
   { id: 't-a5-owner', unitId: 'u-a5-owner', flatId: 'A5 (Owner)', blockName: 'Block A', fullName: 'Md. Rashed (Owner)', phone: '01717623061', nidNumber: '19852695678901235', email: 'rashed.blocka@mbdapartment.com', entryDate: '2024-01-01', emergencyContact: '01737-321998', status: 'active' },
-  { id: 't-a5-sublet', unitId: 'u-a5-sublet', flatId: 'A5 Sublet', blockName: 'Block A', fullName: 'MD.  MANIK (ZEON PHARMA)', phone: '01705356537', nidNumber: '19852695678901236', email: 'manik.a5sublet@gmail.com', entryDate: '2025-09-01', emergencyContact: '01705356537', status: 'active' },
-  { id: 't-a6', unitId: 'u-a6', flatId: 'A6', blockName: 'Block A', fullName: 'SUMAIYA', phone: '8801310526217', nidNumber: '19872696789012346', email: 'sumaiya.a6@gmail.com', entryDate: '2024-06-03', emergencyContact: '8801310526217', status: 'active' },
-  { id: 't-a7', unitId: 'u-a7', flatId: 'A7', blockName: 'Block A', fullName: 'GERMAN ALI', phone: '8801738115155', nidNumber: '19932697890123457', email: 'german.a7@gmail.com', entryDate: '2025-10-14', emergencyContact: '8801738115155', status: 'active' },
+  { id: 't-a5-sublet', unitId: 'u-a5-sublet', flatId: 'A5 Sublet', blockName: 'Block A', fullName: 'S. M. ABDUL LATIF', phone: '01711000000', nidNumber: '19852695678901236', email: 'latif.a5sublet@gmail.com', entryDate: '2026-10-01', emergencyContact: '01711000000', status: 'active' },
+  { id: 't-a6', unitId: 'u-a6', flatId: 'A6', blockName: 'Block A', fullName: 'SUMAIYA', phone: '01310526217', nidNumber: '19872696789012346', email: 'sumaiya.a6@gmail.com', entryDate: '2024-06-03', emergencyContact: '01310526217', status: 'active' },
+  { id: 't-a7', unitId: 'u-a7', flatId: 'A7', blockName: 'Block A', fullName: 'GERMAN ALI', phone: '01738115155', nidNumber: '19932697890123457', email: 'german.a7@gmail.com', entryDate: '2025-10-14', emergencyContact: '01738115155', status: 'active' },
 
   // Block B
-  { id: 't-b1', unitId: 'u-b1', flatId: 'B1', blockName: 'Block B', fullName: 'TOFAZZOL HOSSAIN', phone: '8801819502178', nidNumber: '19862697890123457', email: 'tofazzol.b1@gmail.com', entryDate: '2024-07-01', emergencyContact: '8801819502178', status: 'active' },
-  { id: 't-b2', unitId: 'u-b2', flatId: 'B2', blockName: 'Block B', fullName: 'MIZAN & BROS', phone: '8801765310914', nidNumber: '19832698901234568', email: 'mizan.b2@gmail.com', entryDate: '2025-08-01', emergencyContact: '8801765310914', status: 'active' },
-  { id: 't-b3', unitId: 'u-b3', flatId: 'B3', blockName: 'Block B', fullName: 'ALEYA JANNAT', phone: '8801735414773', nidNumber: '19912699012345679', email: 'aleya.b3@gmail.com', entryDate: '2024-07-26', emergencyContact: '8801735414773', status: 'active' },
-  { id: 't-b4', unitId: 'u-b4', flatId: 'B4', blockName: 'Block B', fullName: 'MD. NADIM', phone: '8801762598361', nidNumber: '19942690123456780', email: 'nadim.b4@gmail.com', entryDate: '2024-08-01', emergencyContact: '8801762598361', status: 'active' },
-  { id: 't-b5', unitId: 'u-b5', flatId: 'B5', blockName: 'Block B', fullName: 'SABBIR IT (TRAINING)', phone: '8801726214320', nidNumber: '19892691234567891', email: 'sabbir.b5@gmail.com', entryDate: '2024-08-01', emergencyContact: '8801726214320', status: 'active' },
-  { id: 't-b6', unitId: 'u-b6', flatId: 'B6', blockName: 'Block B', fullName: 'SHAKIL AHMED', phone: '8801710852936', nidNumber: '19932692345678902', email: 'shakil.b6@gmail.com', entryDate: '2025-12-08', emergencyContact: '8801710852936', status: 'active' },
-  { id: 't-b7', unitId: 'u-b7', flatId: 'B7', blockName: 'Block B', fullName: 'MD. ROCKY', phone: '8801714411735', nidNumber: '19952693456789013', email: 'rocky.b7@gmail.com', entryDate: '2026-05-01', emergencyContact: '8801714411735', status: 'active' },
+  { id: 't-b1', unitId: 'u-b1', flatId: 'B1', blockName: 'Block B', fullName: 'TOFAZZOL HOSSAIN', phone: '01819502178', nidNumber: '19862697890123457', email: 'tofazzol.b1@gmail.com', entryDate: '2024-07-01', emergencyContact: '01819502178', status: 'active' },
+  { id: 't-b2', unitId: 'u-b2', flatId: 'B2', blockName: 'Block B', fullName: 'MIZAN & BROS', phone: '01765310914', nidNumber: '19832698901234568', email: 'mizan.b2@gmail.com', entryDate: '2025-08-01', emergencyContact: '01765310914', status: 'active' },
+  { id: 't-b3', unitId: 'u-b3', flatId: 'B3', blockName: 'Block B', fullName: 'ALEYA JANNAT', phone: '01735414773', nidNumber: '19912699012345679', email: 'aleya.b3@gmail.com', entryDate: '2024-07-26', emergencyContact: '01735414773', status: 'active' },
+  { id: 't-b4', unitId: 'u-b4', flatId: 'B4', blockName: 'Block B', fullName: 'MD. NADIM', phone: '01762598361', nidNumber: '19942690123456780', email: 'nadim.b4@gmail.com', entryDate: '2024-08-01', emergencyContact: '01762598361', status: 'active' },
+  { id: 't-b5', unitId: 'u-b5', flatId: 'B5', blockName: 'Block B', fullName: 'RIPON / MIZANUR RAHMAN', phone: '01700000000', nidNumber: '19892691234567891', email: 'b5.resident@mbdapartment.com', entryDate: '2026-10-01', emergencyContact: '01700000000', status: 'active' },
+  { id: 't-b6', unitId: 'u-b6', flatId: 'B6', blockName: 'Block B', fullName: 'SHAKIL AHMED', phone: '01710852936', nidNumber: '19932692345678902', email: 'shakil.b6@gmail.com', entryDate: '2025-12-08', emergencyContact: '01710852936', status: 'active' },
+  { id: 't-b7', unitId: 'u-b7', flatId: 'B7', blockName: 'Block B', fullName: 'MD. ROCKY', phone: '01714411735', nidNumber: '19952693456789013', email: 'rocky.b7@gmail.com', entryDate: '2026-05-01', emergencyContact: '01714411735', status: 'active' },
 
   // Block C
   { id: 't-c1', unitId: 'u-c1', flatId: 'C1', blockName: 'Block C', fullName: 'JUI RAHMAN', phone: '8801832326112', nidNumber: '19822693456789013', email: 'jui.c1@gmail.com', entryDate: '2026-01-21', emergencyContact: '8801832326112', status: 'active' },
@@ -179,7 +179,7 @@ export const INITIAL_TENANTS: Tenant[] = [
   { id: 't-c3', unitId: 'u-c3', flatId: 'C3', blockName: 'Block C', fullName: 'MONIRUZZAMAMN', phone: '8801773030467', nidNumber: '19922695678901235', email: 'monir.c3@gmail.com', entryDate: '2026-01-28', emergencyContact: '8801773030467', status: 'active' },
   { id: 't-c4', unitId: 'u-c4', flatId: 'C4', blockName: 'Block C', fullName: 'DR. SHAMIMA', phone: '8801745042624', nidNumber: '19882696789012346', email: 'shamima.c4@gmail.com', entryDate: '2025-06-01', emergencyContact: '8801745042624', status: 'active' },
   { id: 't-c6', unitId: 'u-c6', flatId: 'C6', blockName: 'Block C', fullName: 'MD. FARUK HOSSEN', phone: '8801741600402', nidNumber: '19902697890123457', email: 'faruk.c6@gmail.com', entryDate: '2024-12-29', emergencyContact: '8801741600402', status: 'active' },
-  { id: 't-c7', unitId: 'u-c7', flatId: 'C7', blockName: 'Block C', fullName: 'BADHON', phone: '01700-000000', nidNumber: '19942698901234568', email: 'badhon.c7@gmail.com', entryDate: '2026-07-01', emergencyContact: '01700-000000', status: 'active' },
+  { id: 't-c7', unitId: 'u-c7', flatId: 'C7', blockName: 'Block C', fullName: 'BADHON', phone: '01734100737', nidNumber: '19942698901234568', email: 'badhon.c7@gmail.com', entryDate: '2026-07-01', emergencyContact: '01734100737', status: 'active' },
 ];
 
 export const INITIAL_ADVANCE_ACCOUNTS: AdvanceAccount[] = [
@@ -196,7 +196,7 @@ export const INITIAL_ADVANCE_ACCOUNTS: AdvanceAccount[] = [
   { id: 'adv-b2', tenantId: 't-b2', unitId: 'u-b2', flatId: 'B2', totalRequired: 46000, amountPaid: 46000, remainingAdvance: 46000, status: 'paid', lastPaymentDate: '2024-01-10', updatedAt: '2024-01-10' },
   { id: 'adv-b3', tenantId: 't-b3', unitId: 'u-b3', flatId: 'B3', totalRequired: 46000, amountPaid: 46000, remainingAdvance: 46000, status: 'paid', lastPaymentDate: '2024-05-01', updatedAt: '2024-05-01' },
   { id: 'adv-b4', tenantId: 't-b4', unitId: 'u-b4', flatId: 'B4', totalRequired: 48000, amountPaid: 48000, remainingAdvance: 48000, status: 'paid', lastPaymentDate: '2024-03-15', updatedAt: '2024-03-15' },
-  { id: 'adv-b5', tenantId: 't-b5', unitId: 'u-b5', flatId: 'B5', totalRequired: 48000, amountPaid: 25000, remainingAdvance: 25000, status: 'partially_paid', lastPaymentDate: '2024-04-10', updatedAt: '2024-04-10' },
+  { id: 'adv-b5', tenantId: 't-b5', unitId: 'u-b5', flatId: 'B5', totalRequired: 17000, amountPaid: 17000, remainingAdvance: 17000, status: 'paid', lastPaymentDate: '2026-10-01', updatedAt: '2026-10-01' },
   { id: 'adv-b6', tenantId: 't-b6', unitId: 'u-b6', flatId: 'B6', totalRequired: 50000, amountPaid: 50000, remainingAdvance: 50000, status: 'paid', lastPaymentDate: '2024-02-15', updatedAt: '2024-02-15' },
 
   { id: 'adv-c1', tenantId: 't-c1', unitId: 'u-c1', flatId: 'C1', totalRequired: 40000, amountPaid: 40000, remainingAdvance: 40000, status: 'paid', lastPaymentDate: '2024-01-01', updatedAt: '2024-01-01' },
@@ -584,10 +584,30 @@ export function getInitialDatabaseState(): AppDatabaseState {
     paymentSettings: INITIAL_PAYMENT_SETTINGS,
     tariffConfig: DEFAULT_NESCO_TARIFF,
     auditLogs: INITIAL_AUDIT_LOGS,
-    selectedMonth: 9,
+    selectedMonth: 10,
     selectedYear: 2026,
     securityCredentials: { ...DEFAULT_SECURITY_CREDENTIALS },
   };
+}
+
+/**
+ * Resolves the true current/active billing period from the database.
+ * Looks for the maximum billing month & year present in ledger records (e.g. October 2026),
+ * ensuring operations like credential generation, tenant logins, and default passwords
+ * always reflect the current active residents, never past tenants who departed in previous months.
+ */
+export function getCurrentActiveBillingPeriod(data?: AppDatabaseState | null): { month: number; year: number } {
+  let maxYear = 2026;
+  let maxMonth = 10;
+  if (data && Array.isArray(data.ledgerItems) && data.ledgerItems.length > 0) {
+    for (const item of data.ledgerItems) {
+      if (item.year > maxYear || (item.year === maxYear && item.month > maxMonth)) {
+        maxYear = item.year;
+        maxMonth = item.month;
+      }
+    }
+  }
+  return { month: maxMonth, year: maxYear };
 }
 
 /**
@@ -901,15 +921,22 @@ export function purgePreviousTenantChatMessages(
 export function syncTenantsWithCurrentLedger(state: AppDatabaseState): AppDatabaseState {
   if (!state || !Array.isArray(state.ledgerItems)) return state;
 
-  const targetMonth = state.selectedMonth;
-  const targetYear = state.selectedYear;
+  const currentPeriod = getCurrentActiveBillingPeriod(state);
+  const targetMonth = state.selectedMonth || currentPeriod.month;
+  const targetYear = state.selectedYear || currentPeriod.year;
 
   // 1. Get ledger items for the currently selected month & year
-  const monthLedger = state.ledgerItems.filter(
+  let monthLedger = state.ledgerItems.filter(
     (i) => i.month === targetMonth && i.year === targetYear
   );
 
-  // If monthLedger is empty (e.g. newly added month), fall back to any available ledger items
+  // If monthLedger is empty (or has no active data), fall back to current active billing period
+  if (monthLedger.length === 0) {
+    monthLedger = state.ledgerItems.filter(
+      (i) => i.month === currentPeriod.month && i.year === currentPeriod.year
+    );
+  }
+
   const sourceLedger = monthLedger.length > 0 ? monthLedger : state.ledgerItems;
 
   // 2. Identify active occupants per flat

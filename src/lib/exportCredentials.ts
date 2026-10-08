@@ -1,7 +1,8 @@
 import * as XLSX from 'xlsx';
 import { AppDatabaseState } from '../types';
 import { COMPLEX_CONFIG } from './complexConfig';
-import { compareFlatIdSerial, getLast11Digits } from './storage';
+import { compareFlatIdSerial, getLast11Digits, getCurrentActiveBillingPeriod } from './storage';
+import { getMonthName } from './nescoTariff';
 
 export interface ExportCredentialsOptions {
   blockFilter?: string; // e.g. 'Block A', 'Block B', 'Block C', or undefined for all
@@ -10,6 +11,8 @@ export interface ExportCredentialsOptions {
 
 /**
  * 1-Click Export of all Flat IDs and Passwords for all tenants and authority logins to Excel (.xlsx)
+ * Strictly generates credentials from the CURRENT active billing month's tenant list (e.g. October 2026),
+ * ensuring departed tenants from previous months (e.g. Sabbir in B5) are never exported.
  */
 export function exportAllCredentialsToExcel(
   data: AppDatabaseState,
@@ -29,6 +32,8 @@ export function exportAllCredentialsToExcel(
     };
 
     const hostUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+    const activePeriod = getCurrentActiveBillingPeriod(data);
+    const activeMonthLabel = `${getMonthName(activePeriod.month)} ${activePeriod.year}`;
 
     // 1. Build Authority Accounts List
     const authorityRows = [
@@ -41,6 +46,7 @@ export function exportAllCredentialsToExcel(
         'Login Password': securityCreds.authorityPasswords?.manager || '(Set on First Login / Default: empty)',
         'Password Status': securityCreds.authorityPasswords?.manager ? 'Configured' : 'First Time Setup Required',
         'Portal Link': hostUrl,
+        'Billing Period': activeMonthLabel,
         'Notes': 'Full administrative control over ledgers, NESCO, MFS, units and credentials',
       },
       {
@@ -52,6 +58,7 @@ export function exportAllCredentialsToExcel(
         'Login Password': securityCreds.authorityPasswords?.ownerA || 'rashed123',
         'Password Status': 'Active',
         'Portal Link': hostUrl,
+        'Billing Period': activeMonthLabel,
         'Notes': 'Full access to Block A financial ledger, receipts and bank/MFS collection',
       },
       {
@@ -63,6 +70,7 @@ export function exportAllCredentialsToExcel(
         'Login Password': securityCreds.authorityPasswords?.ownerB || 'raju123',
         'Password Status': 'Active',
         'Portal Link': hostUrl,
+        'Billing Period': activeMonthLabel,
         'Notes': 'Full access to Block B financial ledger, receipts and bank/MFS collection',
       },
       {
@@ -74,6 +82,7 @@ export function exportAllCredentialsToExcel(
         'Login Password': securityCreds.authorityPasswords?.ownerC || 'rony123',
         'Password Status': 'Active',
         'Portal Link': hostUrl,
+        'Billing Period': activeMonthLabel,
         'Notes': 'Full access to Block C financial ledger, receipts and bank/MFS collection',
       },
     ];
@@ -84,6 +93,8 @@ export function exportAllCredentialsToExcel(
       : authorityRows;
 
     // 2. Build Tenant & Flat Logins List sorted strictly in serial order (A1, A2... B1, B2... C1, C2...)
+    // Strictly derived from the current active billing month (e.g. October 2026), ensuring current residents
+    // like Ripon / Mizanur Rahman (B5) are generated, and previous tenants who departed are excluded.
     const sortedUnits = [...data.units].sort((a, b) => compareFlatIdSerial(a.flatId, b.flatId));
     const targetUnits = options?.blockFilter
       ? sortedUnits.filter((u) => u.blockName === options.blockFilter)
@@ -91,14 +102,25 @@ export function exportAllCredentialsToExcel(
 
     const tenantRows = targetUnits.map((unit) => {
       const cleanFlatId = unit.flatId.toLowerCase().trim();
+
+      // 1. Primary lookup: Current active billing month ledger item
       const currentMonthLedger = data.ledgerItems.find(
         (item) =>
           item.flatId.toLowerCase().trim() === cleanFlatId &&
-          item.month === data.selectedMonth &&
-          item.year === data.selectedYear
+          item.month === activePeriod.month &&
+          item.year === activePeriod.year
       );
-      const anyLedger = currentMonthLedger || data.ledgerItems.find((i) => i.flatId.toLowerCase().trim() === cleanFlatId);
-      const tenant = data.tenants.find((t) => t.flatId.toLowerCase().trim() === cleanFlatId);
+
+      // 2. Fallback lookup: Latest ledger item sorted descending (NEVER older previous month records)
+      const latestLedger = [...data.ledgerItems]
+        .filter((i) => i.flatId.toLowerCase().trim() === cleanFlatId)
+        .sort((a, b) => (b.year * 12 + b.month) - (a.year * 12 + a.month))[0];
+
+      // 3. Active tenant from synced state
+      const activeTenant = data.tenants.find(
+        (t) => t.flatId.toLowerCase().trim() === cleanFlatId && t.status === 'active'
+      );
+      const anyTenant = activeTenant || data.tenants.find((t) => t.flatId.toLowerCase().trim() === cleanFlatId);
 
       const isOwnerUnit =
         cleanFlatId.includes('owner') ||
@@ -107,21 +129,22 @@ export function exportAllCredentialsToExcel(
 
       const residentName =
         currentMonthLedger?.tenantName?.trim() ||
-        tenant?.fullName?.trim() ||
-        anyLedger?.tenantName?.trim() ||
+        latestLedger?.tenantName?.trim() ||
+        anyTenant?.fullName?.trim() ||
         (isOwnerUnit ? 'Owner Residence' : 'Vacant Flat');
 
-      const residentPhone =
+      const rawPhone =
         currentMonthLedger?.tenantPhone?.trim() ||
-        tenant?.phone?.trim() ||
-        anyLedger?.tenantPhone?.trim() ||
+        latestLedger?.tenantPhone?.trim() ||
+        anyTenant?.phone?.trim() ||
         (isOwnerUnit ? (unit.flatId.startsWith('A') ? '01717623061' : '01712118547') : '01700-000000');
 
       const customPassword =
         securityCreds.unitPasswords?.[unit.flatId] ||
         securityCreds.unitPasswords?.[cleanFlatId];
 
-      const defaultPhonePassword = getLast11Digits(residentPhone);
+      const defaultPhonePassword = getLast11Digits(rawPhone);
+      const residentMobile = defaultPhonePassword.length === 11 ? defaultPhonePassword : rawPhone;
       const activePassword = customPassword || defaultPhonePassword;
       const passwordType = customPassword ? 'Custom Override' : 'Default (11-digit Mobile)';
 
@@ -130,12 +153,13 @@ export function exportAllCredentialsToExcel(
         'Block': unit.blockName,
         'Floor': unit.floor,
         'Resident Name': residentName,
-        'Resident Mobile': residentPhone,
+        'Resident Mobile': residentMobile,
         'Login Password': activePassword,
         'Password Type': passwordType,
+        'Billing Month': activeMonthLabel,
         'Occupancy': unit.isOccupied ? 'Occupied' : 'Vacant',
         'Unit Type': unit.unitType.toUpperCase(),
-        'Monthly Rent (BDT)': unit.monthlyRent,
+        'Monthly Rent (BDT)': currentMonthLedger?.flatRent || unit.monthlyRent,
         'Login Instructions': `Select Flat ${unit.flatId} -> Enter password ${activePassword}`,
       };
     });

@@ -208,7 +208,7 @@ export interface PaymentTransaction {
   tenantId: string;
   tenantName: string;
   flatId: string;
-  category: 'Flat Rent' | 'Electricity' | 'Advance Payment' | 'Parking' | 'Godown' | 'Combined';
+  category: 'Flat Rent' | 'Electricity' | 'Advance Payment' | 'Advance' | 'Parking' | 'Godown' | 'Combined';
   month: number;
   year: number;
   amount: number;
