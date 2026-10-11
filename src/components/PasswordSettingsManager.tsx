@@ -184,7 +184,8 @@ export const PasswordSettingsManager: React.FC<Props> = ({
   const handleCopyCredentials = (flatId: string) => {
     const { name, phone } = getFlatResidentInfo(flatId);
     const activePass = unitPasswords[flatId] || getLast11Digits(phone);
-    const text = `🏢 ${COMPLEX_CONFIG.name} Resident Portal\nFlat: ${flatId}\nResident: ${name}\nLogin Password: ${activePass}\nPortal Link: http://localhost:5173\nManager Hotline: ${COMPLEX_CONFIG.managerPhone}`;
+    const portalUrl = typeof window !== 'undefined' ? window.location.origin : 'https://ams-v40.vercel.app';
+    const text = `🏢 ${COMPLEX_CONFIG.name} Resident Portal\nFlat: ${flatId}\nResident: ${name}\nLogin Password: ${activePass}\nPortal Link: ${portalUrl}\nManager Hotline: ${COMPLEX_CONFIG.managerPhone}`;
 
     navigator.clipboard.writeText(text);
     setCopiedFlatId(flatId);

@@ -131,12 +131,12 @@ export const TenantPortal: React.FC<Props> = ({
     return isWithinStayingPeriod(b.consumptionMonth, b.consumptionYear, b.tenantName);
   });
 
-  const isUnitElecOn =
-    flatElectricityBills.length > 0 ||
-    (currentLedgerItem && currentLedgerItem.electricityBill > 0) ||
-    ((unit?.unitType === 'residential' || unit?.unitType === 'godown' || !unit) &&
-     (unit?.isElectricityEnabled ?? (unit?.electricityBillingType === 'nesco_submeter' || !unit?.electricityBillingType)) &&
-     unit?.electricityBillingType !== 'none');
+  // Strict unit electricity active toggle check - completely hides when disabled on unit
+  const isUnitElecOn = Boolean(
+    unit &&
+    unit.isElectricityEnabled !== false &&
+    unit.electricityBillingType !== 'none'
+  );
 
   // Block MFS Gateway Configuration & Availability
   const tenantBlockName: 'Block A' | 'Block B' | 'Block C' =
@@ -403,6 +403,36 @@ export const TenantPortal: React.FC<Props> = ({
 
   // 2. Current Month Flat Rent
   const currentFlatRent = currentLedgerItem?.flatRent ?? unit?.monthlyRent ?? 0;
+
+  // Base single-month standard security advance amount (strictly single-month e.g. ৳8,000, not cumulative or multiplied sum)
+  const singleMonthAdvanceAmount = (() => {
+    if (isOwnerFlat) return 0;
+    // 1. Direct recorded advance payment on current active ledger item
+    const ledgerAdv =
+      currentLedgerItem?.advancePayment !== undefined && currentLedgerItem?.advancePayment !== null
+        ? Number(currentLedgerItem.advancePayment)
+        : null;
+    if (ledgerAdv !== null && ledgerAdv > 0) {
+      if (!currentFlatRent || ledgerAdv <= currentFlatRent) {
+        return ledgerAdv;
+      }
+      return currentFlatRent > 0 ? currentFlatRent : ledgerAdv;
+    }
+
+    // 2. Matching advance account from database
+    if (matchingAdv) {
+      const advTotal = matchingAdv.amountPaid || matchingAdv.totalRequired || 0;
+      if (advTotal > 0) {
+        if (currentFlatRent > 0 && advTotal > currentFlatRent) {
+          return currentFlatRent;
+        }
+        return advTotal;
+      }
+    }
+
+    // 3. Fallback to current flat monthly rent or standard advance (৳8,000)
+    return currentFlatRent > 0 ? currentFlatRent : 8000;
+  })();
   const rawRentStatus = (currentLedgerItem?.rentStatus || '').trim();
   const resolvedRentStatus: 'Paid' | 'Not Paid' | 'Partially Paid' | 'Adjusted' | 'N/A' =
     isOwnerFlat
@@ -618,11 +648,11 @@ export const TenantPortal: React.FC<Props> = ({
               </span>
             </div>
             <div className="text-xl sm:text-2xl font-black text-indigo-700 mt-2 font-mono">
-              {formatBDT(effectiveAdvAmount)}
+              {formatBDT(singleMonthAdvanceAmount)}
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              {matchingAdv && matchingAdv.amountPaid > effectiveAdvAmount
-                ? `Remaining escrow balance (${formatBDT(matchingAdv.amountPaid)} deposited)`
+              {matchingAdv && matchingAdv.amountPaid > singleMonthAdvanceAmount
+                ? `Standard security advance (${formatBDT(matchingAdv.amountPaid)} total in escrow)`
                 : 'Deposited in escrow account'}
             </p>
           </div>
@@ -635,12 +665,12 @@ export const TenantPortal: React.FC<Props> = ({
                     flatId,
                     month: data.selectedMonth,
                     year: data.selectedYear,
-                    advancePayment: matchingAdv?.amountPaid || effectiveAdvAmount,
+                    advancePayment: singleMonthAdvanceAmount,
                     entryDate: tenant?.entryDate || '2024-01-01',
                   } as MonthlyLedgerItem);
                   handleGenerateAdvanceReceipt({
                     ...targetItem,
-                    advancePayment: matchingAdv?.amountPaid || effectiveAdvAmount,
+                    advancePayment: singleMonthAdvanceAmount,
                   });
                 }}
                 className="w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-[11px] font-bold transition-colors cursor-pointer"
