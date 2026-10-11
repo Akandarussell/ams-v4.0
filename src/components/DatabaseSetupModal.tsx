@@ -40,7 +40,8 @@ export const DatabaseSetupModal: React.FC<Props> = ({ onClose, onResetDemoData }
   const fetchBackupsList = async () => {
     try {
       const res = await fetch('/api/database/backups');
-      if (res.ok) {
+      const contentType = res.headers.get('content-type');
+      if (res.ok && contentType && contentType.includes('application/json')) {
         const json = await res.json();
         if (json.success && json.backups) {
           setBackups(json.backups);
@@ -58,6 +59,10 @@ export const DatabaseSetupModal: React.FC<Props> = ({ onClose, onResetDemoData }
     setBackupMsg(null);
     try {
       const res = await fetch('/api/database/backup', { method: 'POST' });
+      const contentType = res.headers.get('content-type');
+      if (!res.ok || !contentType || !contentType.includes('application/json')) {
+        throw new Error('Server backup endpoint is only available when running with Node server.');
+      }
       const json = await res.json();
       if (json.success) {
         setBackupMsg(`Backup snapshot created: ${json.filename}`);
@@ -78,6 +83,10 @@ export const DatabaseSetupModal: React.FC<Props> = ({ onClose, onResetDemoData }
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ filename }),
       });
+      const contentType = res.headers.get('content-type');
+      if (!res.ok || !contentType || !contentType.includes('application/json')) {
+        throw new Error('Server restore endpoint is only available when running with Node server.');
+      }
       const json = await res.json();
       if (json.success) {
         alert('Database restored successfully! Reloading...');
@@ -91,16 +100,34 @@ export const DatabaseSetupModal: React.FC<Props> = ({ onClose, onResetDemoData }
   const handleDownloadDatabaseJson = async () => {
     try {
       const res = await fetch('/api/database');
-      const json = await res.json();
-      if (json && json.data) {
-        const blob = new Blob([JSON.stringify(json.data, null, 2)], { type: 'application/json' });
+      const contentType = res.headers.get('content-type');
+      if (res.ok && contentType && contentType.includes('application/json')) {
+        const json = await res.json();
+        if (json && json.data) {
+          const blob = new Blob([JSON.stringify(json.data, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `MBD_Apartment_Database_${new Date().toISOString().split('T')[0]}.json`;
+          a.click();
+          URL.revokeObjectURL(url);
+          return;
+        }
+      }
+      // Fallback: download active local state directly from localStorage
+      const localData = localStorage.getItem('mbd_apartment_db_v3');
+      if (localData) {
+        const parsed = JSON.parse(localData);
+        const blob = new Blob([JSON.stringify(parsed, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = `MBD_Apartment_Database_${new Date().toISOString().split('T')[0]}.json`;
         a.click();
         URL.revokeObjectURL(url);
+        return;
       }
+      alert('No database found to download.');
     } catch (e) {
       alert('Could not download database JSON');
     }

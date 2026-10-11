@@ -16,14 +16,12 @@ import {
   Database,
   Printer,
   LogOut,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Calendar,
   Menu,
   X,
   Bell,
-  CheckCircle2,
   ShieldCheck,
   UserCheck,
   Home,
@@ -114,7 +112,6 @@ export default function App() {
   const [currentView, setCurrentView] = useState<string>('dashboard');
   const [ledgerInitialBlock, setLedgerInitialBlock] = useState<string>('all');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
 
   // Active user safe helpers for handlers
   const activeUserFullName = currentUser?.fullName || 'Manager Russell';
@@ -2141,19 +2138,6 @@ export default function App() {
     }));
   };
 
-  // Switch role handler (e.g. Manager Russell, Owner Rashed, Owner Raju, Owner Rony, or Resident)
-  const handleSwitchUser = (user: UserProfile) => {
-    setCurrentUser(user);
-    try {
-      localStorage.setItem('mbd_logged_in_user', JSON.stringify(user));
-    } catch (e) {
-      console.error(e);
-    }
-    setIsRoleDropdownOpen(false);
-    // Reset view to dashboard
-    setCurrentView('dashboard');
-  };
-
   const handleLogin = (user: UserProfile) => {
     setCurrentUser(user);
     try {
@@ -2171,50 +2155,9 @@ export default function App() {
     } catch (e) {
       console.error(e);
     }
-    setIsRoleDropdownOpen(false);
     setIsMobileMenuOpen(false);
     setCurrentView('dashboard');
   };
-
-  // Predefined Quick Accounts for Fast Role Switching in demo/testing
-  const quickAccounts: { label: string; user: UserProfile }[] = [
-    { label: `Russell (Manager - ${COMPLEX_CONFIG.managerPhone})`, user: data.profiles[0] },
-    { label: 'Md. Rashed (Block A Owner - 01717623061)', user: data.profiles[1] },
-    { label: `Md. Raju (Block B Owner - ${COMPLEX_CONFIG.rajuPhone})`, user: data.profiles[2] },
-    { label: 'Md. Rony (Block C Owner - 01712118547)', user: data.profiles[3] },
-    (() => {
-      const tenantA2 = data.tenants.find((t) => t.flatId === 'A2');
-      return {
-        label: `${tenantA2?.fullName || 'ABDULLAH AL MAMUN'} (Tenant - Flat A2)`,
-        user: {
-          id: tenantA2?.id || 't-a2',
-          email: tenantA2?.email || 'mamun.a2@gmail.com',
-          fullName: tenantA2?.fullName || 'ABDULLAH AL MAMUN',
-          phone: tenantA2?.phone || '8801310085876',
-          role: 'tenant' as const,
-          flatId: 'A2',
-          isActive: true,
-          createdAt: tenantA2?.entryDate || '2026-05-01',
-        },
-      };
-    })(),
-    (() => {
-      const tenantB3 = data.tenants.find((t) => t.flatId === 'B3');
-      return {
-        label: `${tenantB3?.fullName || 'ALEYA JANNAT'} (Tenant - Flat B3)`,
-        user: {
-          id: tenantB3?.id || 't-b3',
-          email: tenantB3?.email || 'aleya.b3@gmail.com',
-          fullName: tenantB3?.fullName || 'ALEYA JANNAT',
-          phone: tenantB3?.phone || '8801735414773',
-          role: 'tenant' as const,
-          flatId: 'B3',
-          isActive: true,
-          createdAt: tenantB3?.entryDate || '2024-07-26',
-        },
-      };
-    })(),
-  ];
 
   // Navigation items based on role (Advance Payments, Rental Units, and Electricity tabs removed from left menubar)
   const getNavItems = () => {
@@ -2307,7 +2250,7 @@ export default function App() {
             </div>
           </div>
 
-          {/* Current Period & Database Status & Role Switcher */}
+          {/* Current Period & Database Status & User Profile */}
           <div className="flex items-center gap-2 sm:gap-4">
             {/* Database indicator - ONLY DISPLAY ON MANAGER'S DASHBOARD */}
             {currentUser.role === 'manager' && currentView === 'dashboard' && (
@@ -2377,66 +2320,15 @@ export default function App() {
               </button>
             </div>
 
-            {/* Role Switcher Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-blue-700 hover:bg-blue-600 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
-              >
-                <UserCheck className="w-4 h-4" />
-                <span className="max-w-[130px] sm:max-w-[170px] truncate">
-                  {currentUser.fullName}
-                </span>
-                <ChevronDown className="w-3.5 h-3.5 opacity-80" />
-              </button>
-
-              {isRoleDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 py-2 z-50 text-slate-800 text-xs animate-in fade-in zoom-in-95">
-                  <div className="px-4 py-2 border-b border-slate-100">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      Switch Role / Account (Demo Mode)
-                    </p>
-                    <p className="font-semibold text-slate-700 mt-0.5 truncate">
-                      Active: {currentUser.fullName}
-                    </p>
-                  </div>
-
-                  <div className="py-1">
-                    {quickAccounts.map((item, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleSwitchUser(item.user)}
-                        className={`w-full text-left px-4 py-2.5 hover:bg-slate-50 flex items-center justify-between transition-colors cursor-pointer ${
-                          currentUser.id === item.user.id ? 'bg-blue-50/80 font-bold text-blue-700' : ''
-                        }`}
-                      >
-                        <div>
-                          <p className="font-medium text-slate-900">{item.label}</p>
-                          <p className="text-[10px] text-slate-400 capitalize">{item.user.role}</p>
-                        </div>
-                        {currentUser.id === item.user.id && (
-                          <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="p-2 border-t border-slate-100">
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left px-3 py-2 text-rose-600 hover:bg-rose-50 rounded-xl font-bold flex items-center gap-2 transition-colors cursor-pointer text-xs"
-                    >
-                      <LogOut className="w-4 h-4 text-rose-600" />
-                      <span>Sign Out to Login Screen</span>
-                    </button>
-                  </div>
-
-                  <div className="px-4 py-2 border-t border-slate-100 flex flex-col gap-0.5 text-[10px] text-slate-500">
-                    <span className="font-semibold text-slate-700">{COMPLEX_CONFIG.address}</span>
-                    <span>Contact: {COMPLEX_CONFIG.contacts}</span>
-                  </div>
-                </div>
-              )}
+            {/* Active Logged-in User Display */}
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/90 border border-slate-700/80 rounded-xl text-xs shadow-xs">
+              <UserCheck className="w-4 h-4 text-blue-400 shrink-0" />
+              <span className="font-bold max-w-[120px] sm:max-w-[170px] truncate text-white">
+                {currentUser.fullName}
+              </span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-900/60 text-blue-300 font-semibold uppercase tracking-wider border border-blue-700/50 hidden sm:inline">
+                {currentUser.role}
+              </span>
             </div>
 
             {/* Direct Logout Button in Header */}

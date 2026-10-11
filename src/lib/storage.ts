@@ -1504,6 +1504,8 @@ export async function fetchDatabaseFromServer(): Promise<AppDatabaseState | null
   try {
     const res = await fetch('/api/database');
     if (!res.ok) return null;
+    const contentType = res.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) return null;
     const json = await res.json();
     if (json && json.success && json.data) {
       let serverData = json.data as AppDatabaseState;
@@ -1534,7 +1536,9 @@ export async function saveDatabaseToServer(state: AppDatabaseState): Promise<boo
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(state),
     });
-    return res.ok;
+    if (!res.ok) return false;
+    const contentType = res.headers.get('content-type');
+    return Boolean(contentType && contentType.includes('application/json'));
   } catch (err) {
     console.warn('Could not save database to server:', err);
     return false;

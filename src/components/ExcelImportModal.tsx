@@ -266,18 +266,44 @@ export const ExcelImportModal: React.FC<Props> = ({
     setErrorMessage(null);
 
     try {
-      const res = await fetch('/api/fetch-sheet', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: googleSheetUrl.trim() }),
-      });
-
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        throw new Error(json.error || 'Failed to download Google Sheet.');
+      let csvText: string | null = null;
+      try {
+        const res = await fetch('/api/fetch-sheet', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: googleSheetUrl.trim() }),
+        });
+        const contentType = res.headers.get('content-type');
+        if (res.ok && contentType && contentType.includes('application/json')) {
+          const json = await res.json();
+          if (json.success && json.csv) {
+            csvText = json.csv;
+          }
+        }
+      } catch (proxyErr) {
+        // Fall through to direct fetch
       }
 
-      const wb = XLSX.read(json.csv, { type: 'string' });
+      // Fallback: direct public CSV export download (works client-side on Vercel if sheet is public)
+      if (!csvText) {
+        let fetchUrl = googleSheetUrl.trim();
+        if (fetchUrl.includes('docs.google.com/spreadsheets')) {
+          const match = fetchUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+          if (match) {
+            const id = match[1];
+            const gidMatch = fetchUrl.match(/[#&?]gid=([0-9]+)/);
+            const gidParam = gidMatch ? `&gid=${gidMatch[1]}` : '';
+            fetchUrl = `https://docs.google.com/spreadsheets/d/${id}/export?format=csv${gidParam}`;
+          }
+        }
+        const directRes = await fetch(fetchUrl);
+        if (!directRes.ok) {
+          throw new Error('Failed to download Google Sheet. Ensure sheet sharing is set to "Anyone with the link can view".');
+        }
+        csvText = await directRes.text();
+      }
+
+      const wb = XLSX.read(csvText, { type: 'string' });
       handleProcessWorkbook(wb, 'Google Sheet (Live Extract)');
     } catch (err: any) {
       setErrorMessage(
