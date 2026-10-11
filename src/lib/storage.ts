@@ -29,8 +29,11 @@ import {
   upgradeTariffConfig,
 } from './nescoTariff';
 import { COMPLEX_CONFIG } from './complexConfig';
+import defaultDatabaseData from '../../data/app_database.json';
 
-export const DEFAULT_SECURITY_CREDENTIALS: SecurityCredentials = {
+const bundledDatabase = defaultDatabaseData as unknown as AppDatabaseState;
+
+export const DEFAULT_SECURITY_CREDENTIALS: SecurityCredentials = bundledDatabase.securityCredentials || {
   isManagerPasswordInitialized: false,
   authorityPasswords: {
     manager: '',
@@ -42,7 +45,7 @@ export const DEFAULT_SECURITY_CREDENTIALS: SecurityCredentials = {
 };
 
 // Initial Authority Accounts
-export const INITIAL_PROFILES: UserProfile[] = [
+export const INITIAL_PROFILES: UserProfile[] = (bundledDatabase.profiles as UserProfile[]) || [
   {
     id: 'user-manager-russell',
     email: 'akandarussell@gmail.com',
@@ -545,9 +548,12 @@ export const INITIAL_AUDIT_LOGS: AuditLog[] = [
 ];
 
 // Persistent App State Engine
-const STORAGE_KEY = 'ams_mbd_v2_database';
+const STORAGE_KEY = 'ams_mbd_v4_database';
 
 export function getInitialDatabaseState(): AppDatabaseState {
+  if (bundledDatabase && Array.isArray(bundledDatabase.units) && bundledDatabase.units.length > 0) {
+    return JSON.parse(JSON.stringify(bundledDatabase)) as AppDatabaseState;
+  }
   return {
     profiles: INITIAL_PROFILES,
     blocks: INITIAL_BLOCKS,
@@ -1129,6 +1135,12 @@ export function getEffectiveRemainingAdvance(
 export function loadDatabaseState(): AppDatabaseState {
   if (typeof window === 'undefined') return getInitialDatabaseState();
   try {
+    // Purge legacy mock storage keys if present
+    try {
+      localStorage.removeItem('ams_mbd_v2_database');
+      localStorage.removeItem('ams_mbd_v3_database');
+    } catch (e) {}
+
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
       const initial = getInitialDatabaseState();
@@ -1136,6 +1148,21 @@ export function loadDatabaseState(): AppDatabaseState {
       return initial;
     }
     let parsed: AppDatabaseState = JSON.parse(raw);
+
+    // Auto-migrate if stored database contains obsolete mock data (e.g. A2 advance of 48000 instead of 8000, or A1 of 44000)
+    const isLegacyMock =
+      !parsed ||
+      !Array.isArray(parsed.units) ||
+      parsed.units.length === 0 ||
+      parsed.advanceAccounts?.some((a) => a.flatId === 'A2' && a.totalRequired === 48000) ||
+      parsed.advanceAccounts?.some((a) => a.flatId === 'A1' && a.totalRequired === 44000);
+
+    if (isLegacyMock) {
+      const initial = getInitialDatabaseState();
+      saveDatabaseState(initial);
+      return initial;
+    }
+
     if (parsed) {
       if (Array.isArray(parsed.units)) {
         parsed.units = parsed.units.map((u) => ({
