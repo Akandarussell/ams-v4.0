@@ -64,12 +64,14 @@ export const TenantPortal: React.FC<Props> = ({
 
   // Find tenant details - prioritize active tenant record
   const cleanFlatId = flatId.toLowerCase().trim();
-  const activeTenant = data.tenants.find((t) => t.flatId.toLowerCase().trim() === cleanFlatId && t.status === 'active');
+  const activeTenant = data.tenants.find(
+    (t) => t.flatId.toLowerCase().trim() === cleanFlatId && t.status !== 'moved_out'
+  );
   const tenant = activeTenant || data.tenants.find((t) => t.flatId.toLowerCase().trim() === cleanFlatId);
   const unit = data.units.find((u) => u.flatId.toLowerCase().trim() === cleanFlatId);
 
   // Parse tenant's entry / lease start date for strict staying period boundaries
-  const entryDateStr = activeTenant?.entryDate || tenant?.entryDate || currentUser.createdAt || '';
+  const entryDateStr = activeTenant?.entryDate || tenant?.entryDate || '';
   let entryYear = 0;
   let entryMonth = 0;
   if (entryDateStr && entryDateStr.includes('-')) {
@@ -81,24 +83,25 @@ export const TenantPortal: React.FC<Props> = ({
 
   // Privacy Rule: Check if a given record/bill falls strictly within this tenant's staying period
   const isWithinStayingPeriod = (month: number, year: number, recordTenantName?: string): boolean => {
-    // 1. Entry / lease start date boundary
-    if (entryYear > 0 && entryMonth > 0) {
-      if (year < entryYear || (year === entryYear && month < entryMonth)) {
-        return false; // Prior month/year belongs to previous occupant
-      }
-    }
-    // 2. Tenant name matching check to block previous tenants' information
+    // 1. If record has an occupant name and it explicitly matches current tenant, include it
     if (recordTenantName && currentTenantFullName) {
       const recName = recordTenantName.trim().toLowerCase();
-      const genericNames = ['resident', 'vacant flat', 'owner occupied', 'n/a', ''];
+      const genericNames = ['resident', 'vacant flat', 'owner occupied', 'n/a', '', 'vacant'];
       if (!genericNames.includes(recName)) {
         const isMatch =
           recName === currentTenantFullName ||
           recName.includes(currentTenantFullName) ||
           currentTenantFullName.includes(recName);
         if (!isMatch) {
-          return false;
+          return false; // Belongs to a different occupant
         }
+        return true; // Explicitly matches this tenant
+      }
+    }
+    // 2. Entry / lease start date boundary (only if entry date is validly set)
+    if (entryYear > 0 && entryMonth > 0) {
+      if (year < entryYear || (year === entryYear && month < entryMonth)) {
+        return false;
       }
     }
     return true;
@@ -117,13 +120,14 @@ export const TenantPortal: React.FC<Props> = ({
     })
     .sort((a, b) => b.year - a.year || b.month - a.month);
 
-  // Active month ledger entry (bounded to staying period; falls back to current tenant's latest item)
-  const isSelectedWithinStay = isWithinStayingPeriod(data.selectedMonth, data.selectedYear);
-  const currentLedgerItem = isSelectedWithinStay
-    ? data.ledgerItems.find(
-        (item) => item.flatId.toLowerCase().trim() === cleanFlatId && item.month === data.selectedMonth && item.year === data.selectedYear
-      )
-    : flatLedgerHistory[0] || null;
+  // Active month ledger entry: strictly match selected month/year or tenant's latest ledger record
+  const selectedLedgerItem = data.ledgerItems.find(
+    (item) => item.flatId.toLowerCase().trim() === cleanFlatId && item.month === data.selectedMonth && item.year === data.selectedYear
+  );
+  const currentLedgerItem =
+    (selectedLedgerItem && isWithinStayingPeriod(selectedLedgerItem.month, selectedLedgerItem.year, selectedLedgerItem.tenantName))
+      ? selectedLedgerItem
+      : flatLedgerHistory[0] || selectedLedgerItem || null;
 
   // Electricity bills strictly filtered to consumption during current tenant's staying period
   const flatElectricityBills = data.electricityBills.filter((b) => {
@@ -328,7 +332,7 @@ export const TenantPortal: React.FC<Props> = ({
   };
 
   // Restrict access if flat is vacant or tenant is moved out
-  if ((unit && !unit.isOccupied) || (tenant && tenant.status === 'moved_out') || !activeTenant) {
+  if ((unit && !unit.isOccupied) || (tenant && tenant.status === 'moved_out') || (!activeTenant && !tenant)) {
     return (
       <div className="max-w-2xl mx-auto my-12 p-8 bg-white rounded-3xl border border-slate-200 shadow-xl text-center space-y-5 animate-in fade-in">
         <div className="w-16 h-16 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto border border-rose-200">
@@ -365,74 +369,56 @@ export const TenantPortal: React.FC<Props> = ({
     );
   }
 
-  // 1. Resolve security advance amount & status saved in ledger / advance accounts
+  // 1. Security Advance: Strictly follow current active ledger item (with fallback to advance account / monthly rent)
   const isOwnerFlat = flatId.toLowerCase().includes('owner');
   const matchingAdv = data.advanceAccounts.find(
     (a) => a.flatId.toLowerCase().trim() === cleanFlatId && (!a.tenantId || a.tenantId === activeTenant?.id || a.tenantId === tenant?.id)
   );
 
-  const effectiveAdvAmount = matchingAdv
-    ? getEffectiveRemainingAdvance(matchingAdv, data.ledgerItems)
-    : currentLedgerItem?.advancePayment !== undefined && currentLedgerItem?.advancePayment !== null
-    ? Number(currentLedgerItem.advancePayment)
-    : 0;
+  const rawLedgerAdv =
+    currentLedgerItem?.advancePayment !== undefined &&
+    currentLedgerItem?.advancePayment !== null &&
+    !isNaN(Number(currentLedgerItem.advancePayment))
+      ? Number(currentLedgerItem.advancePayment)
+      : null;
+
+  const displayAdvanceAmount = (() => {
+    if (isOwnerFlat) return 0;
+    if (rawLedgerAdv !== null && rawLedgerAdv > 0) {
+      return rawLedgerAdv;
+    }
+    if (matchingAdv) {
+      return matchingAdv.amountPaid || matchingAdv.totalRequired || 0;
+    }
+    return unit?.monthlyRent || 0;
+  })();
 
   const rawAdvStatus = (currentLedgerItem?.advanceStatus || '').trim().toLowerCase();
-  const isAdvNotPaid = rawAdvStatus === 'not paid' || rawAdvStatus === 'not_paid';
-  const isAdvPaid = rawAdvStatus === 'paid';
-  const isAdvPartial = rawAdvStatus === 'partially paid' || rawAdvStatus === 'partially_paid';
-  const isAdvAdjusted = rawAdvStatus === 'adjusted' || (matchingAdv && (matchingAdv.amountPaid || 0) > 0 && effectiveAdvAmount === 0);
-  const isAdvNA = rawAdvStatus === 'n/a';
-
   const advStatus: 'Paid' | 'Not Paid' | 'Partially Paid' | 'Adjusted' | 'N/A' =
     isOwnerFlat
       ? 'N/A'
-      : isAdvNotPaid
-      ? 'Not Paid'
-      : isAdvAdjusted
-      ? 'Adjusted'
-      : isAdvPaid
+      : rawAdvStatus === 'paid'
       ? 'Paid'
-      : isAdvPartial || matchingAdv?.status === 'partially_paid'
+      : rawAdvStatus === 'not paid' || rawAdvStatus === 'not_paid'
+      ? 'Not Paid'
+      : rawAdvStatus === 'partially paid' || rawAdvStatus === 'partially_paid'
       ? 'Partially Paid'
-      : isAdvNA
+      : rawAdvStatus === 'adjusted'
+      ? 'Adjusted'
+      : rawAdvStatus === 'n/a'
       ? 'N/A'
-      : (matchingAdv?.status === 'paid' || (!rawAdvStatus && effectiveAdvAmount > 0))
+      : matchingAdv?.status === 'paid'
+      ? 'Paid'
+      : matchingAdv?.status === 'partially_paid'
+      ? 'Partially Paid'
+      : matchingAdv?.status === 'not_paid'
+      ? 'Not Paid'
+      : displayAdvanceAmount > 0
       ? 'Paid'
       : 'Not Paid';
 
-  // 2. Current Month Flat Rent
-  const currentFlatRent = currentLedgerItem?.flatRent ?? unit?.monthlyRent ?? 0;
-
-  // Base single-month standard security advance amount (strictly single-month e.g. ৳8,000, not cumulative or multiplied sum)
-  const singleMonthAdvanceAmount = (() => {
-    if (isOwnerFlat) return 0;
-    // 1. Direct recorded advance payment on current active ledger item
-    const ledgerAdv =
-      currentLedgerItem?.advancePayment !== undefined && currentLedgerItem?.advancePayment !== null
-        ? Number(currentLedgerItem.advancePayment)
-        : null;
-    if (ledgerAdv !== null && ledgerAdv > 0) {
-      if (!currentFlatRent || ledgerAdv <= currentFlatRent) {
-        return ledgerAdv;
-      }
-      return currentFlatRent > 0 ? currentFlatRent : ledgerAdv;
-    }
-
-    // 2. Matching advance account from database
-    if (matchingAdv) {
-      const advTotal = matchingAdv.amountPaid || matchingAdv.totalRequired || 0;
-      if (advTotal > 0) {
-        if (currentFlatRent > 0 && advTotal > currentFlatRent) {
-          return currentFlatRent;
-        }
-        return advTotal;
-      }
-    }
-
-    // 3. Fallback to current flat monthly rent or standard advance (৳8,000)
-    return currentFlatRent > 0 ? currentFlatRent : 8000;
-  })();
+  // 2. Current Month Flat Rent: Strictly follow current ledger item
+  const currentFlatRent = currentLedgerItem ? currentLedgerItem.flatRent : (unit?.monthlyRent ?? 0);
   const rawRentStatus = (currentLedgerItem?.rentStatus || '').trim();
   const resolvedRentStatus: 'Paid' | 'Not Paid' | 'Partially Paid' | 'Adjusted' | 'N/A' =
     isOwnerFlat
@@ -449,113 +435,89 @@ export const TenantPortal: React.FC<Props> = ({
       ? 'Paid'
       : 'Not Paid';
 
-  // 3. Electricity Bill Display Eligibility Check:
-  // Condition a: Is electricity bill toggled on for this rental unit?
-  const isElecToggledOn =
-    (unit?.isElectricityEnabled ?? (unit?.electricityBillingType === 'nesco_submeter' || !unit?.electricityBillingType)) &&
-    unit?.electricityBillingType !== 'none';
-
-  // Condition b: Did this tenant occupy this unit last month? (If first month of stay, do NOT show electricity bill)
+  // 3. Electricity Bill: Strictly follow current ledger item
   const prevMonth = data.selectedMonth === 1 ? 12 : data.selectedMonth - 1;
   const prevYear = data.selectedMonth === 1 ? data.selectedYear - 1 : data.selectedYear;
-
-  const isFirstMonthOfStay =
-    (entryYear > 0 && entryMonth > 0) &&
-    ((entryYear === data.selectedYear && entryMonth === data.selectedMonth) ||
-     (entryYear > data.selectedYear) ||
-     (entryYear === data.selectedYear && entryMonth > data.selectedMonth));
-
-  const prevMonthLedgerItem = data.ledgerItems.find(
-    (item) => item.flatId.toLowerCase().trim() === cleanFlatId && item.month === prevMonth && item.year === prevYear
-  );
-
-  let occupiedUnitLastMonth = true;
-  if (isFirstMonthOfStay) {
-    occupiedUnitLastMonth = false;
-  } else if (entryYear > 0 && entryMonth > 0 && (entryYear > prevYear || (entryYear === prevYear && entryMonth > prevMonth))) {
-    occupiedUnitLastMonth = false;
-  } else if (prevMonthLedgerItem && prevMonthLedgerItem.tenantName) {
-    const pName = prevMonthLedgerItem.tenantName.trim().toLowerCase();
-    const genericNames = ['vacant', 'vacant flat', 'owner occupied', 'n/a', 'none', ''];
-    if (!genericNames.includes(pName) && currentTenantFullName) {
-      const isMatch =
-        pName === currentTenantFullName ||
-        pName.includes(currentTenantFullName) ||
-        currentTenantFullName.includes(pName);
-      if (!isMatch) {
-        occupiedUnitLastMonth = false;
-      }
-    }
-  }
-
-  const showElectricityBox = isElecToggledOn && occupiedUnitLastMonth && !isFirstMonthOfStay;
-
+  const currentElectricityBill = currentLedgerItem?.electricityBill || 0;
   const rawElecStatus = (currentLedgerItem?.electricityStatus || '').trim();
-  const currentElecStatus: 'Paid' | 'Not Paid' | 'N/A' =
+  const currentElecStatus: 'Paid' | 'Not Paid' | 'Partially Paid' | 'Adjusted' | 'N/A' =
     isOwnerFlat
       ? 'N/A'
       : rawElecStatus
       ? (rawElecStatus as any)
-      : (currentLedgerItem?.electricityBill || 0) === 0
+      : currentElectricityBill === 0
       ? 'N/A'
       : currentLedgerItem?.paymentStatus === 'Paid'
       ? 'Paid'
       : 'Not Paid';
 
-  // 4. Listing of all previous due amounts (Strictly EXCLUDING electricity due)
+  // 4. Previous Due: Strictly sum all unpaid ledger dues (Advance + Rent + Electricity + Parking/Other)
   interface PreviousDueItem {
     id: string;
     title: string;
     amount: number;
+    category: 'advance' | 'rent' | 'electricity' | 'parking';
   }
 
   const previousDuesList: PreviousDueItem[] = [];
 
-  // Security Advance Due (if applicable)
+  // Security Advance Due (if unpaid or partially paid)
   if (!isOwnerFlat) {
     let advDue = 0;
-    if (matchingAdv) {
-      if (matchingAdv.status === 'not_paid') {
-        advDue = matchingAdv.totalRequired > 0 ? matchingAdv.totalRequired : (effectiveAdvAmount || 0);
-      } else if (matchingAdv.status === 'partially_paid') {
-        advDue = Math.max(0, (matchingAdv.totalRequired || 0) - (matchingAdv.amountPaid || 0));
-      }
+    if (advStatus === 'Not Paid') {
+      advDue = (matchingAdv?.totalRequired && matchingAdv.totalRequired > 0)
+        ? matchingAdv.totalRequired
+        : displayAdvanceAmount > 0
+        ? displayAdvanceAmount
+        : (unit?.monthlyRent || 0);
+    } else if (advStatus === 'Partially Paid') {
+      const totalReq = (matchingAdv?.totalRequired && matchingAdv.totalRequired > 0)
+        ? matchingAdv.totalRequired
+        : displayAdvanceAmount;
+      const paid = matchingAdv?.amountPaid || Math.round(totalReq / 2);
+      advDue = Math.max(0, totalReq - paid);
     }
-    if (advDue === 0 && isAdvNotPaid) {
-      advDue = effectiveAdvAmount > 0 ? effectiveAdvAmount : 0;
-    } else if (advDue === 0 && isAdvPartial) {
-      advDue = Math.max(0, Math.round(effectiveAdvAmount / 2));
-    }
+
     if (advDue > 0) {
       previousDuesList.push({
         id: 'adv-due',
-        title: 'Advance Payment Due',
+        title: 'Security Advance Due',
         amount: advDue,
+        category: 'advance',
       });
     }
   }
 
-  // Previous months flat rent dues (strictly before current selected month/year within staying period)
+  // Previous months' ledger items strictly before active month/year within tenant's history
   const previousMonths = flatLedgerHistory.filter((item) => {
     if (item.year < data.selectedYear) return true;
     if (item.year === data.selectedYear && item.month < data.selectedMonth) return true;
     return false;
-  });
+  }).sort((a, b) => a.year - b.year || a.month - b.month);
 
-  const sortedPreviousMonths = [...previousMonths].sort((a, b) => a.year - b.year || a.month - b.month);
-
-  for (const pItem of sortedPreviousMonths) {
+  for (const pItem of previousMonths) {
     const pRentStatus = (pItem.rentStatus || '').trim().toLowerCase();
+    const pPaymentStatus = (pItem.paymentStatus || '').trim().toLowerCase();
+    const isRentPaidOrAdj =
+      pRentStatus === 'paid' ||
+      pRentStatus === 'adjusted' ||
+      pRentStatus === 'n/a' ||
+      pPaymentStatus === 'paid' ||
+      pPaymentStatus === 'adjusted' ||
+      pPaymentStatus === 'n/a';
+
     let pRentDue = 0;
-    if (pRentStatus === 'paid' || pRentStatus === 'adjusted' || pRentStatus === 'n/a') {
+    if (isRentPaidOrAdj) {
       pRentDue = 0;
-    } else if (pItem.paymentStatus === 'Paid' || pItem.paymentStatus === 'Adjusted' || pItem.paymentStatus === 'N/A') {
-      pRentDue = 0;
-    } else if (pRentStatus === 'partially paid' || pRentStatus === 'partially_paid' || pItem.paymentStatus === 'Partially Paid') {
+    } else if (
+      pRentStatus === 'partially paid' ||
+      pRentStatus === 'partially_paid' ||
+      pPaymentStatus === 'partially paid' ||
+      pPaymentStatus === 'partially_paid'
+    ) {
       const elecPaid = pItem.electricityStatus === 'Paid' ? (pItem.electricityBill || 0) : 0;
       const rentPaid = Math.max(0, (pItem.totalPaid || 0) - elecPaid);
-      const unpaid = Math.max(0, pItem.flatRent - rentPaid);
-      pRentDue = unpaid > 0 ? unpaid : Math.round(pItem.flatRent / 2);
+      pRentDue = Math.max(0, (pItem.flatRent || 0) - rentPaid);
     } else {
       pRentDue = pItem.flatRent || 0;
     }
@@ -563,17 +525,45 @@ export const TenantPortal: React.FC<Props> = ({
     if (pRentDue > 0) {
       previousDuesList.push({
         id: `rent-${pItem.month}-${pItem.year}`,
-        title: `${getMonthName(pItem.month)} Flat Rent Due`,
+        title: `${getMonthName(pItem.month)} ${pItem.year} Flat Rent Due`,
         amount: pRentDue,
+        category: 'rent',
       });
     }
 
-    // Previous parking rent due (if applicable)
-    if (pItem.parkingRent > 0 && pItem.paymentStatus !== 'Paid' && pItem.paymentStatus !== 'Adjusted' && pItem.paymentStatus !== 'N/A') {
+    // Previous Electricity Due (strictly included from ledger)
+    const pElecStatus = (pItem.electricityStatus || '').trim().toLowerCase();
+    let pElecDue = 0;
+    if (
+      pElecStatus === 'paid' ||
+      pElecStatus === 'adjusted' ||
+      pElecStatus === 'n/a' ||
+      (pItem.electricityBill || 0) === 0
+    ) {
+      pElecDue = 0;
+    } else if (pPaymentStatus === 'paid' && !pItem.electricityStatus) {
+      pElecDue = 0;
+    } else {
+      pElecDue = pItem.electricityBill || 0;
+    }
+
+    if (pElecDue > 0) {
       previousDuesList.push({
-        id: `park-${pItem.month}-${pItem.year}`,
-        title: `${getMonthName(pItem.month)} Parking Rent Due`,
-        amount: pItem.parkingRent,
+        id: `elec-${pItem.month}-${pItem.year}`,
+        title: `${getMonthName(pItem.month)} ${pItem.year} Electricity Due`,
+        amount: pElecDue,
+        category: 'electricity',
+      });
+    }
+
+    // Previous Parking / Godown Due
+    const pOtherDue = (pItem.parkingRent || 0) + (pItem.godownRent || 0);
+    if (pOtherDue > 0 && !isRentPaidOrAdj) {
+      previousDuesList.push({
+        id: `other-${pItem.month}-${pItem.year}`,
+        title: `${getMonthName(pItem.month)} ${pItem.year} Parking/Other Due`,
+        amount: pOtherDue,
+        category: 'parking',
       });
     }
   }
@@ -610,7 +600,7 @@ export const TenantPortal: React.FC<Props> = ({
         <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/15 text-right min-w-[200px]">
           <span className="text-xs text-slate-300 font-medium">Current Month Due</span>
           <div className="text-2xl font-black font-mono mt-1 text-white">
-            {formatBDT(currentLedgerItem?.totalDue || 0)}
+            {formatBDT(currentLedgerItem?.totalDue ?? calculateItemTotalDue(currentLedgerItem || ({} as any)))}
           </div>
           <span
             className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
@@ -624,8 +614,8 @@ export const TenantPortal: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* Summary Metric Cards: Security Advance, Current Month Flat Rent, Conditional Electricity, and Previous Dues */}
-      <div className={`grid grid-cols-1 sm:grid-cols-2 ${showElectricityBox ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4`}>
+      {/* Summary Metric Cards: Security Advance, Flat Rent, Electricity Bill, and Previous Dues (Strictly following ledger data) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Box 1: Security Advance & Status */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between">
           <div>
@@ -648,15 +638,21 @@ export const TenantPortal: React.FC<Props> = ({
               </span>
             </div>
             <div className="text-xl sm:text-2xl font-black text-indigo-700 mt-2 font-mono tabular-nums">
-              {formatBDT(singleMonthAdvanceAmount)}
+              {formatBDT(displayAdvanceAmount)}
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              {matchingAdv && matchingAdv.amountPaid > singleMonthAdvanceAmount
-                ? `Standard security advance (${formatBDT(matchingAdv.amountPaid)} total in escrow)`
-                : 'Deposited in escrow account'}
+              {advStatus === 'Paid'
+                ? 'Recorded in official ledger (Deposited in escrow)'
+                : advStatus === 'Adjusted'
+                ? 'Adjusted against monthly rent'
+                : advStatus === 'Partially Paid'
+                ? 'Partially deposited in escrow'
+                : advStatus === 'Not Paid'
+                ? 'Security advance payment pending'
+                : 'Not applicable'}
             </p>
           </div>
-          {(advStatus === 'Paid' || (advStatus === 'Adjusted' && (matchingAdv?.amountPaid || 0) > 0)) && !isOwnerFlat && (
+          {(advStatus === 'Paid' || (advStatus === 'Adjusted' && displayAdvanceAmount > 0)) && !isOwnerFlat && (
             <div className="mt-3 pt-2 border-t border-slate-100">
               <button
                 onClick={() => {
@@ -665,12 +661,12 @@ export const TenantPortal: React.FC<Props> = ({
                     flatId,
                     month: data.selectedMonth,
                     year: data.selectedYear,
-                    advancePayment: singleMonthAdvanceAmount,
+                    advancePayment: displayAdvanceAmount,
                     entryDate: tenant?.entryDate || '2024-01-01',
                   } as MonthlyLedgerItem);
                   handleGenerateAdvanceReceipt({
                     ...targetItem,
-                    advancePayment: singleMonthAdvanceAmount,
+                    advancePayment: displayAdvanceAmount,
                   });
                 }}
                 className="w-full min-h-[44px] inline-flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
@@ -725,49 +721,51 @@ export const TenantPortal: React.FC<Props> = ({
           )}
         </div>
 
-        {/* Box 3: Electricity Bill (Visible ONLY if toggled on AND tenant occupied unit last month) */}
-        {showElectricityBox && (
-          <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  Electricity Bill
-                </span>
-                <span
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                    currentElecStatus === 'Paid'
-                      ? 'bg-emerald-100 text-emerald-800'
-                      : currentElecStatus === 'N/A'
-                      ? 'bg-slate-100 text-slate-600'
-                      : 'bg-rose-100 text-rose-800'
-                  }`}
-                >
-                  {currentElecStatus}
-                </span>
-              </div>
-              <div className="text-xl sm:text-2xl font-black text-amber-600 mt-2 font-mono tabular-nums">
-                {formatBDT(currentLedgerItem?.electricityBill || 0)}
-              </div>
-              <p className="text-xs text-slate-500 mt-1">
-                {getMonthName(prevMonth)} {prevYear} consumption
-              </p>
+        {/* Box 3: Electricity Bill & Status (Strictly following ledger data) */}
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Electricity Bill
+              </span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                  currentElecStatus === 'Paid'
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : currentElecStatus === 'Partially Paid'
+                    ? 'bg-amber-100 text-amber-800'
+                    : currentElecStatus === 'N/A'
+                    ? 'bg-slate-100 text-slate-600'
+                    : 'bg-rose-100 text-rose-800'
+                }`}
+              >
+                {currentElecStatus}
+              </span>
             </div>
-            {currentElecStatus === 'Paid' && (currentLedgerItem?.electricityBill || 0) > 0 && currentLedgerItem && (
-              <div className="mt-3 pt-2 border-t border-slate-100">
-                <button
-                  onClick={() => handleGenerateElectricityReceipt(currentLedgerItem)}
-                  className="w-full min-h-[44px] inline-flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
-                  title="Generate Official Electricity Receipt (Manager Signed)"
-                >
-                  <Receipt className="w-3.5 h-3.5" />
-                  <span>Generate Receipt</span>
-                </button>
-              </div>
-            )}
+            <div className="text-xl sm:text-2xl font-black text-amber-600 mt-2 font-mono tabular-nums">
+              {formatBDT(currentElectricityBill)}
+            </div>
+            <p className="text-xs text-slate-500 mt-1">
+              {currentElectricityBill > 0
+                ? `${getMonthName(prevMonth)} ${prevYear} consumption (Postpaid)`
+                : 'No electricity bill for this period'}
+            </p>
           </div>
-        )}
+          {currentElecStatus === 'Paid' && currentElectricityBill > 0 && currentLedgerItem && (
+            <div className="mt-3 pt-2 border-t border-slate-100">
+              <button
+                onClick={() => handleGenerateElectricityReceipt(currentLedgerItem)}
+                className="w-full min-h-[44px] inline-flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                title="Generate Official Electricity Receipt (Manager Signed)"
+              >
+                <Receipt className="w-3.5 h-3.5" />
+                <span>Generate Receipt</span>
+              </button>
+            </div>
+          )}
+        </div>
 
-        {/* Box 4: Previous Due Amounts Listing (Strictly excluding electricity due) */}
+        {/* Box 4: Previous Due Amounts Listing (Strictly including all unpaid dues from previous months) */}
         <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
@@ -808,9 +806,11 @@ export const TenantPortal: React.FC<Props> = ({
               </div>
             )}
           </div>
-          <p className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100">
-            * Electricity dues excluded
-          </p>
+          {totalPreviousDue > 0 && (
+            <p className="text-[10px] text-slate-400 mt-2 pt-2 border-t border-slate-100">
+              Calculated strictly from previous monthly ledger records
+            </p>
+          )}
         </div>
       </div>
 
@@ -1163,19 +1163,30 @@ export const TenantPortal: React.FC<Props> = ({
                   <span className="font-extrabold text-sm text-slate-900 font-sans">
                     {getMonthName(item.month)} {item.year}
                   </span>
-                  <span
-                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                      rentStatus === 'Paid'
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : rentStatus === 'Partially Paid'
-                        ? 'bg-amber-100 text-amber-800'
-                        : rentStatus === 'N/A'
-                        ? 'bg-slate-100 text-slate-500'
-                        : 'bg-rose-100 text-rose-800'
-                    }`}
-                  >
-                    Rent: {rentStatus}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    {calculateItemTotalDue(item) > 0 ? (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">
+                        Due: {formatBDT(calculateItemTotalDue(item))}
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                        Cleared
+                      </span>
+                    )}
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        rentStatus === 'Paid'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : rentStatus === 'Partially Paid'
+                          ? 'bg-amber-100 text-amber-800'
+                          : rentStatus === 'N/A'
+                          ? 'bg-slate-100 text-slate-500'
+                          : 'bg-rose-100 text-rose-800'
+                      }`}
+                    >
+                      Rent: {rentStatus}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-xs font-mono">
@@ -1259,10 +1270,11 @@ export const TenantPortal: React.FC<Props> = ({
             <thead className="bg-slate-900 text-white font-semibold sticky top-0 z-10">
               <tr>
                 <th className="py-3 px-4 whitespace-nowrap">Period</th>
-                <th className="py-3 px-4 text-right whitespace-nowrap">Advance Paid</th>
+                <th className="py-3 px-4 text-right whitespace-nowrap">Security Advance</th>
                 <th className="py-3 px-4 text-right whitespace-nowrap">Flat Rent</th>
                 <th className="py-3 px-4 text-right whitespace-nowrap">Electricity</th>
                 <th className="py-3 px-4 text-right whitespace-nowrap">Parking</th>
+                <th className="py-3 px-4 text-right whitespace-nowrap">Month Due</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-mono">
@@ -1440,6 +1452,26 @@ export const TenantPortal: React.FC<Props> = ({
                     {/* Parking Rent */}
                     <td className="py-3 px-4 text-right text-slate-600 font-mono tabular-nums whitespace-nowrap">
                       {item.parkingRent > 0 ? formatBDT(item.parkingRent) : '-'}
+                    </td>
+
+                    {/* Month Due */}
+                    <td className="py-3 px-4 text-right font-sans whitespace-nowrap">
+                      <span
+                        className={`font-mono tabular-nums font-bold block ${
+                          calculateItemTotalDue(item) > 0 ? 'text-rose-600' : 'text-emerald-700'
+                        }`}
+                      >
+                        {formatBDT(calculateItemTotalDue(item))}
+                      </span>
+                      <span
+                        className={`inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold ${
+                          calculateItemTotalDue(item) === 0
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : 'bg-rose-100 text-rose-800'
+                        }`}
+                      >
+                        {calculateItemTotalDue(item) === 0 ? 'Cleared' : 'Unpaid'}
+                      </span>
                     </td>
                   </tr>
                 );
