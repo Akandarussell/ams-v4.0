@@ -1,20 +1,26 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Apartment Management System (AMS v4.0)
 
-# Run and deploy your AI Studio app
+> A comprehensive, full-stack web application designed for residential property management, streamlining tenant records, automated rent collections, and complex electricity bill calculations across multiple flats.
 
-This contains everything you need to run your app locally.
+## 🚀 Features
+* **Tenant & Flat Management:** Easily manage and monitor over 20 tenant flats, keeping track of active leases, tenant contact information, and occupancy status.
+* **Automated Rent Tracking:** Record, track, and monitor monthly rent collections and payment statuses to ensure seamless financial oversight.
+* **Electricity Bill Calculations:** Calculate monthly utility and electricity consumption charges accurately per flat, reducing manual calculation errors.
+* **Financial & Expense Tracking:** Maintain transparent financial logs and cost-sharing breakdowns suited for joint property ownership and management partnerships.
 
-View your app in AI Studio: https://ai.studio/apps/3589883f-9f89-44b9-882d-bdc5bb9675e0
+## 🛠️ Tech Stack
+* **Frontend:** React, Vite, Tailwind CSS, Android Studio (Mobile Setup)
+* **Backend / Database:** Supabase, Firebase
+* **Development Environment:** Google Antigravity IDE, GitHub
+* **Deployment:** Vercel
 
-## Run Locally
+## 👥 Authors & Contributors
+* **Lead Developer:** Akanda Russell
+* **Co-Developer:** Mamun
 
-**Prerequisites:**  Node.js
+## 📦 Getting Started
+Follow these steps to set up the project locally:
 
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/Akandarussell/ams-v4.0.git](https://github.com/Akandarussell/ams-v4.0.git)
