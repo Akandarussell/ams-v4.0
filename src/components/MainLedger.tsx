@@ -32,6 +32,10 @@ import {
   Minimize2,
   KeyRound,
   Wallet,
+  LayoutGrid,
+  Table,
+  Phone,
+  Clock,
 } from 'lucide-react';
 import {
   AppDatabaseState,
@@ -145,6 +149,8 @@ export const MainLedger: React.FC<Props> = ({
 
   // Full Screen Mode State
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
+  // Mobile Layout Mode (Cards view vs Table view on smartphones)
+  const [mobileLayoutMode, setMobileLayoutMode] = useState<'cards' | 'table'>('cards');
 
   // Keyboard shortcut listener: press Escape to exit full screen
   React.useEffect(() => {
@@ -1263,40 +1269,40 @@ export const MainLedger: React.FC<Props> = ({
         </div>
 
         {/* Live Metrics Ribbon & Filter Status Bar */}
-        <div className="px-5 py-3 bg-white flex flex-wrap items-center justify-between gap-4 text-xs">
+        <div className="px-5 py-3.5 bg-slate-50/80 border-t border-slate-200/90 flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-xs">
           <div className="flex items-center gap-2 text-slate-600">
-            <span>Showing:</span>
-            <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-blue-700 rounded-md font-bold">
+            <span className="font-semibold text-slate-500">Showing:</span>
+            <span className="px-2.5 py-1 bg-blue-50 border border-blue-200/80 text-blue-700 rounded-lg font-bold text-xs">
               {filteredItems.length} of {scopedLedger.length} Units
             </span>
             {isAnyFilterActive && (
-              <span className="text-[11px] text-amber-700 font-medium">
-                (Filtered view active)
+              <span className="text-[11px] text-amber-700 font-semibold px-2 py-0.5 bg-amber-50 rounded-md border border-amber-200/70">
+                Filtered view active
               </span>
             )}
           </div>
 
           {/* Quick Financial Summary of Filtered View */}
-          <div className="flex flex-wrap items-center gap-4 sm:gap-6 font-mono text-xs">
-            <div>
-              <span className="text-[10px] text-slate-400 font-sans block uppercase font-bold">Payable</span>
-              <span className="font-bold text-slate-900">{formatBDT(totalPayable)}</span>
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs">
+            <div className="bg-white px-3 py-1.5 rounded-xl border border-slate-200/80 shadow-2xs">
+              <span className="text-[10px] text-slate-400 font-sans block uppercase font-bold tracking-wider">Payable</span>
+              <span className="font-bold text-slate-900 font-mono tabular-nums text-sm">{formatBDT(totalPayable)}</span>
             </div>
-            <div>
-              <span className="text-[10px] text-emerald-600 font-sans block uppercase font-bold">Collected</span>
-              <span className="font-bold text-emerald-600">{formatBDT(totalPaid)}</span>
+            <div className="bg-white px-3 py-1.5 rounded-xl border border-emerald-200/80 shadow-2xs">
+              <span className="text-[10px] text-emerald-600 font-sans block uppercase font-bold tracking-wider">Collected</span>
+              <span className="font-bold text-emerald-600 font-mono tabular-nums text-sm">{formatBDT(totalPaid)}</span>
             </div>
-            <div>
-              <span className="text-[10px] text-rose-500 font-sans block uppercase font-bold">Outstanding Due</span>
-              <span className={`font-bold ${totalDue > 0 ? 'text-rose-600' : 'text-slate-500'}`}>
+            <div className="bg-white px-3 py-1.5 rounded-xl border border-rose-200/80 shadow-2xs">
+              <span className="text-[10px] text-rose-500 font-sans block uppercase font-bold tracking-wider">Due</span>
+              <span className={`font-bold font-mono tabular-nums text-sm ${totalDue > 0 ? 'text-rose-600' : 'text-slate-500'}`}>
                 {formatBDT(totalDue)}
               </span>
             </div>
-            <div className="hidden md:flex items-center gap-2 pl-3 border-l border-slate-200 font-sans">
-              <span className="text-[11px] font-bold text-slate-600">{collectionPercentage}% Collected</span>
-              <div className="w-20 bg-slate-100 rounded-full h-2 overflow-hidden">
+            <div className="hidden lg:flex items-center gap-2.5 pl-3 border-l border-slate-200 font-sans">
+              <span className="text-xs font-bold text-slate-700">{collectionPercentage}% Collected</span>
+              <div className="w-24 bg-slate-200 rounded-full h-2.5 overflow-hidden shadow-inner">
                 <div
-                  className="bg-emerald-500 h-2 rounded-full transition-all duration-500"
+                  className="bg-emerald-500 h-2.5 rounded-full transition-all duration-500"
                   style={{ width: `${Math.min(100, collectionPercentage)}%` }}
                 ></div>
               </div>
@@ -1305,8 +1311,440 @@ export const MainLedger: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* Main Financial Ledger Table (8 Columns - Godown, Total Payable, Total Paid, Total Due, Status, and Actions removed) */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+      {/* Mobile View Switcher (Smartphones) */}
+      <div className="md:hidden flex items-center justify-between mb-3 px-1">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">View:</span>
+          <span className="text-xs font-extrabold text-slate-800">{filteredItems.length} Units</span>
+        </div>
+        <div className="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-2xs">
+          <button
+            type="button"
+            onClick={() => setMobileLayoutMode('cards')}
+            className={`min-h-[40px] px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              mobileLayoutMode === 'cards'
+                ? 'bg-white text-blue-700 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <LayoutGrid className="w-3.5 h-3.5" />
+            <span>Cards</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileLayoutMode('table')}
+            className={`min-h-[40px] px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              mobileLayoutMode === 'table'
+                ? 'bg-white text-blue-700 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Table className="w-3.5 h-3.5" />
+            <span>Table</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Card Layout (Visible when mobileLayoutMode === 'cards' on small screens) */}
+      {mobileLayoutMode === 'cards' && (
+        <div className="md:hidden space-y-3.5 mb-6">
+          {filteredItems.length === 0 ? (
+            <div className="p-8 bg-white rounded-2xl border border-slate-200 text-center text-slate-500 font-sans text-xs">
+              No ledger entries found matching your search and filter criteria.
+            </div>
+          ) : (
+            filteredItems.map((item) => {
+              const isOwnerFlat = item.flatId.toLowerCase().includes('owner');
+              const rawAdvStatus = (item.advanceStatus || '').trim();
+              const matchingAdv = data.advanceAccounts.find((a) => a.flatId === item.flatId);
+              const isMarkedPaid = rawAdvStatus.toLowerCase() === 'paid';
+              const isMarkedPartial = rawAdvStatus.toLowerCase() === 'partially paid' || rawAdvStatus.toLowerCase() === 'partially_paid';
+
+              const effectiveAdvAmount =
+                item.advancePayment !== undefined && item.advancePayment !== null
+                  ? Number(item.advancePayment)
+                  : (matchingAdv?.amountPaid && matchingAdv.amountPaid > 0)
+                  ? matchingAdv.amountPaid
+                  : (matchingAdv?.totalRequired && matchingAdv.totalRequired > 0)
+                  ? matchingAdv.totalRequired
+                  : 0;
+
+              const hasAdvAmount = effectiveAdvAmount > 0;
+              const isNotPaid =
+                rawAdvStatus.toLowerCase() === 'not paid' ||
+                rawAdvStatus.toLowerCase() === 'not_paid';
+
+              const advStatus =
+                isOwnerFlat
+                  ? 'N/A'
+                  : isNotPaid
+                  ? 'Not Paid'
+                  : isMarkedPaid
+                  ? 'Paid'
+                  : isMarkedPartial || matchingAdv?.status === 'partially_paid'
+                  ? 'Partially Paid'
+                  : rawAdvStatus.toLowerCase() === 'adjusted'
+                  ? 'Adjusted'
+                  : rawAdvStatus.toLowerCase() === 'n/a'
+                  ? 'N/A'
+                  : (matchingAdv?.status === 'paid' || (!rawAdvStatus && hasAdvAmount))
+                  ? 'Paid'
+                  : 'Not Paid';
+
+              const rentStatus =
+                item.rentStatus ||
+                (item.paymentStatus === 'Adjusted'
+                  ? 'Adjusted'
+                  : item.paymentStatus === 'Paid'
+                  ? 'Paid'
+                  : item.paymentStatus === 'Partially Paid'
+                  ? 'Partially Paid'
+                  : item.paymentStatus === 'N/A'
+                  ? 'N/A'
+                  : 'Not Paid');
+
+              const elecPeriod = currentPostpaidPeriod;
+              const unit = data.units.find((u) => u.flatId.toLowerCase().trim() === item.flatId.toLowerCase().trim());
+
+              const existingBill = data.electricityBills.find(
+                (b) =>
+                  b.flatId.toLowerCase().trim() === item.flatId.toLowerCase().trim() &&
+                  b.consumptionMonth === elecPeriod.month &&
+                  b.consumptionYear === elecPeriod.year
+              );
+              const existingReading = data.meterReadings.find(
+                (r) =>
+                  r.flatId.toLowerCase().trim() === item.flatId.toLowerCase().trim() &&
+                  r.month === elecPeriod.month &&
+                  r.year === elecPeriod.year
+              );
+
+              const prevReading = existingBill?.previousReading ?? existingReading?.previousReading ?? 1500;
+              const currReading =
+                existingBill?.currentReading ??
+                existingReading?.currentReading ??
+                (item.electricityBill > 0 ? prevReading + 220 : prevReading);
+              const consumedKwh =
+                existingBill?.consumedUnits ??
+                existingReading?.consumedUnits ??
+                Math.max(0, currReading - prevReading);
+              const hasGenerated = (existingBill && existingBill.totalBill > 0) || item.electricityBill > 0;
+
+              const billedTenantName =
+                existingBill?.tenantName?.trim() ||
+                item.tenantName;
+
+              return (
+                <div
+                  key={`mobile-card-${item.id}`}
+                  className="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-shadow overflow-hidden"
+                >
+                  {/* Card Header */}
+                  <div className="p-4 bg-slate-50/70 border-b border-slate-200/80 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="px-3 py-1 bg-blue-900 text-white font-mono font-black text-sm rounded-xl shadow-xs">
+                        {item.flatId}
+                      </div>
+                      <div>
+                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+                          {item.blockName}
+                        </span>
+                        <h4 className="font-extrabold text-slate-900 text-sm leading-tight">
+                          {item.tenantName}
+                        </h4>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      {(userRole === 'manager' || userRole === 'owner') && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setItemToEditManual(item);
+                              setIsManualModalOpen(true);
+                            }}
+                            className="min-w-[40px] min-h-[40px] flex items-center justify-center p-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl transition-colors cursor-pointer"
+                            title="Edit Ledger Entry"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openRecordPaymentModal(item)}
+                            className="min-w-[40px] min-h-[40px] flex items-center justify-center p-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs transition-colors cursor-pointer"
+                            title="Record Payment"
+                          >
+                            <Wallet className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Card Body */}
+                  <div className="p-4 space-y-3.5 text-xs">
+                    {/* Contact & Move-in Info */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                      {item.tenantPhone && item.tenantPhone !== '--' ? (
+                        <a
+                          href={`tel:${item.tenantPhone}`}
+                          className="min-h-[44px] px-3.5 py-2 inline-flex items-center gap-2 bg-blue-50/80 hover:bg-blue-100 text-blue-700 font-bold rounded-xl border border-blue-200 transition-colors text-xs cursor-pointer active:scale-95"
+                          title="Call Tenant"
+                        >
+                          <Phone className="w-3.5 h-3.5 text-blue-600" />
+                          <span className="font-mono">{item.tenantPhone}</span>
+                        </a>
+                      ) : (
+                        <span className="text-slate-400 font-mono">No phone</span>
+                      )}
+
+                      <div className="text-right">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Entry Date</span>
+                        <span className="font-mono text-slate-600 font-semibold text-xs">
+                          {formatDateDDMMYYYY(item.entryDate)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Financial Items Grid */}
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {/* Advance Escrow */}
+                      <div className="bg-slate-50/70 p-3 rounded-xl border border-slate-200/80 flex flex-col justify-between">
+                        <div>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                            Advance Escrow
+                          </span>
+                          <span className="text-sm font-black text-indigo-700 font-mono tabular-nums block mt-0.5">
+                            {formatBDT(effectiveAdvAmount)}
+                          </span>
+                        </div>
+                        <div className="mt-2 flex flex-col gap-1.5">
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold text-center ${
+                              advStatus === 'Paid'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : advStatus === 'Partially Paid'
+                                ? 'bg-amber-100 text-amber-800'
+                                : advStatus === 'Adjusted'
+                                ? 'bg-purple-100 text-purple-800'
+                                : 'bg-rose-100 text-rose-800'
+                            }`}
+                          >
+                            {advStatus}
+                          </span>
+                          {(advStatus === 'Paid' || advStatus === 'Partially Paid' || hasAdvAmount) && advStatus !== 'N/A' && advStatus !== 'Not Paid' && !isOwnerFlat && (
+                            <button
+                              type="button"
+                              onClick={() => handleGenerateAdvanceReceipt({ ...item, advancePayment: effectiveAdvAmount })}
+                              className="min-h-[40px] w-full px-2 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-lg text-[10px] flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                            >
+                              <Receipt className="w-3 h-3" />
+                              <span>Advance Receipt</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Flat Rent */}
+                      <div className="bg-slate-50/70 p-3 rounded-xl border border-slate-200/80 flex flex-col justify-between">
+                        <div>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                            Flat Rent
+                          </span>
+                          <span className="text-sm font-black text-slate-900 font-mono tabular-nums block mt-0.5">
+                            {formatBDT(item.flatRent)}
+                          </span>
+                        </div>
+                        <div className="mt-2 flex flex-col gap-1.5">
+                          {(userRole === 'manager' || userRole === 'owner') ? (
+                            <select
+                              value={rentStatus}
+                              onChange={(e) => {
+                                const newStatus = e.target.value as 'Paid' | 'Not Paid' | 'Partially Paid' | 'Adjusted' | 'N/A';
+                                handleQuickUpdateRentStatus(item, newStatus);
+                              }}
+                              className={`w-full min-h-[40px] px-2 py-1.5 rounded-lg text-[10px] font-bold border transition-colors cursor-pointer text-center ${
+                                rentStatus === 'Paid'
+                                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                  : rentStatus === 'Partially Paid'
+                                  ? 'bg-amber-100 text-amber-800 border-amber-300'
+                                  : rentStatus === 'Adjusted'
+                                  ? 'bg-purple-100 text-purple-800 border-purple-300'
+                                  : rentStatus === 'N/A'
+                                  ? 'bg-slate-100 text-slate-600 border-slate-300'
+                                  : 'bg-rose-100 text-rose-800 border-rose-300'
+                              }`}
+                            >
+                              <option value="Not Paid">Not Paid</option>
+                              <option value="Paid">Paid</option>
+                              <option value="Partially Paid">Partially Paid</option>
+                              <option value="Adjusted">Adjusted</option>
+                              <option value="N/A">N/A</option>
+                            </select>
+                          ) : (
+                            <span
+                              className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold text-center ${
+                                rentStatus === 'Paid'
+                                  ? 'bg-emerald-100 text-emerald-800'
+                                  : rentStatus === 'Partially Paid'
+                                  ? 'bg-amber-100 text-amber-800'
+                                  : rentStatus === 'Adjusted'
+                                  ? 'bg-purple-100 text-purple-800'
+                                  : rentStatus === 'N/A'
+                                  ? 'bg-slate-100 text-slate-500'
+                                  : 'bg-rose-100 text-rose-800'
+                              }`}
+                            >
+                              {rentStatus}
+                            </span>
+                          )}
+                          {rentStatus === 'Paid' && item.flatRent > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => handleGenerateRentReceipt(item)}
+                              className="min-h-[40px] w-full px-2 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-lg text-[10px] flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                            >
+                              <Receipt className="w-3 h-3" />
+                              <span>Rent Receipt</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Electricity Item Banner */}
+                    <div className="bg-amber-50/60 p-3 rounded-xl border border-amber-200/80 flex items-center justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <Zap className="w-3.5 h-3.5 text-amber-600 fill-current" />
+                          <span className="text-[10px] font-bold text-amber-900 uppercase tracking-wider">
+                            NESCO Electricity ({getPostpaidElectricityPeriod(data.selectedMonth, data.selectedYear).monthName.slice(0, 3)})
+                          </span>
+                        </div>
+                        <div className="flex items-baseline gap-2 mt-1">
+                          <span className="text-sm font-black text-amber-950 font-mono tabular-nums">
+                            {item.electricityBill > 0 ? formatBDT(item.electricityBill) : '৳0'}
+                          </span>
+                          {consumedKwh > 0 && (
+                            <span className="text-[11px] font-bold text-amber-800 font-mono">
+                              ({consumedKwh} kWh)
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        {hasGenerated ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (onViewBill) {
+                                if (existingBill) {
+                                  onViewBill(existingBill);
+                                } else {
+                                  const calc = calculateNescoElectricityBill(currReading, prevReading, data.tariffConfig, 2);
+                                  const syntheticBill: ElectricityBill = {
+                                    id: `eb-${item.flatId.toLowerCase().trim()}-${elecPeriod.month}-${elecPeriod.year}`,
+                                    unitId: item.unitId || `u-${item.flatId.toLowerCase().trim()}`,
+                                    flatId: item.flatId,
+                                    tenantId: item.tenantId || '',
+                                    tenantName: billedTenantName,
+                                    consumptionMonth: elecPeriod.month,
+                                    consumptionYear: elecPeriod.year,
+                                    billingMonth: data.selectedMonth,
+                                    billingYear: data.selectedYear,
+                                    previousReading: prevReading,
+                                    currentReading: currReading,
+                                    consumedUnits: consumedKwh || calc.consumedUnits,
+                                    slabBreakdown: calc.slabBreakdown,
+                                    baseEnergyCost: calc.baseEnergyCost,
+                                    demandCharge: calc.demandCharge,
+                                    vatAmount: calc.vatAmount,
+                                    meterRent: calc.meterRent,
+                                    rebateAmount: calc.rebateAmount,
+                                    totalBill: item.electricityBill || calc.totalBill,
+                                    paidAmount: item.paymentStatus === 'Paid' ? (item.electricityBill || calc.totalBill) : 0,
+                                    dueAmount: item.paymentStatus === 'Paid' ? 0 : (item.electricityBill || calc.totalBill),
+                                    paymentStatus: item.paymentStatus === 'Paid' ? 'Paid' : 'Not Paid',
+                                    generatedDate: new Date().toISOString().split('T')[0],
+                                    tariffSnapshotTitle: data.tariffConfig.title,
+                                  };
+                                  onViewBill(syntheticBill);
+                                }
+                              }
+                            }}
+                            className="min-h-[40px] px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-lg text-xs flex items-center gap-1 transition-colors cursor-pointer shadow-2xs"
+                            title="View NESCO Voucher"
+                          >
+                            <Zap className="w-3.5 h-3.5 fill-current" />
+                            <span>Voucher</span>
+                          </button>
+                        ) : (
+                          (userRole === 'manager' || userRole === 'owner') && onGenerateElectricityBills && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const stdCurrent = prevReading + 220;
+                                const calc = calculateNescoElectricityBill(stdCurrent, prevReading, data.tariffConfig, 2);
+                                onGenerateElectricityBills(
+                                  elecPeriod.month,
+                                  elecPeriod.year,
+                                  data.selectedMonth,
+                                  data.selectedYear,
+                                  [
+                                    {
+                                      flatId: item.flatId,
+                                      previousReading: prevReading,
+                                      currentReading: stdCurrent,
+                                      consumedUnits: 220,
+                                      billAmount: calc.totalBill,
+                                    },
+                                  ]
+                                );
+                                setNescoSuccessMsg(`⚡ Generated 220 kWh bill (৳${calc.totalBill.toLocaleString()}) for Flat ${item.flatId}!`);
+                                setTimeout(() => setNescoSuccessMsg(null), 5000);
+                              }}
+                              className="min-h-[40px] px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black rounded-lg text-xs flex items-center gap-1 transition-colors cursor-pointer shadow-2xs"
+                            >
+                              <Zap className="w-3 h-3 fill-current" />
+                              <span>+220 kWh</span>
+                            </button>
+                          )
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Card Footer: Total Due & Full-Width Action Button */}
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-3">
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Net Due</span>
+                        <span className={`text-base font-black font-mono tabular-nums ${item.totalDue > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                          {item.totalDue > 0 ? formatBDT(item.totalDue) : '৳0 Paid'}
+                        </span>
+                      </div>
+
+                      {(userRole === 'manager' || userRole === 'owner') && (
+                        <button
+                          type="button"
+                          onClick={() => openRecordPaymentModal(item)}
+                          className="min-h-[44px] px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer active:scale-95"
+                        >
+                          <Wallet className="w-4 h-4" />
+                          <span>Record Payment</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+
+      {/* Main Financial Ledger Table (8 Columns) */}
+      <div className={`bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden ${mobileLayoutMode === 'cards' ? 'hidden md:block' : 'block'}`}>
         {/* Printable Sheet Header (Visible Only When Printing) */}
         <div className="hidden print:block p-6 text-center border-b-2 border-slate-900 mb-4 bg-white">
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">{COMPLEX_CONFIG.name.toUpperCase()}</h1>
@@ -1317,11 +1755,13 @@ export const MainLedger: React.FC<Props> = ({
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="table-scroll-container">
           <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-slate-900 text-white font-semibold">
+            <thead className="bg-slate-900 text-white font-semibold sticky top-0 z-20">
               <tr>
-                <th className="py-3.5 px-3.5 whitespace-nowrap">1. Flat ID</th>
+                <th className="py-3.5 px-3.5 whitespace-nowrap sticky left-0 bg-slate-900 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.35)]">
+                  1. Flat ID
+                </th>
                 <th className="py-3.5 px-3 whitespace-nowrap">2. Tenant Name</th>
                 <th className="py-3.5 px-3 whitespace-nowrap">3. Mobile</th>
                 <th className="py-3.5 px-3 whitespace-nowrap">4. Entry Date</th>
@@ -1457,11 +1897,11 @@ export const MainLedger: React.FC<Props> = ({
                       : 'Not Paid');
 
                   return (
-                    <tr key={item.id} className="hover:bg-blue-50/40 transition-colors">
-                      <td className="py-3 px-3.5 font-bold text-blue-700 font-sans whitespace-nowrap">
+                    <tr key={item.id} className="group hover:bg-blue-50/40 transition-colors">
+                      <td className="py-3 px-3.5 font-bold text-blue-700 font-sans whitespace-nowrap sticky left-0 bg-white group-hover:bg-blue-50/70 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
                         <div className="flex items-center justify-between gap-2">
                           <div>
-                            <span className="font-extrabold">{item.flatId}</span>
+                            <span className="font-extrabold text-blue-800">{item.flatId}</span>
                             <span className="text-[10px] text-slate-400 block font-normal">
                               {item.blockName}
                             </span>
@@ -1474,7 +1914,7 @@ export const MainLedger: React.FC<Props> = ({
                                   setIsManualModalOpen(true);
                                 }}
                                 title="Edit this ledger record manually"
-                                className="px-1.5 py-0.5 bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-700 rounded text-[10px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                                className="px-1.5 py-0.5 bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-700 rounded-md text-[10px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
                               >
                                 <Edit3 className="w-3 h-3" />
                                 <span>Edit</span>
@@ -1482,7 +1922,7 @@ export const MainLedger: React.FC<Props> = ({
                               <button
                                 onClick={() => openRecordPaymentModal(item)}
                                 title="Record payment collection for this flat"
-                                className="px-1.5 py-0.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                                className="px-1.5 py-0.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-md text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
                               >
                                 <Wallet className="w-3 h-3 text-emerald-600" />
                                 <span>Pay</span>
@@ -1503,7 +1943,7 @@ export const MainLedger: React.FC<Props> = ({
 
                       {/* 5. Advance Payment Status & Receipt */}
                       <td className="py-3 px-3 text-right font-sans whitespace-nowrap">
-                        <span className="font-mono font-bold text-indigo-700 block">
+                        <span className="font-mono tabular-nums font-bold text-indigo-700 block">
                           {formatBDT(effectiveAdvAmount)}
                         </span>
                         <span
@@ -1535,7 +1975,7 @@ export const MainLedger: React.FC<Props> = ({
 
                       {/* 6. Flat Rent Status & Receipt */}
                       <td className="py-3 px-3 text-right font-sans whitespace-nowrap">
-                        <span className="font-mono font-bold text-slate-800 block">
+                        <span className="font-mono tabular-nums font-bold text-slate-800 block">
                           {formatBDT(item.flatRent)}
                         </span>
                         {(userRole === 'manager' || userRole === 'owner') ? (
@@ -1981,21 +2421,21 @@ export const MainLedger: React.FC<Props> = ({
               )}
             </tbody>
             {/* Table Summary Footer */}
-            <tfoot className="bg-slate-100 border-t-2 border-slate-300 font-bold font-mono">
+            <tfoot className="bg-slate-100/90 border-t-2 border-slate-300/90 font-bold font-mono sticky bottom-0 z-10 shadow-xs">
               <tr>
-                <td colSpan={4} className="py-3 px-3 text-slate-900 font-sans text-right">
+                <td colSpan={4} className="py-3 px-3.5 text-slate-900 font-sans text-right font-extrabold sticky left-0 bg-slate-100 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]">
                   Grand Totals:
                 </td>
-                <td className="py-3 px-3 text-right text-indigo-700 whitespace-nowrap">
+                <td className="py-3 px-3 text-right text-indigo-700 whitespace-nowrap tabular-nums">
                   {formatBDT(totalAdvance)}
                 </td>
-                <td className="py-3 px-3 text-right text-slate-900 whitespace-nowrap">
+                <td className="py-3 px-3 text-right text-slate-900 whitespace-nowrap tabular-nums">
                   {formatBDT(filteredItems.reduce((acc, curr) => acc + curr.flatRent, 0))}
                 </td>
-                <td className="py-3 px-3 text-right text-slate-900 whitespace-nowrap">
+                <td className="py-3 px-3 text-right text-slate-900 whitespace-nowrap tabular-nums">
                   {formatBDT(filteredItems.reduce((acc, curr) => acc + curr.electricityBill, 0))}
                 </td>
-                <td className="py-3 px-3 text-center text-amber-950 bg-amber-50/50 border-l border-amber-200 whitespace-nowrap font-bold text-xs">
+                <td className="py-3 px-3 text-center text-amber-950 bg-amber-50/70 border-l border-amber-200/80 whitespace-nowrap font-bold text-xs tabular-nums">
                   ⚡ Total: {totalConsumedKwh.toLocaleString()} kWh
                 </td>
                 {(userRole === 'manager' || userRole === 'owner') && (

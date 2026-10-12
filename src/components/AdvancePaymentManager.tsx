@@ -325,9 +325,123 @@ export const AdvancePaymentManager: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Advance Accounts Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+        {/* Advance Accounts Mobile Cards */}
+        <div className="block md:hidden space-y-4 p-4">
+          {filteredAccounts.length === 0 ? (
+            <div className="py-10 text-center text-slate-500 font-sans text-xs">
+              No advance accounts found matching your filter criteria.
+            </div>
+          ) : (
+            filteredAccounts.map((account) => {
+              const tenant = data.tenants.find((t) => t.id === account.tenantId);
+              const unit = data.units.find((u) => u.flatId === account.flatId);
+              const remaining = Math.max(0, account.totalRequired - account.amountPaid);
+
+              return (
+                <div
+                  key={account.id}
+                  className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-4 space-y-3"
+                >
+                  {/* Header */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-black text-indigo-700 text-sm">
+                          Flat {account.flatId}
+                        </span>
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            account.status === 'paid'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : account.status === 'partially_paid'
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-rose-100 text-rose-800'
+                          }`}
+                        >
+                          {account.status === 'paid'
+                            ? 'Paid in Full'
+                            : account.status === 'partially_paid'
+                            ? 'Partially Paid'
+                            : 'Not Paid'}
+                        </span>
+                      </div>
+                      <span className="text-xs font-bold text-slate-800 block mt-0.5">
+                        {tenant?.fullName || 'N/A'}
+                      </span>
+                    </div>
+
+                    <div className="text-right font-mono">
+                      <span className="text-[10px] text-slate-400 font-sans block">Remaining:</span>
+                      <span className={`font-black text-xs ${remaining > 0 ? 'text-rose-600' : 'text-slate-500'}`}>
+                        {formatBDT(remaining)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Financial Breakdown Grid */}
+                  <div className="grid grid-cols-2 gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-xs font-mono">
+                    <div>
+                      <span className="text-[10px] text-slate-400 font-sans block">Required:</span>
+                      <span className="font-semibold text-slate-800">{formatBDT(account.totalRequired)}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 font-sans block">Paid:</span>
+                      <span className="font-extrabold text-emerald-600">{formatBDT(account.amountPaid)}</span>
+                    </div>
+                  </div>
+
+                  {/* Date & Notes */}
+                  {(account.lastPaymentDate || account.notes) && (
+                    <div className="text-[11px] text-slate-500 space-y-0.5">
+                      {account.lastPaymentDate && (
+                        <p>Last Paid: <strong className="text-slate-700 font-mono">{formatDateDDMMYYYY(account.lastPaymentDate)}</strong></p>
+                      )}
+                      {account.notes && (
+                        <p className="italic text-slate-400 truncate">{account.notes}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Receipt Action */}
+                  {account.amountPaid > 0 && (
+                    <button
+                      onClick={() => {
+                        onViewReceipt({
+                          receiptNumber: `ADV-REC-${account.flatId}-${data.selectedYear}`,
+                          type: 'advance',
+                          tenantName: tenant?.fullName || 'Tenant',
+                          tenantPhone: tenant?.phone || '',
+                          flatId: account.flatId,
+                          blockName: unit?.blockName || 'Block A',
+                          amount: account.amountPaid,
+                          paymentDate: account.lastPaymentDate || '2026-01-01',
+                          paymentMethod: 'Bank Transfer',
+                          purpose: `Security Advance Deposit for Residential Flat Agreement - Flat ${account.flatId}`,
+                          remainingAdvance: account.amountPaid,
+                          remainingDue: remaining,
+                          authorizedSignatureBy: 'Russell',
+                          signatureTitle: 'Russell (Manager)',
+                          notes: account.notes,
+                          breakdown: [
+                            { label: 'Security Advance Deposit', amount: account.amountPaid },
+                          ],
+                        });
+                      }}
+                      className="min-h-[44px] w-full flex items-center justify-center gap-1.5 px-4 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-bold transition-colors cursor-pointer border border-indigo-200"
+                    >
+                      <Receipt className="w-4 h-4" />
+                      <span>View Official Advance Receipt</span>
+                    </button>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop View: Advance Accounts Table */}
+        <div className="hidden md:block table-scroll-container">
+          <table className="w-full text-left text-xs border-collapse min-w-[850px]">
             <thead className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
               <tr>
                 <th className="py-3 px-4">Flat ID</th>
@@ -407,7 +521,7 @@ export const AdvancePaymentManager: React.FC<Props> = ({
                               ],
                             });
                           }}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded text-xs font-semibold transition-colors cursor-pointer"
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 min-h-[36px] bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
                           title="Generate Official Advance Payment Receipt"
                         >
                           <Receipt className="w-3.5 h-3.5" />
@@ -522,18 +636,19 @@ export const AdvancePaymentManager: React.FC<Props> = ({
 
       {/* Record Advance Modal */}
       {isDepositModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 border border-slate-200">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <span className="p-2 bg-indigo-50 text-indigo-700 rounded-lg">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md lg:max-w-lg w-full p-5 sm:p-6 border border-slate-200">
+            <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <span className="p-2 bg-indigo-50 text-indigo-700 rounded-xl">
                   <PlusCircle className="w-5 h-5" />
                 </span>
                 <h3 className="font-bold text-slate-900 text-base">Record Advance Payment</h3>
               </div>
               <button
                 onClick={() => setIsDepositModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600"
+                className="min-w-[44px] min-h-[44px] -mr-1.5 p-2.5 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
+                aria-label="Close dialog"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -545,7 +660,7 @@ export const AdvancePaymentManager: React.FC<Props> = ({
                 <select
                   value={selectedFlatId}
                   onChange={(e) => setSelectedFlatId(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
+                  className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-xl text-slate-900 font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
                 >
                   {data.units.filter((u) => u.unitType === 'residential').map((u) => (
                     <option key={u.flatId} value={u.flatId}>
@@ -562,7 +677,7 @@ export const AdvancePaymentManager: React.FC<Props> = ({
                   value={depositAmount}
                   onChange={(e) => setDepositAmount(Number(e.target.value))}
                   min={100}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono font-bold text-slate-900 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
+                  className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-xl font-mono font-bold text-slate-900 text-base sm:text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
                 />
               </div>
 
@@ -571,7 +686,7 @@ export const AdvancePaymentManager: React.FC<Props> = ({
                 <select
                   value={depositMethod}
                   onChange={(e) => setDepositMethod(e.target.value as PaymentMethod)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
+                  className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-xl text-slate-900 font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
                 >
                   <option value="Bank Transfer">Bank Transfer / Pay Order</option>
                   <option value="Cash">Cash Handover</option>
@@ -588,21 +703,21 @@ export const AdvancePaymentManager: React.FC<Props> = ({
                   value={depositTxnId}
                   onChange={(e) => setDepositTxnId(e.target.value)}
                   placeholder="e.g. IBBL-PO-88219"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
+                  className="w-full min-h-[44px] px-3 py-2 border border-slate-300 rounded-xl text-slate-900 text-base sm:text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
                 />
               </div>
 
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+              <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsDepositModalOpen(false)}
-                  className="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-50 cursor-pointer"
+                  className="min-h-[44px] px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50 cursor-pointer flex items-center justify-center"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-sm transition-colors cursor-pointer"
+                  className="min-h-[44px] px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors cursor-pointer flex items-center justify-center"
                 >
                   Save Deposit & Generate Voucher
                 </button>

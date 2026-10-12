@@ -181,22 +181,22 @@ export const ChatSystem: React.FC<Props> = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden h-[620px] flex flex-col md:flex-row">
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden h-[650px] lg:h-[720px] xl:h-[780px] flex flex-col md:flex-row">
       {/* Contact List Sidebar */}
-      <div className="w-full md:w-80 border-r border-slate-200 flex flex-col h-full bg-slate-50/50">
-        <div className="p-4 border-b border-slate-200">
+      <div className="w-full md:w-80 border-b md:border-b-0 md:border-r border-slate-200 flex flex-col max-h-52 md:max-h-none md:h-full bg-slate-50/50 shrink-0">
+        <div className="p-3.5 sm:p-4 border-b border-slate-200">
           <h2 className="font-bold text-slate-900 text-sm">Direct Messages</h2>
           <p className="text-[11px] text-slate-500 mt-0.5">
             Real-time chat with complex management & tenants
           </p>
-          <div className="mt-3 relative">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+          <div className="mt-2.5 relative">
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3.5" />
             <input
               type="text"
               placeholder="Search contacts..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+              className="w-full min-h-[44px] pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-base sm:text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
             />
           </div>
         </div>
@@ -337,14 +337,14 @@ export const ChatSystem: React.FC<Props> = ({
             placeholder="Type your message..."
             value={messageText}
             onChange={(e) => setMessageText(e.target.value)}
-            className="flex-1 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-hidden"
+            className="flex-1 min-h-[44px] px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-base sm:text-xs focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-hidden"
           />
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
+            className="min-h-[44px] px-5 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer shrink-0 shadow-sm"
           >
-            <Send className="w-3.5 h-3.5" />
-            Send
+            <Send className="w-4 h-4" />
+            <span>Send</span>
           </button>
         </form>
       </div>

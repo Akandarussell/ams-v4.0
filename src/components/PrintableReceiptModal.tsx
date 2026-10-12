@@ -227,7 +227,7 @@ export const PrintableReceiptModal: React.FC<Props> = ({ receipt, onClose }) => 
         }
       `}</style>
       {/* Container Card */}
-      <div className="bg-slate-100 print:bg-white rounded-2xl print:rounded-none shadow-2xl print:shadow-none max-w-2xl w-full overflow-hidden border border-slate-300 print:border-none my-auto">
+      <div className="bg-slate-100 print:bg-white rounded-2xl print:rounded-none shadow-2xl print:shadow-none max-w-2xl lg:max-w-3xl w-full overflow-hidden border border-slate-300 print:border-none my-auto">
         {/* Modal Top Controls Toolbar (Hidden when printing) */}
         <div className="no-print bg-slate-900 text-white px-5 py-3.5 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
@@ -245,7 +245,7 @@ export const PrintableReceiptModal: React.FC<Props> = ({ receipt, onClose }) => 
               <select
                 value={selectedThemeMonth}
                 onChange={(e) => setSelectedThemeMonth(e.target.value)}
-                className="bg-transparent text-white text-xs font-bold outline-none cursor-pointer capitalize"
+                className="bg-transparent text-white text-base sm:text-xs font-bold outline-none cursor-pointer capitalize min-h-[36px]"
               >
                 {MONTH_KEYS.map((m) => (
                   <option key={m} value={m} className="bg-slate-900 text-white">
@@ -257,7 +257,7 @@ export const PrintableReceiptModal: React.FC<Props> = ({ receipt, onClose }) => 
 
             <button
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors cursor-pointer"
               title="Close modal"
             >
               <X className="w-5 h-5" />
@@ -482,13 +482,13 @@ export const PrintableReceiptModal: React.FC<Props> = ({ receipt, onClose }) => 
             <span className="font-semibold capitalize">{selectedThemeMonth} Monthly Theme Active</span>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
             {/* Print Button */}
             <button
               onClick={handlePrint}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-xs"
+              className="min-h-[44px] flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-xs flex-1 sm:flex-initial"
             >
-              <Printer className="w-3.5 h-3.5" />
+              <Printer className="w-4 h-4" />
               <span>Print</span>
             </button>
 
@@ -496,29 +496,29 @@ export const PrintableReceiptModal: React.FC<Props> = ({ receipt, onClose }) => 
             <button
               onClick={handleDownloadPNG}
               disabled={isExporting}
-              className="flex items-center gap-1.5 px-4 py-2 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer"
+              className="min-h-[44px] flex items-center justify-center gap-2 px-4 py-2.5 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex-1 sm:flex-initial"
               style={{ backgroundColor: currentTheme.primary }}
               title="Download receipt as PNG"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>{isExporting ? 'Generating PNG...' : 'Download PNG'}</span>
+              <Download className="w-4 h-4" />
+              <span>{isExporting ? 'Generating...' : 'Download PNG'}</span>
             </button>
 
             {/* Share via WhatsApp Button */}
             <button
               onClick={handleShareWhatsApp}
               disabled={isExporting}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors shadow-xs cursor-pointer"
+              className="min-h-[44px] flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors shadow-xs cursor-pointer flex-1 sm:flex-initial"
               title="Share receipt via WhatsApp"
             >
-              <Share2 className="w-3.5 h-3.5" />
+              <Share2 className="w-4 h-4" />
               <span>WhatsApp</span>
             </button>
 
             {/* Close Button */}
             <button
               onClick={onClose}
-              className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+              className="min-h-[44px] px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center justify-center flex-1 sm:flex-initial"
             >
               Close
             </button>

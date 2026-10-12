@@ -66,7 +66,7 @@ export const PrintableBillModal: React.FC<Props> = ({ bill, onClose }) => {
         }
       `}</style>
 
-      <div className="max-w-md w-full my-auto flex flex-col items-center">
+      <div className="max-w-md lg:max-w-lg w-full my-auto flex flex-col items-center">
         {/* Actions Bar (Top) */}
         <div className="no-print w-full bg-slate-900 text-white rounded-t-xl px-5 py-3.5 flex items-center justify-between shadow-lg">
           <div className="flex items-center gap-2">
@@ -80,15 +80,15 @@ export const PrintableBillModal: React.FC<Props> = ({ bill, onClose }) => {
           <div className="flex items-center gap-2">
             <button
               onClick={handlePrint}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+              className="min-h-[44px] flex items-center justify-center gap-2 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer"
               title="Print bill or save as PDF"
             >
-              <Printer className="w-3.5 h-3.5" />
+              <Printer className="w-4 h-4" />
               <span>Print</span>
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors cursor-pointer"
               title="Close window"
             >
               <X className="w-5 h-5" />
@@ -318,14 +318,14 @@ export const PrintableBillModal: React.FC<Props> = ({ bill, onClose }) => {
           <button
             onClick={downloadAsPNG}
             disabled={isDownloading}
-            className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-xl transition duration-200 shadow-md flex justify-center items-center gap-2 text-xs cursor-pointer"
+            className="flex-1 min-h-[44px] bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-xl transition duration-200 shadow-md flex justify-center items-center gap-2 text-xs cursor-pointer active:scale-95"
           >
             <Download className="w-4 h-4" />
             <span>{isDownloading ? 'Generating PNG...' : 'Download Bill as PNG'}</span>
           </button>
           <button
             onClick={onClose}
-            className="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 px-5 rounded-xl transition duration-200 text-xs cursor-pointer"
+            className="min-h-[44px] bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 px-5 rounded-xl transition duration-200 text-xs cursor-pointer active:scale-95"
           >
             Close
           </button>

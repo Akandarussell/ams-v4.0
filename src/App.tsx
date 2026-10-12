@@ -2222,41 +2222,45 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      {/* Top Complex Bar */}
-      <header className="no-print bg-slate-900 text-white sticky top-0 z-40 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+      {/* Top Complex Bar - Modern SaaS Header */}
+      <header className="no-print bg-slate-900 text-white sticky top-0 z-40 border-b border-slate-800/90 shadow-xs backdrop-blur-md bg-slate-900/95">
+        <div className="max-w-[1680px] mx-auto px-3 sm:px-6 lg:px-8 xl:px-10 h-16 flex items-center justify-between gap-2 sm:gap-4">
           {/* Logo & Complex Identity */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 text-slate-300 hover:text-white"
+              className="lg:hidden p-2 -ml-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
+              aria-label="Toggle navigation drawer"
             >
-              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {isMobileMenuOpen ? <X className="w-5 h-5 text-blue-400" /> : <Menu className="w-5 h-5" />}
             </button>
 
-            <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-500 flex items-center justify-center font-black text-white text-xs sm:text-sm shadow-sm tracking-wider shrink-0">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center font-black text-white text-xs sm:text-sm shadow-sm tracking-wider shrink-0 border border-blue-400/20">
                 MBD
               </div>
               <div className="min-w-0">
                 <span className="font-extrabold text-xs sm:text-sm md:text-base tracking-tight block truncate text-white">
                   {COMPLEX_CONFIG.name.toUpperCase()}
                 </span>
-                <span className="text-[10px] text-blue-200 block font-medium truncate max-w-[220px] sm:max-w-md lg:max-w-xl">
-                  {COMPLEX_CONFIG.address} &bull; Hotline: <span className="font-bold text-white">{COMPLEX_CONFIG.contacts}</span>
+                <span className="text-[10px] sm:text-[11px] text-slate-400 hidden sm:block font-medium truncate max-w-xs sm:max-w-md lg:max-w-xl">
+                  {COMPLEX_CONFIG.address} &bull; Hotline: <a href="tel:01737-321998" className="font-bold text-blue-300 hover:underline">{COMPLEX_CONFIG.contacts}</a>
+                </span>
+                <span className="text-[10px] text-blue-300 sm:hidden block font-medium truncate">
+                  Rajshahi-6201 &bull; ERP
                 </span>
               </div>
             </div>
           </div>
 
           {/* Current Period & Database Status & User Profile */}
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             {/* Database indicator - ONLY DISPLAY ON MANAGER'S DASHBOARD */}
             {currentUser.role === 'manager' && currentView === 'dashboard' && (
               <button
                 onClick={() => setIsDbModalOpen(true)}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 transition-colors border border-slate-700 cursor-pointer"
+                className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 transition-colors border border-slate-700/80 cursor-pointer shadow-xs"
                 title="Supabase Database Configuration"
               >
                 <Database className="w-3.5 h-3.5 text-blue-400" />
@@ -2266,7 +2270,7 @@ export default function App() {
             )}
 
             {/* Header Billing Period Dropdown (Strict YYYY-MM Scoping) */}
-            <div className="flex items-center gap-1 bg-slate-800/90 border border-slate-700/80 rounded-xl p-1 text-xs shadow-xs">
+            <div className="flex items-center gap-0.5 sm:gap-1 bg-slate-800/90 border border-slate-700/80 rounded-xl p-1 text-xs shadow-xs">
               <button
                 onClick={() => {
                   let newM = data.selectedMonth - 1;
@@ -2283,7 +2287,7 @@ export default function App() {
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
 
-              <div className="flex items-center gap-1.5 px-1 font-mono">
+              <div className="flex items-center gap-1 px-1 font-mono">
                 <Calendar className="w-3.5 h-3.5 text-blue-400 shrink-0 hidden sm:inline" />
                 <span className="text-[10px] text-slate-400 font-sans hidden xl:inline">Period:</span>
                 <select
@@ -2292,7 +2296,7 @@ export default function App() {
                     const { month, year } = parseBillingPeriod(e.target.value);
                     handleUpdateMonthYear(month, year);
                   }}
-                  className="bg-transparent text-blue-400 font-bold text-xs focus:outline-hidden cursor-pointer py-0.5 border-none font-mono"
+                  className="bg-transparent text-blue-300 hover:text-white font-bold text-xs focus:outline-hidden cursor-pointer py-0.5 border-none font-mono max-w-[105px] sm:max-w-none"
                   title="Select Billing Period (strict YYYY-MM format)"
                 >
                   {headerBillingPeriods.map((bp) => (
@@ -2321,12 +2325,12 @@ export default function App() {
             </div>
 
             {/* Active Logged-in User Display */}
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/90 border border-slate-700/80 rounded-xl text-xs shadow-xs">
-              <UserCheck className="w-4 h-4 text-blue-400 shrink-0" />
-              <span className="font-bold max-w-[120px] sm:max-w-[170px] truncate text-white">
+            <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 py-1.5 bg-slate-800/90 border border-slate-700/80 rounded-xl text-xs shadow-xs">
+              <UserCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400 shrink-0" />
+              <span className="font-bold max-w-[90px] sm:max-w-[150px] truncate text-white">
                 {currentUser.fullName}
               </span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-900/60 text-blue-300 font-semibold uppercase tracking-wider border border-blue-700/50 hidden sm:inline">
+              <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-md bg-blue-900/60 text-blue-300 font-bold uppercase tracking-wider border border-blue-700/50 hidden md:inline">
                 {currentUser.role}
               </span>
             </div>
@@ -2334,7 +2338,7 @@ export default function App() {
             {/* Direct Logout Button in Header */}
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-rose-900/60 hover:text-rose-200 text-slate-300 rounded-xl text-xs font-bold transition-all border border-slate-700 cursor-pointer shadow-xs"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-slate-800 hover:bg-rose-900/60 hover:text-rose-200 text-slate-300 rounded-xl text-xs font-bold transition-all border border-slate-700/80 cursor-pointer shadow-xs active:scale-95"
               title="Sign out of your account"
             >
               <LogOut className="w-3.5 h-3.5 text-rose-400" />
@@ -2346,47 +2350,54 @@ export default function App() {
 
       {/* Main Body Layout */}
       <div
-        className={`flex-1 w-full mx-auto py-6 flex gap-6 ${
+        className={`flex-1 w-full mx-auto py-4 sm:py-6 flex gap-6 pb-24 lg:pb-8 ${
           currentView === 'monthly-ledger'
-            ? 'max-w-none px-3 sm:px-6'
-            : 'max-w-7xl px-4 sm:px-6 lg:px-8'
+            ? 'max-w-none px-2 sm:px-4 lg:px-6'
+            : 'max-w-[1680px] px-3 sm:px-6 lg:px-8 xl:px-10'
         }`}
       >
-        {/* Left Sidebar Navigation (Desktop) */}
-        <aside className="no-print hidden lg:block w-64 shrink-0">
-          <nav className="bg-white rounded-2xl border border-slate-200 p-3 shadow-xs space-y-1 sticky top-22">
-            <div className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-              {currentUser.role === 'manager'
-                ? 'Super Admin ERP'
-                : currentUser.role === 'owner'
-                ? `${currentUser.assignedBlock} Owner`
-                : 'Resident Portal'}
+        {/* Left Sidebar Navigation (Desktop Fixed & Clean, Laptop Viewport Scrollable) */}
+        <aside className="no-print hidden lg:block w-64 xl:w-72 shrink-0">
+          <nav className="bg-white rounded-2xl border border-slate-200/90 p-3.5 shadow-xs space-y-1.5 sticky top-20 max-h-[calc(100vh-5.5rem)] overflow-y-auto no-scrollbar">
+            {/* Role Header Chip */}
+            <div className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between mb-2">
+              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+                {currentUser.role === 'manager'
+                  ? 'Super Admin ERP'
+                  : currentUser.role === 'owner'
+                  ? `${currentUser.assignedBlock} Owner`
+                  : 'Resident Portal'}
+              </span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             </div>
 
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentView === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setCurrentView(item.id)}
-                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    isActive
-                      ? 'bg-blue-700 text-white shadow-xs'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
+            {/* Nav Links */}
+            <div className="space-y-1">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = currentView === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setCurrentView(item.id)}
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-blue-600 text-white shadow-xs font-extrabold'
+                        : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 font-semibold'
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                    <span className="truncate">{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
 
             <div className="pt-3 mt-3 border-t border-slate-100 space-y-2">
               {currentUser.role === 'manager' && currentView === 'dashboard' && (
                 <button
                   onClick={() => setIsDbModalOpen(true)}
-                  className="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition-colors cursor-pointer border border-transparent hover:border-blue-200"
                 >
                   <Database className="w-4 h-4 text-blue-600" />
                   <span>Supabase & SQL</span>
@@ -2401,10 +2412,11 @@ export default function App() {
                 <span>Sign Out</span>
               </button>
 
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-[11px]">
-                <p className="font-bold text-slate-800 leading-tight">{COMPLEX_CONFIG.name}</p>
-                <p className="text-slate-500 text-[10px] mt-1 leading-normal">{COMPLEX_CONFIG.address}</p>
-                <div className="mt-2 pt-2 border-t border-slate-200 flex flex-col gap-0.5 text-[10px]">
+              {/* Complex Emergency Contacts Widget */}
+              <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-200/80 text-[11px]">
+                <p className="font-extrabold text-slate-800 leading-tight">{COMPLEX_CONFIG.name}</p>
+                <p className="text-slate-500 text-[10px] mt-0.5 leading-normal">{COMPLEX_CONFIG.address}</p>
+                <div className="mt-2 pt-2 border-t border-slate-200/80 flex flex-col gap-1 text-[10px]">
                   {currentUser.role === 'tenant' ? (() => {
                     const tUnit = data.units.find(u => u.flatId.toLowerCase() === (currentUser.flatId || '').toLowerCase());
                     const bName = tUnit?.blockName || (currentUser.flatId?.toUpperCase().startsWith('B') ? 'Block B' : currentUser.flatId?.toUpperCase().startsWith('C') ? 'Block C' : 'Block A');
@@ -2415,22 +2427,26 @@ export default function App() {
                       : { name: 'Md. Rony', phone: '01712118547' };
                     return (
                       <>
-                        <p className="text-slate-600 font-medium">
-                          Manager: <a href="tel:01737-321998" className="font-bold text-blue-700 hover:underline">01737-321998</a>
-                        </p>
-                        <p className="text-slate-600 font-medium">
-                          {bOwner.name} ({bName}): <a href={`tel:${bOwner.phone}`} className="font-bold text-blue-700 hover:underline">{bOwner.phone}</a>
-                        </p>
+                        <div className="flex items-center justify-between text-slate-600">
+                          <span>Manager:</span>
+                          <a href="tel:01737-321998" className="font-bold text-blue-700 hover:underline">01737-321998</a>
+                        </div>
+                        <div className="flex items-center justify-between text-slate-600">
+                          <span>{bOwner.name} ({bName}):</span>
+                          <a href={`tel:${bOwner.phone}`} className="font-bold text-blue-700 hover:underline">{bOwner.phone}</a>
+                        </div>
                       </>
                     );
                   })() : (
                     <>
-                      <p className="text-slate-600 font-medium">
-                        Manager: <a href="tel:01737-321998" className="font-bold text-blue-700 hover:underline">01737-321998</a>
-                      </p>
-                      <p className="text-slate-600 font-medium">
-                        Raju: <a href="tel:01913-858775" className="font-bold text-blue-700 hover:underline">01913-858775</a>
-                      </p>
+                      <div className="flex items-center justify-between text-slate-600">
+                        <span>Manager:</span>
+                        <a href="tel:01737-321998" className="font-bold text-blue-700 hover:underline">01737-321998</a>
+                      </div>
+                      <div className="flex items-center justify-between text-slate-600">
+                        <span>Raju:</span>
+                        <a href="tel:01913-858775" className="font-bold text-blue-700 hover:underline">01913-858775</a>
+                      </div>
                     </>
                   )}
                 </div>
@@ -2441,22 +2457,42 @@ export default function App() {
 
         {/* Mobile Navigation Drawer */}
         {isMobileMenuOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden bg-slate-900/60 backdrop-blur-xs flex">
-            <div className="w-72 bg-white h-full p-4 flex flex-col justify-between overflow-y-auto">
-              <div className="space-y-1">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                  <div>
-                    <span className="font-bold text-slate-900 text-sm block">{COMPLEX_CONFIG.name}</span>
-                    <span className="text-[10px] text-slate-500">Rajshahi-6201</span>
+          <div className="fixed inset-0 z-50 lg:hidden bg-slate-950/70 backdrop-blur-sm flex">
+            <div className="w-80 max-w-[85vw] bg-white h-full p-4 sm:p-5 flex flex-col justify-between overflow-y-auto shadow-2xl">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-blue-600 text-white font-black flex items-center justify-center text-xs">
+                      MBD
+                    </div>
+                    <div>
+                      <span className="font-extrabold text-slate-900 text-xs block leading-tight">{COMPLEX_CONFIG.name}</span>
+                      <span className="text-[10px] text-slate-500">Rajshahi-6201 &bull; ERP</span>
+                    </div>
                   </div>
-                  <button onClick={() => setIsMobileMenuOpen(false)}>
-                    <X className="w-5 h-5 text-slate-500" />
+                  <button
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl cursor-pointer transition-colors"
+                    aria-label="Close menu drawer"
+                  >
+                    <X className="w-5 h-5" />
                   </button>
                 </div>
 
+                {/* Mobile User Profile Header */}
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 my-2 flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-xs shrink-0">
+                    {currentUser.fullName.charAt(0)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-xs text-slate-900 truncate">{currentUser.fullName}</p>
+                    <p className="text-[10px] text-slate-500 uppercase font-semibold">{currentUser.role} {currentUser.flatId ? `(${currentUser.flatId})` : ''}</p>
+                  </div>
+                </div>
+
                 {/* Mobile Billing Period Selector */}
-                <div className="p-2.5 bg-slate-900 text-white rounded-xl my-2">
-                  <div className="text-[10px] uppercase font-bold text-slate-400 mb-1 flex items-center gap-1.5">
+                <div className="p-3 bg-slate-900 text-white rounded-xl my-2 shadow-xs">
+                  <div className="text-[10px] uppercase font-bold text-slate-400 mb-1.5 flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5 text-blue-400" />
                     <span>Billing Period (Monthly Scoping)</span>
                   </div>
@@ -2467,7 +2503,7 @@ export default function App() {
                       handleUpdateMonthYear(month, year);
                       setIsMobileMenuOpen(false);
                     }}
-                    className="w-full bg-slate-800 text-blue-300 font-mono text-xs rounded-lg px-2.5 py-2 font-bold border border-slate-700"
+                    className="w-full bg-slate-800 text-blue-300 font-mono text-xs rounded-lg px-2.5 py-2 font-bold border border-slate-700 focus:outline-hidden"
                   >
                     {headerBillingPeriods.map((bp) => (
                       <option key={bp.period} value={bp.period} className="bg-slate-900 text-white">
@@ -2477,9 +2513,11 @@ export default function App() {
                   </select>
                 </div>
 
-                <div className="pt-1 space-y-1">
+                {/* Navigation Items */}
+                <div className="pt-2 space-y-1">
                   {navItems.map((item) => {
                     const Icon = item.icon;
+                    const isActive = currentView === item.id;
                     return (
                       <button
                         key={item.id}
@@ -2487,11 +2525,13 @@ export default function App() {
                           setCurrentView(item.id);
                           setIsMobileMenuOpen(false);
                         }}
-                        className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold ${
-                          currentView === item.id ? 'bg-blue-700 text-white' : 'text-slate-700 hover:bg-slate-100'
+                        className={`w-full min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+                          isActive
+                            ? 'bg-blue-600 text-white shadow-xs'
+                            : 'text-slate-700 hover:bg-slate-100'
                         }`}
                       >
-                        <Icon className="w-4 h-4" />
+                        <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-500'}`} />
                         <span>{item.label}</span>
                       </button>
                     );
@@ -2499,43 +2539,31 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-100 space-y-2">
+              {/* Mobile Drawer Bottom Actions */}
+              <div className="pt-4 border-t border-slate-100 space-y-2 mt-4">
                 {currentUser.role === 'manager' && currentView === 'dashboard' && (
                   <button
                     onClick={() => {
                       setIsDbModalOpen(true);
                       setIsMobileMenuOpen(false);
                     }}
-                    className="w-full py-2 bg-slate-100 rounded-lg text-xs font-bold text-slate-700"
+                    className="w-full min-h-[44px] py-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700 transition-colors cursor-pointer"
                   >
-                    Database Setup
+                    Database Setup & SQL
                   </button>
                 )}
                 <button
                   onClick={handleLogout}
-                  className="w-full py-2 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5"
+                  className="w-full min-h-[44px] py-2.5 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   <span>Sign Out</span>
                 </button>
                 <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-[10px] text-slate-600">
                   <p className="font-bold text-slate-800">{COMPLEX_CONFIG.address}</p>
-                  {currentUser.role === 'tenant' ? (() => {
-                    const tUnit = data.units.find(u => u.flatId.toLowerCase() === (currentUser.flatId || '').toLowerCase());
-                    const bName = tUnit?.blockName || (currentUser.flatId?.toUpperCase().startsWith('B') ? 'Block B' : currentUser.flatId?.toUpperCase().startsWith('C') ? 'Block C' : 'Block A');
-                    const bOwner = bName === 'Block A' 
-                      ? { name: 'Md. Rashed', phone: '01717623061' } 
-                      : bName === 'Block B' 
-                      ? { name: 'Md. Raju', phone: '01913858775' } 
-                      : { name: 'Md. Rony', phone: '01712118547' };
-                    return (
-                      <p className="mt-1 font-semibold text-blue-700">
-                        Hotline: Manager (01737-321998), {bOwner.name} ({bOwner.phone})
-                      </p>
-                    );
-                  })() : (
-                    <p className="mt-1 font-semibold text-blue-700">Hotline: {COMPLEX_CONFIG.contacts}</p>
-                  )}
+                  <p className="mt-1 font-semibold text-blue-700">
+                    Hotline: <a href="tel:01737-321998">{COMPLEX_CONFIG.contacts}</a>
+                  </p>
                 </div>
               </div>
             </div>
@@ -2543,8 +2571,142 @@ export default function App() {
           </div>
         )}
 
+        {/* Mobile Sticky Bottom Navigation Bar (Smartphones) */}
+        <div className="no-print lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-lg px-1.5 py-1 flex items-center justify-around safe-pb">
+          {currentUser.role === 'tenant' ? (
+            <>
+              <button
+                onClick={() => setCurrentView('dashboard')}
+                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
+                  currentView === 'dashboard' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                <span>Dashboard</span>
+              </button>
+              <button
+                onClick={() => setCurrentView('complaints')}
+                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
+                  currentView === 'complaints' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <AlertCircle className="w-4 h-4" />
+                <span>Requests</span>
+              </button>
+              <button
+                onClick={() => setCurrentView('messages')}
+                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
+                  currentView === 'messages' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>Chat</span>
+              </button>
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold text-slate-500 hover:text-slate-900 active:scale-95 cursor-pointer"
+              >
+                <Menu className="w-4 h-4" />
+                <span>More</span>
+              </button>
+            </>
+          ) : currentUser.role === 'owner' ? (
+            <>
+              <button
+                onClick={() => setCurrentView('dashboard')}
+                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
+                  currentView === 'dashboard' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                <span>Dashboard</span>
+              </button>
+              <button
+                onClick={() => setCurrentView('monthly-ledger')}
+                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
+                  currentView === 'monthly-ledger' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                <span>Ledger</span>
+              </button>
+              <button
+                onClick={() => setCurrentView('complaints')}
+                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
+                  currentView === 'complaints' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <AlertCircle className="w-4 h-4" />
+                <span>Complaints</span>
+              </button>
+              <button
+                onClick={() => setCurrentView('messages')}
+                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
+                  currentView === 'messages' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>Chat</span>
+              </button>
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold text-slate-500 hover:text-slate-900 active:scale-95 cursor-pointer"
+              >
+                <Menu className="w-4 h-4" />
+                <span>More</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => setCurrentView('dashboard')}
+                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
+                  currentView === 'dashboard' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                <span>Overview</span>
+              </button>
+              <button
+                onClick={() => setCurrentView('monthly-ledger')}
+                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
+                  currentView === 'monthly-ledger' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                <span>Ledger</span>
+              </button>
+              <button
+                onClick={() => setCurrentView('online-payments')}
+                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
+                  currentView === 'online-payments' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <CreditCard className="w-4 h-4" />
+                <span>Payments</span>
+              </button>
+              <button
+                onClick={() => setCurrentView('messages')}
+                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
+                  currentView === 'messages' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>Chat</span>
+              </button>
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold text-slate-500 hover:text-slate-900 active:scale-95 cursor-pointer"
+              >
+                <Menu className="w-4 h-4" />
+                <span>Menu</span>
+              </button>
+            </>
+          )}
+        </div>
+
         {/* Main Content Area */}
-        <main className="flex-1 min-w-0">
+        <main className="flex-1 min-w-0 pb-24 lg:pb-8">
           {/* VIEW ROUTING */}
           {currentUser.role === 'tenant' ? (
             /* Tenant View */

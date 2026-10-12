@@ -518,7 +518,7 @@ export const ManualLedgerEntryModal: React.FC<Props> = ({
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full overflow-hidden border border-slate-200">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-3xl lg:max-w-5xl xl:max-w-6xl w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95">
         {/* Modal Header */}
         <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -536,7 +536,7 @@ export const ManualLedgerEntryModal: React.FC<Props> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -636,15 +636,18 @@ export const ManualLedgerEntryModal: React.FC<Props> = ({
             </div>
           </div>
 
-          {/* Section: Advance Payment */}
-          <div className="p-4 rounded-xl border border-indigo-200 bg-indigo-50/30 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-indigo-900 flex items-center gap-1.5 uppercase tracking-wider">
-                <Wallet className="w-4 h-4 text-indigo-600" /> 1. Advance Payment / Deposit
-              </span>
-              <span className="text-[11px] text-indigo-700">Security Advance Deposit Record</span>
-            </div>
-            <div className={`grid grid-cols-1 ${isAdvanceDateEnabled ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-3`}>
+          {/* 3-Column Desktop Financial Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Section: Advance Payment */}
+            <div className="p-4 rounded-xl border border-indigo-200 bg-indigo-50/30 space-y-3 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-bold text-indigo-900 flex items-center gap-1.5 uppercase tracking-wider">
+                    <Wallet className="w-4 h-4 text-indigo-600" /> 1. Advance Deposit
+                  </span>
+                  <span className="text-[11px] text-indigo-700">Escrow Record</span>
+                </div>
+                <div className={`grid grid-cols-1 ${isAdvanceDateEnabled ? 'sm:grid-cols-3 lg:grid-cols-1' : 'sm:grid-cols-2 lg:grid-cols-1'} gap-2.5`}>
               {/* Field 1: Advance Amount */}
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1">Advance Amount (BDT)</label>
@@ -691,18 +694,20 @@ export const ManualLedgerEntryModal: React.FC<Props> = ({
                   />
                 </div>
               )}
+              </div>
             </div>
           </div>
 
           {/* Section: Flat Rent */}
-          <div className="p-4 rounded-xl border border-blue-200 bg-blue-50/30 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-blue-900 flex items-center gap-1.5 uppercase tracking-wider">
-                <Building className="w-4 h-4 text-blue-600" /> 2. Monthly Flat Rent
-              </span>
-              <span className="text-[11px] text-blue-700">Contract Base Rent</span>
-            </div>
-            <div className={`grid grid-cols-1 ${isRentDateEnabled || rentStatus === 'Adjusted' ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-3`}>
+          <div className="p-4 rounded-xl border border-blue-200 bg-blue-50/30 space-y-3 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-blue-900 flex items-center gap-1.5 uppercase tracking-wider">
+                  <Building className="w-4 h-4 text-blue-600" /> 2. Monthly Flat Rent
+                </span>
+                <span className="text-[11px] text-blue-700">Contract Base Rent</span>
+              </div>
+              <div className={`grid grid-cols-1 ${isRentDateEnabled || rentStatus === 'Adjusted' ? 'sm:grid-cols-3 lg:grid-cols-1' : 'sm:grid-cols-2 lg:grid-cols-1'} gap-2.5`}>
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1">Flat Rent Amount (BDT)</label>
                 <input
@@ -748,20 +753,22 @@ export const ManualLedgerEntryModal: React.FC<Props> = ({
                   />
                 </div>
               )}
+              </div>
             </div>
           </div>
 
           {/* Section: Electricity Bill */}
-          <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/30 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-amber-900 flex items-center gap-1.5 uppercase tracking-wider">
-                <Zap className="w-4 h-4 text-amber-600" /> 3. Electricity Bill (Postpaid: {elecPeriod.displayStr})
-              </span>
-              <span className="text-[11px] text-amber-700 font-medium">
-                For {getMonthName(month)} {year} Rent &bull; Postpaid Period: <strong>{elecPeriod.displayStr}</strong>
-              </span>
-            </div>
-            <div className={`grid grid-cols-1 ${isElectricityDateEnabled ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-3`}>
+          <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/30 space-y-3 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-amber-900 flex items-center gap-1.5 uppercase tracking-wider">
+                  <Zap className="w-4 h-4 text-amber-600" /> 3. Electricity Bill
+                </span>
+                <span className="text-[11px] text-amber-700 font-medium">
+                  Postpaid: <strong>{elecPeriod.displayStr}</strong>
+                </span>
+              </div>
+              <div className={`grid grid-cols-1 ${isElectricityDateEnabled ? 'sm:grid-cols-3 lg:grid-cols-1' : 'sm:grid-cols-2 lg:grid-cols-1'} gap-2.5`}>
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1 flex items-center justify-between">
                   <span>Electricity Bill (BDT)</span>
@@ -806,8 +813,10 @@ export const ManualLedgerEntryModal: React.FC<Props> = ({
                   />
                 </div>
               )}
+              </div>
             </div>
           </div>
+        </div>
 
           {/* Real-time Financial Breakdown Preview */}
           <div className="p-3.5 bg-slate-900 text-white rounded-xl flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
@@ -844,17 +853,17 @@ export const ManualLedgerEntryModal: React.FC<Props> = ({
           </div>
 
           {/* Modal Actions */}
-          <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-200">
+          <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5 border-t border-slate-200">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition-colors cursor-pointer"
+              className="min-h-[44px] px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition-colors cursor-pointer flex items-center justify-center order-2 sm:order-1"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex items-center gap-1.5 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-md transition-all cursor-pointer"
+              className="min-h-[44px] flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-md transition-all cursor-pointer order-1 sm:order-2"
             >
               <Save className="w-4 h-4" />
               <span>{itemToEdit ? 'Update Ledger Record' : 'Save Ledger Entry'}</span>

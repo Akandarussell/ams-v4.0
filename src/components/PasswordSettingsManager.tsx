@@ -345,7 +345,7 @@ export const PasswordSettingsManager: React.FC<Props> = ({
             </div>
             <div className="space-y-1">
               <label className="block text-[11px] font-bold text-slate-700">Master Password</label>
-              <div className="relative">
+              <div className="relative flex items-center">
                 <input
                   type={showAuthorityPass['manager'] ? 'text' : 'password'}
                   placeholder="Set master password"
@@ -353,7 +353,7 @@ export const PasswordSettingsManager: React.FC<Props> = ({
                   onChange={(e) =>
                     setAuthorityPasswords({ ...authorityPasswords, manager: e.target.value })
                   }
-                  className="w-full pl-3 pr-8 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-blue-600 focus:outline-hidden font-mono"
+                  className="w-full min-h-[44px] pl-3 pr-11 py-2 bg-white border border-slate-300 rounded-xl text-base sm:text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-blue-600 focus:outline-hidden font-mono"
                 />
                 <button
                   type="button"
@@ -363,12 +363,13 @@ export const PasswordSettingsManager: React.FC<Props> = ({
                       manager: !showAuthorityPass['manager'],
                     })
                   }
-                  className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  className="min-w-[44px] min-h-[44px] absolute right-0 flex items-center justify-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                  aria-label="Toggle password visibility"
                 >
                   {showAuthorityPass['manager'] ? (
-                    <EyeOff className="w-3.5 h-3.5" />
+                    <EyeOff className="w-4 h-4" />
                   ) : (
-                    <Eye className="w-3.5 h-3.5" />
+                    <Eye className="w-4 h-4" />
                   )}
                 </button>
               </div>
@@ -390,7 +391,7 @@ export const PasswordSettingsManager: React.FC<Props> = ({
             </div>
             <div className="space-y-1">
               <label className="block text-[11px] font-bold text-slate-700">Access Password</label>
-              <div className="relative">
+              <div className="relative flex items-center">
                 <input
                   type={showAuthorityPass['ownerA'] ? 'text' : 'password'}
                   placeholder="Default: rashed123"
@@ -398,7 +399,7 @@ export const PasswordSettingsManager: React.FC<Props> = ({
                   onChange={(e) =>
                     setAuthorityPasswords({ ...authorityPasswords, ownerA: e.target.value })
                   }
-                  className="w-full pl-3 pr-8 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-emerald-600 focus:outline-hidden font-mono"
+                  className="w-full min-h-[44px] pl-3 pr-11 py-2 bg-white border border-slate-300 rounded-xl text-base sm:text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-emerald-600 focus:outline-hidden font-mono"
                 />
                 <button
                   type="button"
@@ -408,12 +409,13 @@ export const PasswordSettingsManager: React.FC<Props> = ({
                       ownerA: !showAuthorityPass['ownerA'],
                     })
                   }
-                  className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  className="min-w-[44px] min-h-[44px] absolute right-0 flex items-center justify-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                  aria-label="Toggle password visibility"
                 >
                   {showAuthorityPass['ownerA'] ? (
-                    <EyeOff className="w-3.5 h-3.5" />
+                    <EyeOff className="w-4 h-4" />
                   ) : (
-                    <Eye className="w-3.5 h-3.5" />
+                    <Eye className="w-4 h-4" />
                   )}
                 </button>
               </div>
@@ -435,7 +437,7 @@ export const PasswordSettingsManager: React.FC<Props> = ({
             </div>
             <div className="space-y-1">
               <label className="block text-[11px] font-bold text-slate-700">Access Password</label>
-              <div className="relative">
+              <div className="relative flex items-center">
                 <input
                   type={showAuthorityPass['ownerB'] ? 'text' : 'password'}
                   placeholder="Default: raju123"
@@ -443,7 +445,7 @@ export const PasswordSettingsManager: React.FC<Props> = ({
                   onChange={(e) =>
                     setAuthorityPasswords({ ...authorityPasswords, ownerB: e.target.value })
                   }
-                  className="w-full pl-3 pr-8 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-indigo-600 focus:outline-hidden font-mono"
+                  className="w-full min-h-[44px] pl-3 pr-11 py-2 bg-white border border-slate-300 rounded-xl text-base sm:text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-indigo-600 focus:outline-hidden font-mono"
                 />
                 <button
                   type="button"
@@ -453,12 +455,13 @@ export const PasswordSettingsManager: React.FC<Props> = ({
                       ownerB: !showAuthorityPass['ownerB'],
                     })
                   }
-                  className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  className="min-w-[44px] min-h-[44px] absolute right-0 flex items-center justify-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                  aria-label="Toggle password visibility"
                 >
                   {showAuthorityPass['ownerB'] ? (
-                    <EyeOff className="w-3.5 h-3.5" />
+                    <EyeOff className="w-4 h-4" />
                   ) : (
-                    <Eye className="w-3.5 h-3.5" />
+                    <Eye className="w-4 h-4" />
                   )}
                 </button>
               </div>
@@ -480,7 +483,7 @@ export const PasswordSettingsManager: React.FC<Props> = ({
             </div>
             <div className="space-y-1">
               <label className="block text-[11px] font-bold text-slate-700">Access Password</label>
-              <div className="relative">
+              <div className="relative flex items-center">
                 <input
                   type={showAuthorityPass['ownerC'] ? 'text' : 'password'}
                   placeholder="Default: rony123"
@@ -488,7 +491,7 @@ export const PasswordSettingsManager: React.FC<Props> = ({
                   onChange={(e) =>
                     setAuthorityPasswords({ ...authorityPasswords, ownerC: e.target.value })
                   }
-                  className="w-full pl-3 pr-8 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-purple-600 focus:outline-hidden font-mono"
+                  className="w-full min-h-[44px] pl-3 pr-11 py-2 bg-white border border-slate-300 rounded-xl text-base sm:text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-purple-600 focus:outline-hidden font-mono"
                 />
                 <button
                   type="button"
@@ -498,12 +501,13 @@ export const PasswordSettingsManager: React.FC<Props> = ({
                       ownerC: !showAuthorityPass['ownerC'],
                     })
                   }
-                  className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  className="min-w-[44px] min-h-[44px] absolute right-0 flex items-center justify-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                  aria-label="Toggle password visibility"
                 >
                   {showAuthorityPass['ownerC'] ? (
-                    <EyeOff className="w-3.5 h-3.5" />
+                    <EyeOff className="w-4 h-4" />
                   ) : (
-                    <Eye className="w-3.5 h-3.5" />
+                    <Eye className="w-4 h-4" />
                   )}
                 </button>
               </div>
@@ -538,12 +542,12 @@ export const PasswordSettingsManager: React.FC<Props> = ({
         {/* Filter & Search Bar */}
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pt-2">
           {/* Block Filter Tabs */}
-          <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-100 rounded-xl">
+          <div className="flex overflow-x-auto no-scrollbar items-center gap-1.5 p-1 bg-slate-100 rounded-xl whitespace-nowrap">
             {(['all', 'Block A', 'Block B', 'Block C', 'Other'] as const).map((block) => (
               <button
                 key={block}
                 onClick={() => setSelectedBlockFilter(block)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                className={`min-h-[36px] px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shrink-0 ${
                   selectedBlockFilter === block
                     ? 'bg-white text-slate-900 shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
@@ -554,18 +558,18 @@ export const PasswordSettingsManager: React.FC<Props> = ({
             ))}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Custom Only Toggle */}
             <button
               onClick={() => setFilterCustomOnly(!filterCustomOnly)}
-              className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer flex items-center gap-1.5 ${
+              className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer flex items-center gap-1.5 ${
                 filterCustomOnly
                   ? 'bg-amber-500 text-white border-amber-600'
                   : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
               }`}
             >
               <Filter className="w-3.5 h-3.5" />
-              <span>Custom Passwords Only</span>
+              <span>Custom Only</span>
             </button>
 
             {/* Quick Export Button */}
@@ -575,7 +579,7 @@ export const PasswordSettingsManager: React.FC<Props> = ({
                 const ok = exportAllCredentialsToExcel(data, { blockFilter: filter });
                 if (ok) showToast(`Exported ${filter || 'all'} passwords to Excel!`);
               }}
-              className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+              className="min-h-[44px] px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
               title="Export displayed units to Excel"
             >
               <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
@@ -583,35 +587,184 @@ export const PasswordSettingsManager: React.FC<Props> = ({
             </button>
 
             {/* Search Box */}
-            <div className="relative min-w-[200px] sm:min-w-[240px]">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+            <div className="relative flex-1 sm:min-w-[240px]">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
               <input
                 type="text"
                 placeholder="Search flat (e.g. A1, B4) or name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-600 focus:outline-hidden"
+                className="w-full min-h-[44px] pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-base sm:text-xs font-medium text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-600 focus:outline-hidden"
               />
             </div>
           </div>
         </div>
 
-        {/* Units Table */}
-        <div className="overflow-x-auto rounded-2xl border border-slate-200">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-100/90 text-slate-700 font-bold border-b border-slate-200">
+        {/* Units Responsive Container: Cards on Mobile (< md), Table on Desktop (>= md) */}
+        {/* Mobile View: Cards */}
+        <div className="block md:hidden space-y-4">
+          {filteredUnits.length === 0 ? (
+            <div className="py-12 text-center bg-slate-50 rounded-2xl border border-slate-200 text-slate-500 font-medium">
+              No units found matching your search and filter criteria.
+            </div>
+          ) : (
+            filteredUnits.map((unit) => {
+              const flatId = unit.flatId;
+              const { name, phone } = getFlatResidentInfo(flatId);
+              const last11Digits = getLast11Digits(phone);
+              const customPass = unitPasswords[flatId] || '';
+              const hasCustomOverride = Boolean(customPass);
+              const isOwnerUnit = flatId.toLowerCase().includes('owner');
+
+              return (
+                <div
+                  key={unit.id}
+                  className={`p-4 rounded-2xl border transition-all space-y-3.5 ${
+                    hasCustomOverride
+                      ? 'bg-amber-50/30 border-amber-300 shadow-2xs'
+                      : 'bg-white border-slate-200 shadow-xs'
+                  }`}
+                >
+                  {/* Card Header */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-10 h-10 rounded-xl bg-blue-100 text-blue-900 flex items-center justify-center font-black text-sm shrink-0">
+                        {flatId}
+                      </span>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-extrabold text-slate-900 text-sm">Flat {flatId}</h3>
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold ${
+                            hasCustomOverride
+                              ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                              : 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                          }`}>
+                            {hasCustomOverride ? 'Custom Override' : 'Default Phone'}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-slate-500 font-medium">
+                          {unit.blockName} &bull; Floor {unit.floor}
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleCopyCredentials(flatId)}
+                      title="Copy login info"
+                      className="min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-500 hover:text-blue-700 hover:bg-blue-50 rounded-xl transition-colors cursor-pointer shrink-0"
+                      aria-label={`Copy credentials for Flat ${flatId}`}
+                    >
+                      {copiedFlatId === flatId ? (
+                        <Check className="w-5 h-5 text-emerald-600" />
+                      ) : (
+                        <Copy className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Resident Info */}
+                  <div className="flex items-center justify-between p-2.5 bg-slate-50/80 rounded-xl border border-slate-100 text-xs">
+                    <div className="flex items-center gap-2">
+                      <UserCheck className="w-4 h-4 text-slate-400 shrink-0" />
+                      <div>
+                        <span className="font-bold text-slate-800 block">{name}</span>
+                        <span className="text-[10px] text-slate-500">
+                          {isOwnerUnit ? 'Owner Residence' : unit.isOccupied ? 'Active Resident' : 'Vacant'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="text-right font-mono">
+                      <span className="text-[10px] text-slate-400 block font-sans">Default Password:</span>
+                      <span className="font-bold text-slate-800 text-xs">{last11Digits}</span>
+                    </div>
+                  </div>
+
+                  {/* Password Override Input */}
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-bold text-slate-700">
+                      Active Login Password Override:
+                    </label>
+                    <div className="relative flex items-center">
+                      <input
+                        type={showUnitPass[flatId] ? 'text' : 'password'}
+                        placeholder={`Default phone: ${last11Digits}`}
+                        value={unitPasswords[flatId] !== undefined ? unitPasswords[flatId] : ''}
+                        onChange={(e) => {
+                          setUnitPasswords({
+                            ...unitPasswords,
+                            [flatId]: e.target.value,
+                          });
+                        }}
+                        className={`w-full min-h-[44px] pl-3 pr-11 py-2 rounded-xl text-base sm:text-xs font-mono font-semibold focus:outline-hidden border ${
+                          hasCustomOverride
+                            ? 'bg-amber-50/60 border-amber-300 text-amber-950 focus:ring-2 focus:ring-amber-500'
+                            : 'bg-white border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-600'
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowUnitPass({
+                            ...showUnitPass,
+                            [flatId]: !showUnitPass[flatId],
+                          })
+                        }
+                        className="min-w-[44px] min-h-[44px] absolute right-0 flex items-center justify-center text-slate-400 hover:text-slate-600 cursor-pointer"
+                        aria-label="Toggle password visibility"
+                      >
+                        {showUnitPass[flatId] ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      onClick={() => handleSetUnitPassword(flatId, unitPasswords[flatId] || '')}
+                      className="min-h-[44px] flex-1 px-4 py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                    >
+                      <Save className="w-4 h-4" />
+                      <span>Save Password</span>
+                    </button>
+
+                    {hasCustomOverride && (
+                      <button
+                        onClick={() => handleResetUnitToDefaultPhone(flatId)}
+                        className="min-h-[44px] px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        title="Reset back to default mobile number"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        <span>Reset Phone</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop View: Dense Table */}
+        <div className="hidden md:block table-scroll-container rounded-2xl border border-slate-200/90 shadow-xs">
+          <table className="w-full text-left text-xs min-w-[760px] border-collapse">
+            <thead className="bg-slate-900 text-white font-bold sticky top-0 z-20 shadow-xs">
               <tr>
-                <th className="py-3 px-4">Flat Number</th>
-                <th className="py-3 px-4">Resident Tenant</th>
-                <th className="py-3 px-4">Default Password (Last 11 Digits)</th>
-                <th className="py-3 px-4">Active Login Password</th>
-                <th className="py-3 px-4 text-right">Super Admin Actions</th>
+                <th className="py-3.5 px-4 sticky left-0 bg-slate-900 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.35)]">Flat Number</th>
+                <th className="py-3.5 px-4">Resident Tenant</th>
+                <th className="py-3.5 px-4">Default Password (Last 11 Digits)</th>
+                <th className="py-3.5 px-4">Active Login Password</th>
+                <th className="py-3.5 px-4 text-right">Super Admin Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredUnits.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-slate-400 font-medium">
+                  <td colSpan={5} className="py-10 text-center text-slate-400 font-medium">
                     No units found matching your search and filter criteria.
                   </td>
                 </tr>
@@ -630,7 +783,7 @@ export const PasswordSettingsManager: React.FC<Props> = ({
                       className="hover:bg-slate-50/80 transition-colors group"
                     >
                       {/* Flat ID & Block */}
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-4 sticky left-0 bg-white group-hover:bg-slate-50 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]">
                         <div className="flex items-center gap-2">
                           <span className="w-8 h-8 rounded-lg bg-blue-100 text-blue-900 flex items-center justify-center font-black text-xs shrink-0">
                             {flatId}

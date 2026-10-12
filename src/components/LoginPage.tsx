@@ -723,13 +723,13 @@ export const LoginPage: React.FC<Props> = ({
                 setActiveTab('tenant');
                 setErrorMsg('');
               }}
-              className={`py-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              className={`min-h-[44px] py-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                 activeTab === 'tenant'
                   ? 'bg-blue-700 text-white shadow-md'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <Home className="w-3.5 h-3.5" />
+              <Home className="w-4 h-4" />
               <span>Tenant Login</span>
             </button>
 
@@ -739,13 +739,13 @@ export const LoginPage: React.FC<Props> = ({
                 setActiveTab('authority');
                 setErrorMsg('');
               }}
-              className={`py-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              className={`min-h-[44px] py-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                 activeTab === 'authority'
                   ? 'bg-blue-700 text-white shadow-md'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <ShieldCheck className="w-3.5 h-3.5" />
+              <ShieldCheck className="w-4 h-4" />
               <span>Authority Login</span>
             </button>
           </div>
@@ -897,19 +897,20 @@ export const LoginPage: React.FC<Props> = ({
                 </label>
 
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                   <input
                     type={showTenantPassword ? 'text' : 'password'}
                     placeholder="Put your registered mobile number here"
                     value={tenantPassword}
                     onChange={(e) => setTenantPassword(e.target.value)}
                     disabled={!selectedFlatInfo.isEligibleForTenantLogin}
-                    className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-600 focus:outline-hidden disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="min-h-[44px] w-full pl-10 pr-12 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-600 focus:outline-hidden disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <button
                     type="button"
                     onClick={() => setShowTenantPassword(!showTenantPassword)}
-                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                    className="min-w-[40px] min-h-[40px] flex items-center justify-center absolute right-1.5 top-1 text-slate-400 hover:text-slate-600 cursor-pointer"
+                    aria-label={showTenantPassword ? "Hide password" : "Show password"}
                   >
                     {showTenantPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -924,7 +925,7 @@ export const LoginPage: React.FC<Props> = ({
               <button
                 type="submit"
                 disabled={isLoading || !selectedFlatInfo.isEligibleForTenantLogin}
-                className="w-full py-3 bg-blue-700 hover:bg-blue-800 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer text-xs mt-2"
+                className="w-full min-h-[48px] py-3 bg-blue-700 hover:bg-blue-800 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer text-xs mt-2"
               >
                 {isLoading ? (
                   <span>Signing In as Tenant...</span>
@@ -1020,18 +1021,19 @@ export const LoginPage: React.FC<Props> = ({
                   </div>
 
                   <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                     <input
                       type={showAuthorityPassword ? 'text' : 'password'}
                       placeholder="Enter authority password"
                       value={authorityPassword}
                       onChange={(e) => setAuthorityPassword(e.target.value)}
-                      className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-600 focus:outline-hidden font-mono"
+                      className="min-h-[44px] w-full pl-10 pr-12 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-600 focus:outline-hidden font-mono"
                     />
                     <button
                       type="button"
                       onClick={() => setShowAuthorityPassword(!showAuthorityPassword)}
-                      className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+                      className="min-w-[40px] min-h-[40px] flex items-center justify-center absolute right-1.5 top-1 text-slate-400 hover:text-slate-600 cursor-pointer"
+                      aria-label={showAuthorityPassword ? "Hide password" : "Show password"}
                     >
                       {showAuthorityPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -1044,7 +1046,7 @@ export const LoginPage: React.FC<Props> = ({
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3 bg-blue-700 hover:bg-blue-800 disabled:bg-blue-400 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer text-xs mt-2"
+                  className="w-full min-h-[48px] py-3 bg-blue-700 hover:bg-blue-800 disabled:bg-blue-400 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer text-xs mt-2"
                 >
                   {isLoading ? (
                     <span>Verifying Authority...</span>
@@ -1059,7 +1061,56 @@ export const LoginPage: React.FC<Props> = ({
             </form>
           )}
 
-
+          {/* Quick 1-Click Role Testing Presets */}
+          <div className="mt-5 pt-4 border-t border-slate-100">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                Quick Role Demo Access:
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowHintModal(true)}
+                className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 cursor-pointer"
+              >
+                Help & Passwords
+              </button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+              <button
+                type="button"
+                onClick={() => handleQuickDemo('manager')}
+                className="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-lg text-[10px] transition-colors border border-blue-200/60 truncate cursor-pointer"
+                title="Sign in as Manager Russell (Super Admin)"
+              >
+                Super Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => handleQuickDemo('ownerA')}
+                className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-lg text-[10px] transition-colors border border-emerald-200/60 truncate cursor-pointer"
+                title="Sign in as Block A Owner Rashed"
+              >
+                Block A Owner
+              </button>
+              <button
+                type="button"
+                onClick={() => handleQuickDemo('ownerB')}
+                className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg text-[10px] transition-colors border border-indigo-200/60 truncate cursor-pointer"
+                title="Sign in as Block B Owner Raju"
+              >
+                Block B Owner
+              </button>
+              <button
+                type="button"
+                onClick={() => handleQuickDemo('A1')}
+                className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-[10px] transition-colors border border-slate-200 truncate cursor-pointer"
+                title="Sign in as Resident of Flat A1"
+              >
+                Resident A1
+              </button>
+            </div>
+          </div>
         </div>
       </main>
 

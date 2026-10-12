@@ -238,19 +238,19 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;`;
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-xl max-w-3xl w-full p-6 border border-slate-200 max-h-[92vh] flex flex-col">
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-3xl lg:max-w-4xl xl:max-w-5xl w-full p-5 sm:p-6 border border-slate-200 max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-          <div className="flex items-center gap-2.5">
-            <span className="p-2 bg-blue-50 text-blue-700 rounded-xl">
+        <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+          <div className="flex items-center gap-3">
+            <span className="p-2.5 bg-blue-50 text-blue-700 rounded-2xl">
               <Database className="w-5 h-5" />
             </span>
             <div>
               <span className="text-[10px] font-bold text-blue-700 uppercase tracking-wider block">
                 {COMPLEX_CONFIG.name} &bull; {COMPLEX_CONFIG.contacts}
               </span>
-              <h3 className="font-bold text-slate-900 text-base">
+              <h3 className="font-bold text-slate-900 text-base sm:text-lg">
                 Supabase PostgreSQL Database Architecture
               </h3>
               <p className="text-xs text-slate-500">
@@ -258,17 +258,21 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;`;
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+          <button
+            onClick={onClose}
+            className="min-w-[44px] min-h-[44px] -mr-1.5 p-2.5 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
+            aria-label="Close dialog"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-slate-200 gap-4 mt-3 text-xs font-bold">
+        <div className="flex border-b border-slate-200 gap-2 sm:gap-4 mt-3 text-xs font-bold overflow-x-auto no-scrollbar whitespace-nowrap">
           <button
             onClick={() => setActiveTab('server-storage')}
-            className={`pb-2.5 border-b-2 cursor-pointer flex items-center gap-1.5 ${
-              activeTab === 'server-storage' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500'
+            className={`min-h-[44px] px-3 py-2.5 border-b-2 cursor-pointer flex items-center gap-1.5 shrink-0 transition-colors ${
+              activeTab === 'server-storage' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
             <Database className="w-3.5 h-3.5" />
@@ -276,24 +280,24 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;`;
           </button>
           <button
             onClick={() => setActiveTab('config')}
-            className={`pb-2.5 border-b-2 cursor-pointer ${
-              activeTab === 'config' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500'
+            className={`min-h-[44px] px-3 py-2.5 border-b-2 cursor-pointer shrink-0 transition-colors ${
+              activeTab === 'config' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
             Supabase Cloud Setup
           </button>
           <button
             onClick={() => setActiveTab('migrations')}
-            className={`pb-2.5 border-b-2 cursor-pointer ${
-              activeTab === 'migrations' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500'
+            className={`min-h-[44px] px-3 py-2.5 border-b-2 cursor-pointer shrink-0 transition-colors ${
+              activeTab === 'migrations' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
             SQL Migrations (Executable)
           </button>
           <button
             onClick={() => setActiveTab('rls-guide')}
-            className={`pb-2.5 border-b-2 cursor-pointer ${
-              activeTab === 'rls-guide' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500'
+            className={`min-h-[44px] px-3 py-2.5 border-b-2 cursor-pointer shrink-0 transition-colors ${
+              activeTab === 'rls-guide' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
             Security & RLS

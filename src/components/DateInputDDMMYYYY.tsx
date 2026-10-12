@@ -388,7 +388,7 @@ export const DateInputDDMMYYYY: React.FC<Props> = ({
               setIsOpen(true);
             }
           }}
-          className={`w-full pl-3 pr-10 py-2 rounded-lg text-xs font-mono font-medium transition-all ${
+          className={`w-full min-h-[44px] pl-3 pr-10 py-2 rounded-xl text-base sm:text-xs font-mono font-medium transition-all ${
             isEnabled
               ? 'bg-white border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-hidden cursor-pointer shadow-xs'
               : 'bg-slate-100 border border-slate-200 text-slate-400 select-none cursor-not-allowed font-mono tracking-wider'
@@ -401,7 +401,7 @@ export const DateInputDDMMYYYY: React.FC<Props> = ({
             type="button"
             tabIndex={-1}
             onClick={handleTogglePicker}
-            className="absolute right-1.5 p-1.5 rounded-md text-blue-600 hover:text-blue-800 hover:bg-blue-50 cursor-pointer transition-colors"
+            className="absolute right-1.5 min-w-[36px] min-h-[36px] flex items-center justify-center p-2 rounded-lg text-blue-600 hover:text-blue-800 hover:bg-blue-50 cursor-pointer transition-colors"
             title="Click to pick date from calendar"
           >
             <Calendar className="w-4 h-4 text-blue-600" />

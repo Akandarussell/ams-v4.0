@@ -376,12 +376,12 @@ export const ElectricityManager: React.FC<Props> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-amber-300">
-          <span className="font-bold text-slate-700">Consumption Period:</span>
+        <div className="flex flex-wrap items-center gap-2 bg-white px-3 py-2 rounded-xl border border-amber-300 min-h-[44px]">
+          <span className="font-bold text-slate-700 text-xs shrink-0">Consumption Period:</span>
           <select
             value={consumptionMonth}
             onChange={(e) => setConsumptionMonth(Number(e.target.value))}
-            className="text-slate-800 font-semibold focus:outline-hidden text-xs"
+            className="text-slate-800 font-semibold focus:outline-hidden text-xs min-h-[36px] bg-slate-50 border border-slate-200 rounded-lg px-2"
           >
             {MONTH_NAMES.map((m, i) => (
               <option key={m} value={i + 1}>
@@ -392,7 +392,7 @@ export const ElectricityManager: React.FC<Props> = ({
           <select
             value={consumptionYear}
             onChange={(e) => setConsumptionYear(Number(e.target.value))}
-            className="text-slate-800 font-semibold focus:outline-hidden text-xs"
+            className="text-slate-800 font-semibold focus:outline-hidden text-xs min-h-[36px] bg-slate-50 border border-slate-200 rounded-lg px-2"
           >
             <option value={2026}>2026</option>
             <option value={2025}>2025</option>
@@ -402,14 +402,14 @@ export const ElectricityManager: React.FC<Props> = ({
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Sub-metered Units</span>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
               {activeElecUnits.length} ON
             </span>
           </div>
-          <div className="text-2xl font-black text-slate-900 mt-2">
+          <div className="text-2xl font-black text-slate-900 mt-2 tabular-nums">
             {activeElecUnits.length} / {eligibleUnits.length} Units
           </div>
           <p className="text-xs text-slate-500 mt-1">
@@ -417,9 +417,9 @@ export const ElectricityManager: React.FC<Props> = ({
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs hover:shadow-md transition-all duration-200">
           <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Electricity Billed</span>
-          <div className="text-2xl font-black text-amber-600 mt-2 font-mono">
+          <div className="text-2xl font-black text-amber-600 mt-2 font-mono tabular-nums">
             {formatBDT(totalBilledBDT)}
           </div>
           <p className="text-xs text-slate-500 mt-1">
@@ -427,9 +427,9 @@ export const ElectricityManager: React.FC<Props> = ({
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs hover:shadow-md transition-all duration-200">
           <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Collected Amount</span>
-          <div className="text-2xl font-black text-emerald-600 mt-2 font-mono">
+          <div className="text-2xl font-black text-emerald-600 mt-2 font-mono tabular-nums">
             {formatBDT(totalPaidBDT)}
           </div>
           <p className="text-xs text-slate-500 mt-1">
@@ -439,10 +439,10 @@ export const ElectricityManager: React.FC<Props> = ({
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex border-b border-slate-200 gap-6 text-xs font-bold">
+      <div className="flex overflow-x-auto no-scrollbar border-b border-slate-200 gap-4 sm:gap-6 text-xs font-bold">
         <button
           onClick={() => setActiveTab('bills')}
-          className={`pb-3 border-b-2 transition-colors cursor-pointer ${
+          className={`min-h-[44px] py-2 px-1 border-b-2 transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'bills'
               ? 'border-blue-600 text-blue-600'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -452,7 +452,7 @@ export const ElectricityManager: React.FC<Props> = ({
         </button>
         <button
           onClick={() => setActiveTab('readings')}
-          className={`pb-3 border-b-2 transition-colors cursor-pointer flex items-center gap-1.5 ${
+          className={`min-h-[44px] py-2 px-1 border-b-2 transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
             activeTab === 'readings'
               ? 'border-blue-600 text-blue-600'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -465,7 +465,7 @@ export const ElectricityManager: React.FC<Props> = ({
         </button>
         <button
           onClick={() => setActiveTab('calculator')}
-          className={`pb-3 border-b-2 transition-colors cursor-pointer ${
+          className={`min-h-[44px] py-2 px-1 border-b-2 transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'calculator'
               ? 'border-blue-600 text-blue-600'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -591,12 +591,141 @@ export const ElectricityManager: React.FC<Props> = ({
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead className="bg-slate-900 text-white font-semibold">
+          {/* Mobile View: Electricity Bills Cards */}
+          <div className="block md:hidden space-y-4">
+            {filteredBills.length === 0 ? (
+              <div className="py-12 text-center bg-white rounded-2xl border border-slate-200 text-slate-500 font-sans">
+                No electricity bills found matching your filter criteria.
+              </div>
+            ) : (
+              filteredBills.map((bill) => (
+                <div
+                  key={bill.id}
+                  className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-4 space-y-3"
+                >
+                  {/* Header */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-extrabold text-blue-700 text-base">
+                          Flat {bill.flatId}
+                        </span>
+                        <span
+                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                            bill.paymentStatus === 'Paid'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : 'bg-rose-100 text-rose-800'
+                          }`}
+                        >
+                          {bill.paymentStatus}
+                        </span>
+                      </div>
+                      <span className="text-xs font-semibold text-slate-800 block mt-0.5">
+                        {bill.tenantName}
+                      </span>
+                    </div>
+
+                    <div className="text-right">
+                      <span className="text-[10px] text-slate-400 font-sans block">Total Bill</span>
+                      <span className="font-black text-amber-700 text-base font-mono">
+                        {formatBDT(bill.totalBill)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Key Stats Grid */}
+                  <div className="grid grid-cols-2 gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs tabular-nums">
+                    <div>
+                      <span className="text-[10px] text-slate-400 block font-sans">Consumed Units:</span>
+                      <span className="font-extrabold text-blue-700 font-mono text-sm">
+                        {bill.consumedUnits} kWh
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 block font-sans">Readings:</span>
+                      <span className="font-mono text-slate-700 text-xs">
+                        {bill.previousReading} &rarr; {bill.currentReading}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 block font-sans">Energy Cost:</span>
+                      <span className="font-semibold text-slate-800 font-mono">
+                        {formatBDT(bill.baseEnergyCost)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 block font-sans">Demand + VAT:</span>
+                      <span className="font-semibold text-slate-600 font-mono">
+                        {formatBDT(bill.demandCharge + bill.vatAmount)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      onClick={() => onViewBill(bill)}
+                      className="min-h-[44px] flex-1 px-4 py-2 bg-amber-50 text-amber-900 hover:bg-amber-100 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5 border border-amber-200"
+                    >
+                      <Zap className="w-4 h-4 text-amber-600" />
+                      <span>View Bill</span>
+                    </button>
+                    {bill.paidAmount > 0 && bill.paymentStatus === 'Paid' && (
+                      <button
+                        onClick={() => {
+                          const priorOccupant = getPostpaidElectricityTenantInfo(
+                            bill.flatId,
+                            bill.consumptionMonth,
+                            bill.consumptionYear,
+                            data,
+                            bill.tenantName,
+                            ''
+                          );
+                          onViewReceipt({
+                            receiptNumber: bill.receiptNo || `REC-ELEC-${bill.flatId}-01`,
+                            type: 'electricity',
+                            tenantName: priorOccupant.tenantName || bill.tenantName,
+                            tenantPhone: priorOccupant.tenantPhone,
+                            flatId: bill.flatId,
+                            blockName: '',
+                            amount: bill.paidAmount,
+                            paymentDate: bill.generatedDate,
+                            paymentMethod: 'Cash',
+                            monthName: getMonthName(bill.consumptionMonth),
+                            year: bill.consumptionYear,
+                            purpose: `Electricity Bill Payment for ${getMonthName(bill.consumptionMonth)} ${bill.consumptionYear} consumption`,
+                            remainingDue: bill.dueAmount,
+                            authorizedSignatureBy: 'Russell',
+                            signatureTitle: 'Russell (Manager)',
+                            breakdown: [
+                              { label: `Consumed ${bill.consumedUnits} Units Energy Cost`, amount: bill.baseEnergyCost },
+                              { label: 'Demand Charge (2 kW)', amount: bill.demandCharge },
+                              { label: 'Government VAT (5%)', amount: bill.vatAmount },
+                              { label: 'Meter Rent', amount: bill.meterRent },
+                            ],
+                          });
+                        }}
+                        className="min-h-[44px] px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5 border border-blue-200"
+                        title="Payment Receipt"
+                        aria-label="Payment Receipt"
+                      >
+                        <Receipt className="w-4 h-4" />
+                        <span>Receipt</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Desktop View: Dense Table */}
+          <div className="hidden md:block bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+            <div className="table-scroll-container">
+              <table className="w-full text-left text-xs border-collapse min-w-[950px]">
+                <thead className="bg-slate-900 text-white font-semibold sticky top-0 z-20 shadow-xs">
                   <tr>
-                    <th className="py-3.5 px-4">Flat ID</th>
+                    <th className="py-3.5 px-4 sticky left-0 bg-slate-900 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.35)]">Flat ID</th>
                     <th className="py-3.5 px-4">Tenant Name</th>
                     <th className="py-3.5 px-4 text-center">Previous Reading</th>
                     <th className="py-3.5 px-4 text-center">Current Reading</th>
@@ -609,29 +738,29 @@ export const ElectricityManager: React.FC<Props> = ({
                     <th className="py-3.5 px-4 text-center no-print">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 font-mono">
+                <tbody className="divide-y divide-slate-100 tabular-nums">
                   {filteredBills.length === 0 ? (
                     <tr>
-                      <td colSpan={11} className="py-10 text-center text-slate-500 font-sans">
+                      <td colSpan={11} className="py-12 text-center text-slate-500 font-sans">
                         No electricity bills found matching your filter criteria.
                       </td>
                     </tr>
                   ) : (
                     filteredBills.map((bill) => (
-                    <tr key={bill.id} className="hover:bg-amber-50/40 transition-colors">
-                      <td className="py-3 px-4 font-bold text-blue-700 font-sans">
+                    <tr key={bill.id} className="group hover:bg-amber-50/40 transition-colors">
+                      <td className="py-3 px-4 font-bold text-blue-700 font-sans sticky left-0 bg-white group-hover:bg-amber-50/70 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]">
                         Flat {bill.flatId}
                       </td>
                       <td className="py-3 px-4 font-medium text-slate-900 font-sans">
                         {bill.tenantName}
                       </td>
-                      <td className="py-3 px-4 text-center text-slate-600">
+                      <td className="py-3 px-4 text-center text-slate-600 font-mono">
                         {bill.previousReading}
                       </td>
-                      <td className="py-3 px-4 text-center font-bold text-slate-900">
+                      <td className="py-3 px-4 text-center font-bold text-slate-900 font-mono">
                         {bill.currentReading}
                       </td>
-                      <td className="py-3 px-4 text-center font-bold text-blue-700">
+                      <td className="py-3 px-4 text-center font-bold text-blue-700 font-mono">
                         {bill.consumedUnits}
                       </td>
                       <td className="py-3 px-4 text-right text-slate-800">
@@ -661,7 +790,7 @@ export const ElectricityManager: React.FC<Props> = ({
                         <div className="flex items-center justify-center gap-1.5">
                           <button
                             onClick={() => onViewBill(bill)}
-                            className="px-2.5 py-1 bg-amber-50 text-amber-800 hover:bg-amber-100 rounded text-xs font-semibold transition-colors cursor-pointer"
+                            className="min-h-[36px] px-3 py-1.5 bg-amber-50 text-amber-800 hover:bg-amber-100 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center justify-center"
                           >
                             View Bill
                           </button>
@@ -700,10 +829,11 @@ export const ElectricityManager: React.FC<Props> = ({
                                   ],
                                 });
                               }}
-                              className="p-1 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded cursor-pointer"
+                              className="min-w-[36px] min-h-[36px] p-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg flex items-center justify-center cursor-pointer transition-colors"
                               title="Payment Receipt"
+                              aria-label="Payment Receipt"
                             >
-                              <Receipt className="w-3.5 h-3.5" />
+                              <Receipt className="w-4 h-4" />
                             </button>
                           )}
                         </div>
@@ -776,159 +906,294 @@ export const ElectricityManager: React.FC<Props> = ({
             </div>
           </div>
 
-          <div className="border border-slate-200 rounded-xl overflow-hidden text-xs">
-            <table className="w-full text-left">
-              <thead className="bg-slate-100 text-slate-700 font-semibold border-b border-slate-200">
-                <tr>
-                  <th className="py-2.5 px-4 whitespace-nowrap">Flat / Godown ID</th>
-                  <th className="py-2.5 px-3 whitespace-nowrap">Block & Type</th>
-                  <th className="py-2.5 px-3 text-center whitespace-nowrap">
-                    Electricity Bill & Receipt
-                  </th>
-                  <th className="py-2.5 px-4 text-center whitespace-nowrap">Previous Reading (Stored)</th>
-                  <th className="py-2.5 px-4 text-center whitespace-nowrap">Current Reading</th>
-                  <th className="py-2.5 px-4 text-center whitespace-nowrap">Consumed Units</th>
-                  <th className="py-2.5 px-4 text-center whitespace-nowrap">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 font-mono">
-                {filteredReadings.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-500 font-sans">
-                      No units found matching your filter criteria.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredReadings.map((unit) => {
-                    const isElecOn = (unit.isElectricityEnabled ?? (unit.electricityBillingType === 'nesco_submeter')) && unit.electricityBillingType !== 'none';
-                    const mr = data.meterReadings.find(
-                      (r) => r.unitId === unit.id && r.month === consumptionMonth && r.year === consumptionYear
-                    );
-                    const prevReading = mr?.previousReading || 1500;
-                    const currentInput = editingReadings[unit.flatId] !== undefined
-                      ? editingReadings[unit.flatId]
-                      : mr?.currentReading || prevReading + 200;
-                    const consumed = isElecOn ? Math.max(0, currentInput - prevReading) : 0;
-                    const error = readingError[unit.flatId];
+          {/* Mobile View: Meter Readings Cards */}
+          <div className="block md:hidden space-y-4">
+            {filteredReadings.length === 0 ? (
+              <div className="py-10 text-center bg-white rounded-2xl border border-slate-200 text-slate-500 font-sans text-xs">
+                No units found matching your filter criteria.
+              </div>
+            ) : (
+              filteredReadings.map((unit) => {
+                const isElecOn = (unit.isElectricityEnabled ?? (unit.electricityBillingType === 'nesco_submeter')) && unit.electricityBillingType !== 'none';
+                const mr = data.meterReadings.find(
+                  (r) => r.unitId === unit.id && r.month === consumptionMonth && r.year === consumptionYear
+                );
+                const prevReading = mr?.previousReading || 1500;
+                const currentInput = editingReadings[unit.flatId] !== undefined
+                  ? editingReadings[unit.flatId]
+                  : mr?.currentReading || prevReading + 200;
+                const consumed = isElecOn ? Math.max(0, currentInput - prevReading) : 0;
+                const error = readingError[unit.flatId];
 
-                    return (
-                      <tr key={unit.id} className={`transition-colors ${isElecOn ? 'hover:bg-slate-50/50' : 'bg-slate-50/50 text-slate-400'}`}>
-                        {/* Flat / Godown ID */}
-                        <td className="py-3 px-4 font-bold font-sans">
-                          <div className="flex items-center gap-1.5">
-                            {unit.unitType === 'godown' ? (
-                              <Warehouse className="w-3.5 h-3.5 text-purple-600 shrink-0" />
-                            ) : (
-                              <Home className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                            )}
-                            <span className={isElecOn ? 'text-blue-700 font-extrabold' : 'text-slate-500'}>
-                              {unit.unitType === 'godown' ? `Godown ${unit.flatId}` : `Flat ${unit.flatId}`}
-                            </span>
-                          </div>
-                        </td>
-
-                        {/* Block & Type */}
-                        <td className="py-3 px-3 font-sans text-slate-600">
-                          <span className="font-medium">{unit.blockName}</span>
-                          <span className="block text-[10px] text-slate-400 capitalize">{unit.unitType}</span>
-                        </td>
-
-                        {/* Electricity Bill & Receipt ON/OFF Toggle Button */}
-                        <td className="py-3 px-3 text-center font-sans">
-                          {userRole === 'manager' ? (
-                            <button
-                              type="button"
-                              onClick={() => onToggleUnitElectricity?.(unit.flatId, !isElecOn)}
-                              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer shadow-2xs border ${
-                                isElecOn
-                                  ? 'bg-emerald-600 text-white border-emerald-500 hover:bg-emerald-700'
-                                  : 'bg-slate-200 text-slate-600 border-slate-300 hover:bg-slate-300'
-                              }`}
-                              title={isElecOn ? "Electricity bill & receipt enabled. Click to turn OFF." : "Electricity bill & receipt disabled. Click to turn ON."}
-                            >
-                              {isElecOn ? (
-                                <>
-                                  <ToggleRight className="w-4 h-4 text-emerald-200" />
-                                  <span>ON</span>
-                                </>
-                              ) : (
-                                <>
-                                  <ToggleLeft className="w-4 h-4 text-slate-400" />
-                                  <span>OFF</span>
-                                </>
-                              )}
-                            </button>
+                return (
+                  <div
+                    key={unit.id}
+                    className={`p-4 rounded-2xl border transition-all space-y-3.5 ${
+                      isElecOn ? 'bg-white border-slate-200 shadow-xs' : 'bg-slate-50/70 border-slate-200 text-slate-400'
+                    }`}
+                  >
+                    {/* Card Header */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className="p-2 bg-blue-50 text-blue-700 rounded-xl">
+                          {unit.unitType === 'godown' ? (
+                            <Warehouse className="w-4 h-4 text-purple-600" />
                           ) : (
-                            <span
-                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
-                                isElecOn
-                                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                                  : 'bg-slate-100 text-slate-500 border-slate-200'
-                              }`}
-                            >
-                              {isElecOn ? 'ON' : 'OFF'}
-                            </span>
+                            <Home className="w-4 h-4 text-blue-600" />
                           )}
-                          <span className="block text-[9.5px] mt-0.5 text-slate-400">
-                            {isElecOn ? 'Bill & Receipt ON' : 'No Bill / Receipt'}
+                        </span>
+                        <div>
+                          <h4 className="font-extrabold text-slate-900 text-sm">
+                            {unit.unitType === 'godown' ? `Godown ${unit.flatId}` : `Flat ${unit.flatId}`}
+                          </h4>
+                          <span className="text-[11px] text-slate-500 font-medium">
+                            {unit.blockName} &bull; <span className="capitalize">{unit.unitType}</span>
                           </span>
-                        </td>
+                        </div>
+                      </div>
 
-                        {/* Previous Reading */}
-                        <td className="py-3 px-4 text-center text-slate-600 font-bold">
-                          {isElecOn ? prevReading : '-'}
-                        </td>
-
-                        {/* Current Reading */}
-                        <td className="py-3 px-4 text-center">
+                      {/* Toggle Button */}
+                      {userRole === 'manager' ? (
+                        <button
+                          type="button"
+                          onClick={() => onToggleUnitElectricity?.(unit.flatId, !isElecOn)}
+                          className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs border flex items-center gap-1.5 ${
+                            isElecOn
+                              ? 'bg-emerald-600 text-white border-emerald-500 hover:bg-emerald-700'
+                              : 'bg-slate-200 text-slate-600 border-slate-300 hover:bg-slate-300'
+                          }`}
+                        >
                           {isElecOn ? (
                             <>
-                              <input
-                                type="number"
-                                value={currentInput}
-                                onChange={(e) => handleReadingChange(unit.flatId, Number(e.target.value), prevReading)}
-                                className="w-28 px-2 py-1 bg-white border border-slate-300 rounded text-center font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
-                              />
-                              {error && <p className="text-[10px] text-rose-600 font-sans mt-0.5">{error}</p>}
+                              <ToggleRight className="w-4 h-4 text-emerald-200" />
+                              <span>Bill ON</span>
                             </>
                           ) : (
-                            <span className="text-slate-400 italic text-[11px] font-sans">
-                              Disabled (OFF)
-                            </span>
+                            <>
+                              <ToggleLeft className="w-4 h-4 text-slate-400" />
+                              <span>Bill OFF</span>
+                            </>
                           )}
-                        </td>
+                        </button>
+                      ) : (
+                        <span
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold border ${
+                            isElecOn
+                              ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                              : 'bg-slate-100 text-slate-500 border-slate-200'
+                          }`}
+                        >
+                          {isElecOn ? 'ON' : 'OFF'}
+                        </span>
+                      )}
+                    </div>
 
-                        {/* Consumed Units */}
-                        <td className="py-3 px-4 text-center font-bold">
-                          {isElecOn ? (
-                            <span className="text-emerald-600">{consumed} kWh</span>
-                          ) : (
-                            <span className="text-slate-400">-</span>
-                          )}
-                        </td>
+                    {isElecOn ? (
+                      <>
+                        {/* Readings stats */}
+                        <div className="grid grid-cols-2 gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs font-mono">
+                          <div>
+                            <span className="text-[10px] text-slate-400 font-sans block">Previous Reading:</span>
+                            <span className="font-bold text-slate-700 text-sm">{prevReading} kWh</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-slate-400 font-sans block">Consumed:</span>
+                            <span className="font-extrabold text-emerald-600 text-sm">{consumed} kWh</span>
+                          </div>
+                        </div>
 
-                        {/* Action */}
-                        <td className="py-3 px-4 text-center font-sans">
-                          {isElecOn ? (
+                        {/* Current Reading input */}
+                        <div className="space-y-1">
+                          <label className="block text-[11px] font-bold text-slate-700">
+                            Current Meter Reading:
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              value={currentInput}
+                              onChange={(e) => handleReadingChange(unit.flatId, Number(e.target.value), prevReading)}
+                              className="min-h-[44px] flex-1 px-3 py-2 bg-white border border-slate-300 rounded-xl text-base sm:text-xs font-bold font-mono text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                            />
                             <button
                               onClick={() => handleSaveReading(unit.flatId, prevReading)}
                               disabled={Boolean(error)}
-                              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white rounded text-xs font-semibold cursor-pointer shadow-2xs transition-colors"
+                              className="min-h-[44px] px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white rounded-xl text-xs font-bold cursor-pointer shadow-xs transition-colors shrink-0 flex items-center justify-center"
                             >
                               Save
                             </button>
-                          ) : (
-                            <span className="text-slate-400 text-[11px]">
-                              Excluded
+                          </div>
+                          {error && <p className="text-[11px] text-rose-600 font-sans font-medium mt-1">{error}</p>}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="p-3 bg-slate-100/80 rounded-xl text-center text-slate-500 text-xs">
+                        Excluded from electricity billing & receipt generation
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Desktop View: Dense Table */}
+          <div className="hidden md:block bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden text-xs">
+            <div className="table-scroll-container">
+              <table className="w-full text-left min-w-[760px] border-collapse">
+                <thead className="bg-slate-900 text-white font-semibold sticky top-0 z-20 shadow-xs">
+                  <tr>
+                    <th className="py-3 px-4 whitespace-nowrap sticky left-0 bg-slate-900 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.35)]">Flat / Godown ID</th>
+                    <th className="py-3 px-3 whitespace-nowrap">Block & Type</th>
+                    <th className="py-3 px-3 text-center whitespace-nowrap">
+                      Electricity Bill & Receipt
+                    </th>
+                    <th className="py-3 px-4 text-center whitespace-nowrap">Previous Reading (Stored)</th>
+                    <th className="py-3 px-4 text-center whitespace-nowrap">Current Reading</th>
+                    <th className="py-3 px-4 text-center whitespace-nowrap">Consumed Units</th>
+                    <th className="py-3 px-4 text-center whitespace-nowrap">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 tabular-nums">
+                  {filteredReadings.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-10 text-center text-slate-500 font-sans">
+                        No units found matching your filter criteria.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredReadings.map((unit) => {
+                      const isElecOn = (unit.isElectricityEnabled ?? (unit.electricityBillingType === 'nesco_submeter')) && unit.electricityBillingType !== 'none';
+                      const mr = data.meterReadings.find(
+                        (r) => r.unitId === unit.id && r.month === consumptionMonth && r.year === consumptionYear
+                      );
+                      const prevReading = mr?.previousReading || 1500;
+                      const currentInput = editingReadings[unit.flatId] !== undefined
+                        ? editingReadings[unit.flatId]
+                        : mr?.currentReading || prevReading + 200;
+                      const consumed = isElecOn ? Math.max(0, currentInput - prevReading) : 0;
+                      const error = readingError[unit.flatId];
+
+                      return (
+                        <tr key={unit.id} className={`group transition-colors ${isElecOn ? 'hover:bg-slate-50/70' : 'bg-slate-50/40 text-slate-400'}`}>
+                          {/* Flat / Godown ID */}
+                          <td className={`py-3 px-4 font-bold font-sans sticky left-0 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)] ${
+                            isElecOn ? 'bg-white group-hover:bg-slate-50' : 'bg-slate-50/90'
+                          }`}>
+                            <div className="flex items-center gap-1.5">
+                              {unit.unitType === 'godown' ? (
+                                <Warehouse className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                              ) : (
+                                <Home className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                              )}
+                              <span className={isElecOn ? 'text-blue-700 font-extrabold' : 'text-slate-500'}>
+                                {unit.unitType === 'godown' ? `Godown ${unit.flatId}` : `Flat ${unit.flatId}`}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Block & Type */}
+                          <td className="py-3 px-3 font-sans text-slate-600">
+                            <span className="font-medium">{unit.blockName}</span>
+                            <span className="block text-[10px] text-slate-400 capitalize">{unit.unitType}</span>
+                          </td>
+
+                          {/* Electricity Bill & Receipt ON/OFF Toggle Button */}
+                          <td className="py-3 px-3 text-center font-sans">
+                            {userRole === 'manager' ? (
+                              <button
+                                type="button"
+                                onClick={() => onToggleUnitElectricity?.(unit.flatId, !isElecOn)}
+                                className={`min-h-[36px] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer shadow-2xs border ${
+                                  isElecOn
+                                    ? 'bg-emerald-600 text-white border-emerald-500 hover:bg-emerald-700'
+                                    : 'bg-slate-200 text-slate-600 border-slate-300 hover:bg-slate-300'
+                                }`}
+                                title={isElecOn ? "Electricity bill & receipt enabled. Click to turn OFF." : "Electricity bill & receipt disabled. Click to turn ON."}
+                              >
+                                {isElecOn ? (
+                                  <>
+                                    <ToggleRight className="w-4 h-4 text-emerald-200" />
+                                    <span>ON</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <ToggleLeft className="w-4 h-4 text-slate-400" />
+                                    <span>OFF</span>
+                                  </>
+                                )}
+                              </button>
+                            ) : (
+                              <span
+                                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                                  isElecOn
+                                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                    : 'bg-slate-100 text-slate-500 border-slate-200'
+                                }`}
+                              >
+                                {isElecOn ? 'ON' : 'OFF'}
+                              </span>
+                            )}
+                            <span className="block text-[9.5px] mt-0.5 text-slate-400">
+                              {isElecOn ? 'Bill & Receipt ON' : 'No Bill / Receipt'}
                             </span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                          </td>
+
+                          {/* Previous Reading */}
+                          <td className="py-3 px-4 text-center text-slate-600 font-bold font-mono">
+                            {isElecOn ? prevReading : '-'}
+                          </td>
+
+                          {/* Current Reading */}
+                          <td className="py-3 px-4 text-center">
+                            {isElecOn ? (
+                              <>
+                                <input
+                                  type="number"
+                                  value={currentInput}
+                                  onChange={(e) => handleReadingChange(unit.flatId, Number(e.target.value), prevReading)}
+                                  className="w-28 min-h-[36px] px-2 py-1 bg-white border border-slate-300 rounded text-center font-bold font-mono text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                                />
+                                {error && <p className="text-[10px] text-rose-600 font-sans mt-0.5">{error}</p>}
+                              </>
+                            ) : (
+                              <span className="text-slate-400 italic text-[11px] font-sans">
+                                Disabled (OFF)
+                              </span>
+                            )}
+                          </td>
+
+                          {/* Consumed Units */}
+                          <td className="py-3 px-4 text-center font-bold font-mono">
+                            {isElecOn ? (
+                              <span className="text-emerald-600">{consumed} kWh</span>
+                            ) : (
+                              <span className="text-slate-400">-</span>
+                            )}
+                          </td>
+
+                          {/* Action */}
+                          <td className="py-3 px-4 text-center font-sans">
+                            {isElecOn ? (
+                              <button
+                                onClick={() => handleSaveReading(unit.flatId, prevReading)}
+                                disabled={Boolean(error)}
+                                className="min-h-[36px] px-4 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white rounded-lg text-xs font-semibold cursor-pointer shadow-xs transition-colors"
+                              >
+                                Save
+                              </button>
+                            ) : (
+                              <span className="text-slate-400 text-[11px]">
+                                Excluded
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}

@@ -102,7 +102,7 @@ export const UnitManager: React.FC<Props> = ({
 
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="flex items-center gap-1.5 px-4 py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold shadow-sm transition-colors cursor-pointer"
+          className="min-h-[44px] flex items-center justify-center gap-1.5 px-5 py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold shadow-sm transition-colors cursor-pointer w-full sm:w-auto"
         >
           <PlusCircle className="w-4 h-4" />
           Add Rental Unit
@@ -110,25 +110,25 @@ export const UnitManager: React.FC<Props> = ({
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative min-w-[200px]">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+      <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
+          <div className="relative flex-1 sm:min-w-[200px]">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
             <input
               type="text"
               placeholder="Search by Flat ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+              className="min-h-[44px] w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-base sm:text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
             />
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <span className="text-slate-500">Type:</span>
+          <div className="flex items-center gap-1.5 flex-1 sm:flex-initial">
+            <span className="text-slate-500 shrink-0">Type:</span>
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 font-medium"
+              className="min-h-[44px] w-full sm:w-auto bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-base sm:text-xs font-semibold focus:ring-2 focus:ring-blue-500 cursor-pointer"
             >
               <option value="all">All Types</option>
               <option value="residential">Residential Flats</option>
@@ -137,12 +137,12 @@ export const UnitManager: React.FC<Props> = ({
             </select>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <span className="text-slate-500">Block:</span>
+          <div className="flex items-center gap-1.5 flex-1 sm:flex-initial">
+            <span className="text-slate-500 shrink-0">Block:</span>
             <select
               value={filterBlock}
               onChange={(e) => setFilterBlock(e.target.value)}
-              className="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 font-medium"
+              className="min-h-[44px] w-full sm:w-auto bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-base sm:text-xs font-semibold focus:ring-2 focus:ring-blue-500 cursor-pointer"
             >
               <option value="all">All Blocks</option>
               <option value="Block A">Block A</option>
@@ -152,7 +152,7 @@ export const UnitManager: React.FC<Props> = ({
           </div>
         </div>
 
-        <span className="text-slate-500 font-medium">
+        <span className="text-slate-500 font-medium shrink-0 self-end sm:self-center">
           {filteredUnits.length} Units Configured
         </span>
       </div>
@@ -224,7 +224,7 @@ export const UnitManager: React.FC<Props> = ({
               <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
                 <button
                   onClick={() => handleOpenEdit(unit)}
-                  className="flex items-center gap-1 text-slate-600 hover:text-blue-700 font-semibold cursor-pointer"
+                  className="min-h-[40px] px-3 py-2 flex items-center gap-1.5 text-slate-600 hover:text-blue-700 font-semibold cursor-pointer rounded-lg hover:bg-slate-50 transition-colors"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
                   Edit Rent
@@ -237,7 +237,7 @@ export const UnitManager: React.FC<Props> = ({
                         onVacateUnit(unit.id);
                       }
                     }}
-                    className="text-rose-600 hover:text-rose-700 font-semibold cursor-pointer text-[11px]"
+                    className="min-h-[40px] px-3 py-2 text-rose-600 hover:text-rose-700 font-semibold cursor-pointer text-xs rounded-lg hover:bg-rose-50 transition-colors"
                   >
                     Mark Vacated
                   </button>
@@ -268,21 +268,21 @@ export const UnitManager: React.FC<Props> = ({
                   type="number"
                   value={newRent}
                   onChange={(e) => setNewRent(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono font-bold text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                  className="w-full min-h-[44px] px-3.5 py-2.5 border border-slate-300 rounded-xl font-mono font-bold text-slate-900 text-base sm:text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
                 />
               </div>
             </div>
 
-            <div className="mt-6 pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+            <div className="mt-6 pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2">
               <button
                 onClick={() => setEditingUnit(null)}
-                className="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-50 cursor-pointer"
+                className="min-h-[44px] px-4 py-2.5 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50 cursor-pointer flex items-center justify-center order-2 sm:order-1"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveRent}
-                className="px-5 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-bold shadow-xs cursor-pointer"
+                className="min-h-[44px] px-5 py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer flex items-center justify-center order-1 sm:order-2"
               >
                 Save Rent
               </button>
@@ -294,19 +294,20 @@ export const UnitManager: React.FC<Props> = ({
       {/* ADD UNIT MODAL */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 border border-slate-200">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md lg:max-w-lg w-full p-6 border border-slate-200 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h3 className="font-bold text-slate-900 text-base">Add New Rental Unit</h3>
               <button
                 onClick={() => setIsAddModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600"
+                className="min-w-[44px] min-h-[44px] p-2.5 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                aria-label="Close dialog"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleAddSubmit} className="mt-4 space-y-3.5 text-xs">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-slate-700 font-semibold mb-1">Unit / Flat ID *</label>
                   <input
@@ -315,7 +316,7 @@ export const UnitManager: React.FC<Props> = ({
                     placeholder="e.g. A8 or P7 or G4"
                     value={newFlatId}
                     onChange={(e) => setNewFlatId(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 font-bold focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                    className="w-full min-h-[44px] px-3.5 py-2.5 border border-slate-300 rounded-xl text-slate-900 font-bold text-base sm:text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
                   />
                 </div>
                 <div>
@@ -323,7 +324,7 @@ export const UnitManager: React.FC<Props> = ({
                   <select
                     value={newBlock}
                     onChange={(e) => setNewBlock(e.target.value as any)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                    className="w-full min-h-[44px] px-3.5 py-2.5 border border-slate-300 rounded-xl text-slate-900 font-semibold text-base sm:text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden cursor-pointer"
                   >
                     <option value="Block A">Block A</option>
                     <option value="Block B">Block B</option>
@@ -332,13 +333,13 @@ export const UnitManager: React.FC<Props> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-slate-700 font-semibold mb-1">Unit Type *</label>
                   <select
                     value={newType}
                     onChange={(e) => setNewType(e.target.value as any)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                    className="w-full min-h-[44px] px-3.5 py-2.5 border border-slate-300 rounded-xl text-slate-900 font-semibold text-base sm:text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden cursor-pointer"
                   >
                     <option value="residential">Residential Flat</option>
                     <option value="parking">Parking Space</option>
@@ -351,7 +352,7 @@ export const UnitManager: React.FC<Props> = ({
                     type="number"
                     value={newFloor}
                     onChange={(e) => setNewFloor(Number(e.target.value))}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                    className="w-full min-h-[44px] px-3.5 py-2.5 border border-slate-300 rounded-xl text-slate-900 text-base sm:text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
                   />
                 </div>
               </div>
@@ -362,7 +363,7 @@ export const UnitManager: React.FC<Props> = ({
                   type="number"
                   value={newRentAmount}
                   onChange={(e) => setNewRentAmount(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                  className="w-full min-h-[44px] px-3.5 py-2.5 border border-slate-300 rounded-xl font-mono font-bold text-slate-900 text-base sm:text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
                 />
               </div>
 
@@ -371,7 +372,7 @@ export const UnitManager: React.FC<Props> = ({
                 <select
                   value={newElecType}
                   onChange={(e) => setNewElecType(e.target.value as any)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                  className="w-full min-h-[44px] px-3.5 py-2.5 border border-slate-300 rounded-xl text-slate-900 font-semibold text-base sm:text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden cursor-pointer"
                 >
                   <option value="nesco_submeter">NESCO Postpaid Sub-meter</option>
                   <option value="fixed">Fixed Monthly Charge</option>
@@ -379,17 +380,17 @@ export const UnitManager: React.FC<Props> = ({
                 </select>
               </div>
 
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+              <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-semibold hover:bg-slate-50 cursor-pointer"
+                  className="min-h-[44px] px-5 py-2.5 border border-slate-200 text-slate-600 rounded-xl font-semibold hover:bg-slate-50 cursor-pointer flex items-center justify-center"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg font-bold shadow-xs cursor-pointer"
+                  className="min-h-[44px] px-6 py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl font-bold shadow-xs cursor-pointer flex items-center justify-center"
                 >
                   Create Unit
                 </button>

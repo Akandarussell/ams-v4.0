@@ -173,42 +173,43 @@ export const ManagerDashboard: React.FC<Props> = ({
   return (
     <div className="space-y-6">
       {/* Month & Year Selection Header with ENTER Button */}
-      <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/90 shadow-xs flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+          <div className="flex items-center gap-3">
+            <span className="p-2.5 bg-blue-50 text-blue-600 rounded-xl border border-blue-100 shrink-0">
               <Building2 className="w-5 h-5" />
             </span>
             <div>
               <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                 {COMPLEX_CONFIG.name.toUpperCase()}
               </h1>
-              <p className="text-xs text-slate-700 font-medium mt-0.5">
+              <p className="text-xs text-slate-600 font-medium mt-0.5">
                 {COMPLEX_CONFIG.address}
               </p>
-              <p className="text-xs text-slate-600 mt-0.5">
-                Hotline Contacts: <strong className="text-blue-700">{COMPLEX_CONFIG.contacts}</strong> &bull; Super Admin ERP
+              <p className="text-xs text-slate-500 mt-0.5">
+                Hotline: <a href="tel:01737-321998" className="font-bold text-blue-700 hover:underline">{COMPLEX_CONFIG.contacts}</a> &bull; Super Admin ERP
               </p>
             </div>
           </div>
         </div>
 
-        {/* Month, Year & ENTER Button */}
-        <div className="flex flex-wrap items-center gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
+        {/* Month, Year & Action Buttons */}
+        <div className="flex flex-wrap items-center gap-2 bg-slate-50/80 p-2 rounded-2xl border border-slate-200/80">
           <button
             onClick={handlePrevMonth}
             title="Previous Month"
-            className="p-1.5 hover:bg-white text-slate-600 hover:text-slate-900 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-slate-200"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-white text-slate-600 hover:text-slate-900 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-slate-200"
+            aria-label="Previous Month"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-5 h-5 sm:w-4 sm:h-4" />
           </button>
 
-          <div className="flex items-center gap-1.5">
-            <Calendar className="w-4 h-4 text-slate-500" />
+          <div className="flex items-center gap-1.5 flex-1 sm:flex-initial">
+            <Calendar className="w-4 h-4 text-slate-400 shrink-0" />
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(Number(e.target.value))}
-              className="bg-white border border-slate-300 text-slate-800 text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+              className="min-h-[44px] w-full sm:w-auto bg-white border border-slate-300 text-slate-800 text-base sm:text-xs font-semibold rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-hidden cursor-pointer"
             >
               {MONTH_NAMES.map((m, idx) => (
                 <option key={m} value={idx + 1}>
@@ -218,11 +219,11 @@ export const ManagerDashboard: React.FC<Props> = ({
             </select>
           </div>
 
-          <div>
+          <div className="flex-1 sm:flex-initial">
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="bg-white border border-slate-300 text-slate-800 text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+              className="min-h-[44px] w-full sm:w-auto bg-white border border-slate-300 text-slate-800 text-base sm:text-xs font-semibold rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-hidden cursor-pointer font-mono"
             >
               {yearOptions.map((y) => (
                 <option key={y} value={y}>
@@ -235,38 +236,39 @@ export const ManagerDashboard: React.FC<Props> = ({
           <button
             onClick={handleNextMonth}
             title="Next Month"
-            className="p-1.5 hover:bg-white text-slate-600 hover:text-slate-900 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-slate-200"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-white text-slate-600 hover:text-slate-900 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-slate-200"
+            aria-label="Next Month"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-5 h-5 sm:w-4 sm:h-4" />
           </button>
 
           <button
             onClick={() => handleApplyFilter(selectedMonth, selectedYear)}
-            className="px-4 py-1.5 bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer ml-1"
+            className="min-h-[44px] px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 flex-1 sm:flex-initial"
           >
-            <Filter className="w-3.5 h-3.5" />
+            <Filter className="w-4 h-4" />
             ENTER
           </button>
 
           <button
             type="button"
             onClick={() => setIsAddUnitModalOpen(true)}
-            className="px-3.5 py-1.5 bg-gradient-to-r from-blue-700 to-indigo-600 hover:from-blue-800 hover:to-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer ml-1 sm:ml-2"
+            className="min-h-[44px] px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 flex-1 sm:flex-initial"
             title="Create New Rental Unit"
           >
-            <PlusCircle className="w-3.5 h-3.5" />
+            <PlusCircle className="w-4 h-4" />
             <span>+ Create Unit</span>
           </button>
         </div>
       </div>
 
       {/* Manager's Dedicated Supabase Database Live Connection Bar */}
-      <div className="bg-slate-900 text-white rounded-2xl p-4 border border-slate-800 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="flex items-center gap-3">
+      <div className="bg-slate-900 text-white rounded-2xl p-4 sm:p-5 border border-slate-800 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           <div className="p-2.5 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20 shrink-0">
             <Database className="w-5 h-5" />
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-bold text-xs sm:text-sm text-white">
                 PostgreSQL & Supabase Database Live Connection
@@ -286,11 +288,11 @@ export const ManagerDashboard: React.FC<Props> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-wrap shrink-0 w-full sm:w-auto">
           <button
             type="button"
             onClick={() => exportAllCredentialsToExcel(data)}
-            className="flex items-center justify-center gap-2 px-3.5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer shrink-0"
+            className="min-h-[44px] flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 flex-1 sm:flex-initial"
             title="1-Click export all flat IDs and login passwords for tenants & authority logins (.xlsx)"
           >
             <Download className="w-4 h-4" />
@@ -300,7 +302,7 @@ export const ManagerDashboard: React.FC<Props> = ({
           <button
             type="button"
             onClick={() => setIsAddUnitModalOpen(true)}
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer shrink-0"
+            className="min-h-[44px] flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 flex-1 sm:flex-initial"
           >
             <PlusCircle className="w-4 h-4" />
             <span>Create Rental Unit</span>
@@ -309,7 +311,7 @@ export const ManagerDashboard: React.FC<Props> = ({
           {onOpenDbModal && (
             <button
               onClick={onOpenDbModal}
-              className="flex items-center justify-center gap-2 px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer shrink-0"
+              className="min-h-[44px] flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 flex-1 sm:flex-initial"
             >
               <Server className="w-4 h-4 text-blue-400" />
               <span>Database Setup & SQL</span>
@@ -339,13 +341,13 @@ export const ManagerDashboard: React.FC<Props> = ({
             return (
               <div
                 onClick={() => handleBlockClick('Block A')}
-                className="bg-white rounded-2xl border-2 border-slate-200 hover:border-blue-600 hover:shadow-lg transition-all p-5 flex flex-col justify-between cursor-pointer group relative overflow-hidden"
+                className="bg-white rounded-2xl border border-slate-200/90 hover:border-blue-500 hover:shadow-md transition-all duration-200 p-5 flex flex-col justify-between cursor-pointer group relative overflow-hidden shadow-xs"
                 title={`Click to open Block A Monthly Ledger for ${getMonthName(data.selectedMonth)} ${data.selectedYear}`}
               >
                 <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-bl-full pointer-events-none group-hover:bg-blue-500/10 transition-colors"></div>
                 <div>
                   <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
-                    <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-blue-900 text-white shadow-xs">
+                    <span className="text-xs font-black px-2.5 py-0.5 rounded-lg bg-blue-600 text-white shadow-xs">
                       {b.name}
                     </span>
                     <span className="text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded-md">
@@ -355,21 +357,21 @@ export const ManagerDashboard: React.FC<Props> = ({
 
                   <div className="mt-2.5 flex items-center justify-between text-xs">
                     <span className="text-slate-500">Owner: <strong className="text-slate-800">{b.owner}</strong></span>
-                    <span className="font-bold text-slate-700">{b.occupied}/{b.totalUnits} Units</span>
+                    <span className="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">{b.occupied}/{b.totalUnits} Units</span>
                   </div>
 
                   <div className="mt-3 space-y-1.5 text-xs">
                     <div className="flex justify-between py-0.5">
                       <span className="text-slate-500">Collection:</span>
-                      <span className="font-black text-emerald-600 font-mono text-sm">{formatBDT(b.collected)}</span>
+                      <span className="font-black text-emerald-600 font-mono text-sm tabular-nums">{formatBDT(b.collected)}</span>
                     </div>
                     <div className="flex justify-between py-0.5">
                       <span className="text-slate-500">Outstanding Due:</span>
-                      <span className={`font-bold font-mono ${b.due > 0 ? 'text-rose-600' : 'text-slate-700'}`}>{formatBDT(b.due)}</span>
+                      <span className={`font-bold font-mono tabular-nums ${b.due > 0 ? 'text-rose-600' : 'text-slate-700'}`}>{formatBDT(b.due)}</span>
                     </div>
                     <div className="flex justify-between py-0.5">
                       <span className="text-slate-500">Advance Escrow:</span>
-                      <span className="font-bold text-indigo-700 font-mono">{formatBDT(b.advance)}</span>
+                      <span className="font-bold text-indigo-700 font-mono tabular-nums">{formatBDT(b.advance)}</span>
                     </div>
                   </div>
                 </div>
@@ -381,7 +383,7 @@ export const ManagerDashboard: React.FC<Props> = ({
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden mb-2.5">
                     <div
-                      className="bg-blue-600 h-1.5 rounded-full transition-all"
+                      className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
                       style={{ width: `${b.collectionRate}%` }}
                     ></div>
                   </div>
@@ -400,13 +402,13 @@ export const ManagerDashboard: React.FC<Props> = ({
             return (
               <div
                 onClick={() => handleBlockClick('Block B')}
-                className="bg-white rounded-2xl border-2 border-slate-200 hover:border-indigo-600 hover:shadow-lg transition-all p-5 flex flex-col justify-between cursor-pointer group relative overflow-hidden"
+                className="bg-white rounded-2xl border border-slate-200/90 hover:border-indigo-500 hover:shadow-md transition-all duration-200 p-5 flex flex-col justify-between cursor-pointer group relative overflow-hidden shadow-xs"
                 title={`Click to open Block B Monthly Ledger for ${getMonthName(data.selectedMonth)} ${data.selectedYear}`}
               >
                 <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-bl-full pointer-events-none group-hover:bg-indigo-500/10 transition-colors"></div>
                 <div>
                   <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
-                    <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-indigo-900 text-white shadow-xs">
+                    <span className="text-xs font-black px-2.5 py-0.5 rounded-lg bg-indigo-600 text-white shadow-xs">
                       {b.name}
                     </span>
                     <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200/60 px-2 py-0.5 rounded-md">
@@ -416,21 +418,21 @@ export const ManagerDashboard: React.FC<Props> = ({
 
                   <div className="mt-2.5 flex items-center justify-between text-xs">
                     <span className="text-slate-500">Owner: <strong className="text-slate-800">{b.owner}</strong></span>
-                    <span className="font-bold text-slate-700">{b.occupied}/{b.totalUnits} Units</span>
+                    <span className="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">{b.occupied}/{b.totalUnits} Units</span>
                   </div>
 
                   <div className="mt-3 space-y-1.5 text-xs">
                     <div className="flex justify-between py-0.5">
                       <span className="text-slate-500">Collection:</span>
-                      <span className="font-black text-emerald-600 font-mono text-sm">{formatBDT(b.collected)}</span>
+                      <span className="font-black text-emerald-600 font-mono text-sm tabular-nums">{formatBDT(b.collected)}</span>
                     </div>
                     <div className="flex justify-between py-0.5">
                       <span className="text-slate-500">Outstanding Due:</span>
-                      <span className={`font-bold font-mono ${b.due > 0 ? 'text-rose-600' : 'text-slate-700'}`}>{formatBDT(b.due)}</span>
+                      <span className={`font-bold font-mono tabular-nums ${b.due > 0 ? 'text-rose-600' : 'text-slate-700'}`}>{formatBDT(b.due)}</span>
                     </div>
                     <div className="flex justify-between py-0.5">
                       <span className="text-slate-500">Advance Escrow:</span>
-                      <span className="font-bold text-indigo-700 font-mono">{formatBDT(b.advance)}</span>
+                      <span className="font-bold text-indigo-700 font-mono tabular-nums">{formatBDT(b.advance)}</span>
                     </div>
                   </div>
                 </div>
@@ -442,7 +444,7 @@ export const ManagerDashboard: React.FC<Props> = ({
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden mb-2.5">
                     <div
-                      className="bg-indigo-600 h-1.5 rounded-full transition-all"
+                      className="bg-indigo-600 h-1.5 rounded-full transition-all duration-300"
                       style={{ width: `${b.collectionRate}%` }}
                     ></div>
                   </div>
@@ -461,13 +463,13 @@ export const ManagerDashboard: React.FC<Props> = ({
             return (
               <div
                 onClick={() => handleBlockClick('Block C')}
-                className="bg-white rounded-2xl border-2 border-slate-200 hover:border-purple-600 hover:shadow-lg transition-all p-5 flex flex-col justify-between cursor-pointer group relative overflow-hidden"
+                className="bg-white rounded-2xl border border-slate-200/90 hover:border-purple-500 hover:shadow-md transition-all duration-200 p-5 flex flex-col justify-between cursor-pointer group relative overflow-hidden shadow-xs"
                 title={`Click to open Block C Monthly Ledger for ${getMonthName(data.selectedMonth)} ${data.selectedYear}`}
               >
                 <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-bl-full pointer-events-none group-hover:bg-purple-500/10 transition-colors"></div>
                 <div>
                   <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
-                    <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-purple-900 text-white shadow-xs">
+                    <span className="text-xs font-black px-2.5 py-0.5 rounded-lg bg-purple-600 text-white shadow-xs">
                       {b.name}
                     </span>
                     <span className="text-[11px] font-bold text-purple-700 bg-purple-50 border border-purple-200/60 px-2 py-0.5 rounded-md">
@@ -477,21 +479,21 @@ export const ManagerDashboard: React.FC<Props> = ({
 
                   <div className="mt-2.5 flex items-center justify-between text-xs">
                     <span className="text-slate-500">Owner: <strong className="text-slate-800">{b.owner}</strong></span>
-                    <span className="font-bold text-slate-700">{b.occupied}/{b.totalUnits} Units</span>
+                    <span className="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">{b.occupied}/{b.totalUnits} Units</span>
                   </div>
 
                   <div className="mt-3 space-y-1.5 text-xs">
                     <div className="flex justify-between py-0.5">
                       <span className="text-slate-500">Collection:</span>
-                      <span className="font-black text-emerald-600 font-mono text-sm">{formatBDT(b.collected)}</span>
+                      <span className="font-black text-emerald-600 font-mono text-sm tabular-nums">{formatBDT(b.collected)}</span>
                     </div>
                     <div className="flex justify-between py-0.5">
                       <span className="text-slate-500">Outstanding Due:</span>
-                      <span className={`font-bold font-mono ${b.due > 0 ? 'text-rose-600' : 'text-slate-700'}`}>{formatBDT(b.due)}</span>
+                      <span className={`font-bold font-mono tabular-nums ${b.due > 0 ? 'text-rose-600' : 'text-slate-700'}`}>{formatBDT(b.due)}</span>
                     </div>
                     <div className="flex justify-between py-0.5">
                       <span className="text-slate-500">Advance Escrow:</span>
-                      <span className="font-bold text-indigo-700 font-mono">{formatBDT(b.advance)}</span>
+                      <span className="font-bold text-indigo-700 font-mono tabular-nums">{formatBDT(b.advance)}</span>
                     </div>
                   </div>
                 </div>
@@ -503,7 +505,7 @@ export const ManagerDashboard: React.FC<Props> = ({
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden mb-2.5">
                     <div
-                      className="bg-purple-600 h-1.5 rounded-full transition-all"
+                      className="bg-purple-600 h-1.5 rounded-full transition-all duration-300"
                       style={{ width: `${b.collectionRate}%` }}
                     ></div>
                   </div>
@@ -522,13 +524,13 @@ export const ManagerDashboard: React.FC<Props> = ({
             return (
               <div
                 onClick={() => handleBlockClick('all')}
-                className="bg-gradient-to-b from-white to-slate-50 rounded-2xl border-2 border-slate-900/40 hover:border-slate-900 hover:shadow-lg transition-all p-5 flex flex-col justify-between cursor-pointer group relative overflow-hidden"
+                className="bg-gradient-to-b from-white to-slate-50/70 rounded-2xl border-2 border-slate-800/80 hover:border-slate-900 hover:shadow-md transition-all duration-200 p-5 flex flex-col justify-between cursor-pointer group relative overflow-hidden shadow-xs"
                 title={`Click to open All Blocks Unified Ledger for ${getMonthName(data.selectedMonth)} ${data.selectedYear}`}
               >
                 <div className="absolute top-0 right-0 w-24 h-24 bg-slate-900/5 rounded-bl-full pointer-events-none group-hover:bg-slate-900/10 transition-colors"></div>
                 <div>
                   <div className="flex items-center justify-between pb-2.5 border-b border-slate-200">
-                    <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-slate-900 text-white shadow-xs">
+                    <span className="text-xs font-black px-2.5 py-0.5 rounded-lg bg-slate-900 text-white shadow-xs">
                       All Blocks Summary
                     </span>
                     <span className="text-[11px] font-bold text-slate-800 bg-slate-200/80 px-2 py-0.5 rounded-md">
@@ -538,21 +540,21 @@ export const ManagerDashboard: React.FC<Props> = ({
 
                   <div className="mt-2.5 flex items-center justify-between text-xs">
                     <span className="text-slate-500">Complex: <strong className="text-slate-800">A + B + C</strong></span>
-                    <span className="font-bold text-slate-800">{occupiedFlats}/{totalFlats} Units</span>
+                    <span className="font-bold text-slate-800 bg-slate-200/70 px-2 py-0.5 rounded-md">{occupiedFlats}/{totalFlats} Units</span>
                   </div>
 
                   <div className="mt-3 space-y-1.5 text-xs">
                     <div className="flex justify-between py-0.5">
                       <span className="text-slate-500">Total Collection:</span>
-                      <span className="font-black text-emerald-600 font-mono text-sm">{formatBDT(totalCollection)}</span>
+                      <span className="font-black text-emerald-600 font-mono text-sm tabular-nums">{formatBDT(totalCollection)}</span>
                     </div>
                     <div className="flex justify-between py-0.5">
                       <span className="text-slate-500">Total Dues:</span>
-                      <span className={`font-bold font-mono ${totalDues > 0 ? 'text-rose-600' : 'text-slate-800'}`}>{formatBDT(totalDues)}</span>
+                      <span className={`font-bold font-mono tabular-nums ${totalDues > 0 ? 'text-rose-600' : 'text-slate-800'}`}>{formatBDT(totalDues)}</span>
                     </div>
                     <div className="flex justify-between py-0.5">
                       <span className="text-slate-500">Total Advance Escrow:</span>
-                      <span className="font-bold text-indigo-700 font-mono">{formatBDT(advanceTotal)}</span>
+                      <span className="font-bold text-indigo-700 font-mono tabular-nums">{formatBDT(advanceTotal)}</span>
                     </div>
                   </div>
                 </div>
@@ -564,7 +566,7 @@ export const ManagerDashboard: React.FC<Props> = ({
                   </div>
                   <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden mb-2.5">
                     <div
-                      className="bg-slate-900 h-1.5 rounded-full transition-all"
+                      className="bg-slate-900 h-1.5 rounded-full transition-all duration-300"
                       style={{ width: `${allCollectionRate}%` }}
                     ></div>
                   </div>
@@ -580,49 +582,49 @@ export const ManagerDashboard: React.FC<Props> = ({
       </div>
 
       {/* Category Breakdown Sub-Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-white rounded-xl p-4 border border-slate-200 flex items-center gap-3">
-          <div className="p-2.5 bg-blue-50 text-blue-700 rounded-lg">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+        <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs flex items-center gap-3 hover:border-blue-300 hover:shadow-sm transition-all">
+          <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl border border-blue-100 shrink-0">
             <Building2 className="w-5 h-5" />
           </div>
-          <div>
-            <p className="text-[11px] font-bold text-slate-500 uppercase">Flat Rent</p>
-            <p className="text-base font-bold text-slate-900">{formatBDT(flatRentCollection)}</p>
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">Flat Rent</p>
+            <p className="text-base font-bold text-slate-900 font-mono tabular-nums truncate">{formatBDT(flatRentCollection)}</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-4 border border-slate-200 flex items-center gap-3">
-          <div className="p-2.5 bg-amber-50 text-amber-600 rounded-lg">
+        <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs flex items-center gap-3 hover:border-amber-300 hover:shadow-sm transition-all">
+          <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl border border-amber-100 shrink-0">
             <Zap className="w-5 h-5" />
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-1.5">
-              <p className="text-[11px] font-bold text-slate-500 uppercase">Electricity (NESCO)</p>
-              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800">
+              <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">Electricity</p>
+              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 shrink-0">
                 {data.units.filter((u) => (u.unitType === 'residential' || u.unitType === 'godown') && (u.isElectricityEnabled ?? (u.electricityBillingType === 'nesco_submeter')) && u.electricityBillingType !== 'none').length} ON
               </span>
             </div>
-            <p className="text-base font-bold text-slate-900">{formatBDT(electricityCollection)}</p>
+            <p className="text-base font-bold text-slate-900 font-mono tabular-nums truncate">{formatBDT(electricityCollection)}</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-4 border border-slate-200 flex items-center gap-3">
-          <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg">
+        <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs flex items-center gap-3 hover:border-emerald-300 hover:shadow-sm transition-all">
+          <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 shrink-0">
             <Car className="w-5 h-5" />
           </div>
-          <div>
-            <p className="text-[11px] font-bold text-slate-500 uppercase">Parking Rental</p>
-            <p className="text-base font-bold text-slate-900">{formatBDT(parkingCollection)}</p>
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">Parking Rental</p>
+            <p className="text-base font-bold text-slate-900 font-mono tabular-nums truncate">{formatBDT(parkingCollection)}</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-4 border border-slate-200 flex items-center gap-3">
-          <div className="p-2.5 bg-purple-50 text-purple-600 rounded-lg">
+        <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs flex items-center gap-3 hover:border-purple-300 hover:shadow-sm transition-all">
+          <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl border border-purple-100 shrink-0">
             <Warehouse className="w-5 h-5" />
           </div>
-          <div>
-            <p className="text-[11px] font-bold text-slate-500 uppercase">Godown Rental</p>
-            <p className="text-base font-bold text-slate-900">{formatBDT(godownCollection)}</p>
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">Godown Rental</p>
+            <p className="text-base font-bold text-slate-900 font-mono tabular-nums truncate">{formatBDT(godownCollection)}</p>
           </div>
         </div>
       </div>

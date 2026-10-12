@@ -25,6 +25,9 @@ import {
   Calendar,
   FileSpreadsheet,
   KeyRound,
+  LayoutGrid,
+  Table,
+  Phone,
 } from 'lucide-react';
 import { AppDatabaseState, UserProfile, PrintableReceipt, MonthlyLedgerItem, PaymentSettings, PaymentMethod } from '../types';
 import { formatBDT, formatDateDDMMYYYY, getMonthName, MONTH_NAMES, getPostpaidElectricityPeriod, getPostpaidElectricityTenantInfo } from '../lib/nescoTariff';
@@ -74,6 +77,7 @@ export const OwnerDashboard: React.FC<Props> = ({
   const blockName = currentUser.assignedBlock || 'Block A';
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [mobileLayoutMode, setMobileLayoutMode] = useState<'cards' | 'table'>('cards');
 
   // Block MFS Gateway Configuration & Toggle
   const currentBlockConfig =
@@ -503,21 +507,21 @@ export const OwnerDashboard: React.FC<Props> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => window.print()}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg backdrop-blur-xs transition-colors cursor-pointer"
+              className="min-h-[44px] flex items-center gap-1.5 px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-xl backdrop-blur-xs transition-colors cursor-pointer"
             >
               <Printer className="w-4 h-4" />
               Print Report
             </button>
             <button
               onClick={handleExportCSV}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer"
+              className="min-h-[44px] flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl shadow-sm transition-colors cursor-pointer"
             >
               <Download className="w-4 h-4" />
               Export CSV
             </button>
             <button
               onClick={() => exportAllCredentialsToExcel(data, { blockFilter: blockName })}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-lg shadow-sm transition-all cursor-pointer"
+              className="min-h-[44px] flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-xl shadow-sm transition-all cursor-pointer"
               title={`1-Click Export Passwords for ${blockName} & Authority accounts (.xlsx)`}
             >
               <KeyRound className="w-4 h-4 text-emerald-100" />
@@ -530,18 +534,18 @@ export const OwnerDashboard: React.FC<Props> = ({
       {/* Top 4 KPI Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Box 1: Flats Occupancy */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                 <Building2 className="w-3.5 h-3.5 text-blue-600" />
                 Flats Occupancy
               </span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200/80">
                 {occupancyRate}% Occupied
               </span>
             </div>
-            <div className="text-2xl font-black text-slate-900 mt-2 font-mono">
+            <div className="text-2xl font-black text-slate-900 mt-2 font-mono tabular-nums">
               {occupiedFlats} <span className="text-base font-normal text-slate-400">/ {totalFlats}</span>
             </div>
             <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
@@ -549,7 +553,7 @@ export const OwnerDashboard: React.FC<Props> = ({
               {occupiedFlats} Occupied &bull; {vacantFlats} Vacant
             </p>
           </div>
-          <div className="mt-3 w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+          <div className="mt-3 w-full bg-slate-100 rounded-full h-2 overflow-hidden shadow-inner">
             <div
               className="bg-blue-600 h-2 rounded-full transition-all"
               style={{ width: `${occupancyRate}%` }}
@@ -558,36 +562,36 @@ export const OwnerDashboard: React.FC<Props> = ({
         </div>
 
         {/* Box 2: Advance Amount Paid vs Due */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                 <Wallet className="w-3.5 h-3.5 text-indigo-600" />
                 Advance (Paid vs Due)
               </span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/80">
                 Security Escrow
               </span>
             </div>
             <div className="grid grid-cols-2 gap-2 mt-2 pt-1 border-t border-slate-100">
               <div>
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Paid (Escrow)</span>
-                <div className="text-base sm:text-lg font-black text-indigo-700 font-mono">
+                <div className="text-base sm:text-lg font-black text-indigo-700 font-mono tabular-nums">
                   {formatBDT(advancePaid)}
                 </div>
               </div>
               <div className="border-l border-slate-100 pl-2">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Advance Due</span>
-                <div className="text-base sm:text-lg font-black text-rose-600 font-mono">
+                <div className="text-base sm:text-lg font-black text-rose-600 font-mono tabular-nums">
                   {formatBDT(advanceDue)}
                 </div>
               </div>
             </div>
-            <p className="text-[11px] text-slate-500 mt-1.5">
+            <p className="text-[11px] text-slate-500 mt-1.5 tabular-nums">
               Total required: {formatBDT(advancePaid + advanceDue)}
             </p>
           </div>
-          <div className="mt-3 w-full bg-slate-100 rounded-full h-2 overflow-hidden flex">
+          <div className="mt-3 w-full bg-slate-100 rounded-full h-2 overflow-hidden flex shadow-inner">
             <div
               className="bg-indigo-600 h-2 transition-all"
               style={{ width: `${(advancePaid + advanceDue) > 0 ? (advancePaid / (advancePaid + advanceDue)) * 100 : 100}%` }}
@@ -600,27 +604,27 @@ export const OwnerDashboard: React.FC<Props> = ({
         </div>
 
         {/* Box 3: Current Month Flat Rent Paid vs Due */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                 <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
                 {getMonthName(data.selectedMonth)} Flat Rent
               </span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
                 Paid vs Due
               </span>
             </div>
             <div className="grid grid-cols-2 gap-2 mt-2 pt-1 border-t border-slate-100">
               <div>
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Rent Paid</span>
-                <div className="text-base sm:text-lg font-black text-emerald-600 font-mono">
+                <div className="text-base sm:text-lg font-black text-emerald-600 font-mono tabular-nums">
                   {formatBDT(rentPaid)}
                 </div>
               </div>
               <div className="border-l border-slate-100 pl-2">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Rent Due</span>
-                <div className="text-base sm:text-lg font-black text-rose-600 font-mono">
+                <div className="text-base sm:text-lg font-black text-rose-600 font-mono tabular-nums">
                   {formatBDT(rentDue)}
                 </div>
               </div>
@@ -629,7 +633,7 @@ export const OwnerDashboard: React.FC<Props> = ({
               {rentPaidCount} Paid (incl. adjusted) &bull; {rentDueCount} Due
             </p>
           </div>
-          <div className="mt-3 w-full bg-slate-100 rounded-full h-2 overflow-hidden flex">
+          <div className="mt-3 w-full bg-slate-100 rounded-full h-2 overflow-hidden flex shadow-inner">
             <div
               className="bg-emerald-500 h-2 transition-all"
               style={{ width: `${(rentPaid + rentDue) > 0 ? (rentPaid / (rentPaid + rentDue)) * 100 : 100}%` }}
@@ -642,27 +646,27 @@ export const OwnerDashboard: React.FC<Props> = ({
         </div>
 
         {/* Box 4: (Previous Month) Electricity Paid vs Due Status */}
-        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                 <Zap className="w-3.5 h-3.5 text-amber-500" />
                 {elecPeriod.monthName} Electricity
               </span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/80">
                 Postpaid
               </span>
             </div>
             <div className="grid grid-cols-2 gap-2 mt-2 pt-1 border-t border-slate-100">
               <div>
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Bill Paid</span>
-                <div className="text-base sm:text-lg font-black text-emerald-600 font-mono">
+                <div className="text-base sm:text-lg font-black text-emerald-600 font-mono tabular-nums">
                   {formatBDT(elecPaid)}
                 </div>
               </div>
               <div className="border-l border-slate-100 pl-2">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Bill Due</span>
-                <div className="text-base sm:text-lg font-black text-rose-600 font-mono">
+                <div className="text-base sm:text-lg font-black text-rose-600 font-mono tabular-nums">
                   {formatBDT(elecDue)}
                 </div>
               </div>
@@ -671,7 +675,7 @@ export const OwnerDashboard: React.FC<Props> = ({
               {elecPaidCount} Paid &bull; {elecDueCount} Due ({elecPeriod.displayStr})
             </p>
           </div>
-          <div className="mt-3 w-full bg-slate-100 rounded-full h-2 overflow-hidden flex">
+          <div className="mt-3 w-full bg-slate-100 rounded-full h-2 overflow-hidden flex shadow-inner">
             <div
               className="bg-emerald-500 h-2 transition-all"
               style={{ width: `${(elecPaid + elecDue) > 0 ? (elecPaid / (elecPaid + elecDue)) * 100 : 100}%` }}
@@ -991,8 +995,319 @@ export const OwnerDashboard: React.FC<Props> = ({
         </div>
       )}
 
+      {/* Mobile View Switcher (Smartphones) */}
+      <div className="md:hidden flex items-center justify-between mb-3 px-1">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">View:</span>
+          <span className="text-xs font-extrabold text-slate-800">{filteredLedger.length} Units</span>
+        </div>
+        <div className="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-2xs">
+          <button
+            type="button"
+            onClick={() => setMobileLayoutMode('cards')}
+            className={`min-h-[44px] px-3.5 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              mobileLayoutMode === 'cards'
+                ? 'bg-white text-blue-700 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <LayoutGrid className="w-3.5 h-3.5" />
+            <span>Cards</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileLayoutMode('table')}
+            className={`min-h-[44px] px-3.5 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              mobileLayoutMode === 'table'
+                ? 'bg-white text-blue-700 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Table className="w-3.5 h-3.5" />
+            <span>Table</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Card Layout (Visible when mobileLayoutMode === 'cards' on small screens) */}
+      {mobileLayoutMode === 'cards' && (
+        <div className="md:hidden space-y-3.5 mb-6">
+          {filteredLedger.length === 0 ? (
+            <div className="p-8 bg-white rounded-2xl border border-slate-200 text-center text-slate-500 font-sans text-xs">
+              No ledger records match the selected criteria.
+            </div>
+          ) : (
+            filteredLedger.map((row) => {
+              const isOwnerFlat = row.flatId.toLowerCase().includes('owner');
+              const rawAdvStatus = (row.advanceStatus || '').trim();
+              const matchingAdv = data.advanceAccounts.find((a) => a.flatId === row.flatId);
+              const isMarkedPaid = rawAdvStatus.toLowerCase() === 'paid';
+              const isMarkedPartial = rawAdvStatus.toLowerCase() === 'partially paid' || rawAdvStatus.toLowerCase() === 'partially_paid';
+
+              const effectiveAdvAmount =
+                row.advancePayment !== undefined && row.advancePayment !== null
+                  ? Number(row.advancePayment)
+                  : (matchingAdv?.amountPaid && matchingAdv.amountPaid > 0)
+                  ? matchingAdv.amountPaid
+                  : (matchingAdv?.totalRequired && matchingAdv.totalRequired > 0)
+                  ? matchingAdv.totalRequired
+                  : 0;
+
+              const hasAdvAmount = effectiveAdvAmount > 0;
+              const isNotPaid =
+                rawAdvStatus.toLowerCase() === 'not paid' ||
+                rawAdvStatus.toLowerCase() === 'not_paid';
+
+              const advStatus =
+                isOwnerFlat
+                  ? 'N/A'
+                  : isNotPaid
+                  ? 'Not Paid'
+                  : isMarkedPaid
+                  ? 'Paid'
+                  : isMarkedPartial || matchingAdv?.status === 'partially_paid'
+                  ? 'Partially Paid'
+                  : rawAdvStatus.toLowerCase() === 'adjusted'
+                  ? 'Adjusted'
+                  : rawAdvStatus.toLowerCase() === 'n/a'
+                  ? 'N/A'
+                  : (matchingAdv?.status === 'paid' || (!rawAdvStatus && hasAdvAmount))
+                  ? 'Paid'
+                  : 'Not Paid';
+
+              const rentStatus =
+                row.rentStatus ||
+                (row.paymentStatus === 'Paid' || row.paymentStatus === 'Adjusted'
+                  ? 'Paid'
+                  : row.paymentStatus === 'Partially Paid'
+                  ? 'Partially Paid'
+                  : row.paymentStatus === 'N/A'
+                  ? 'N/A'
+                  : 'Not Paid');
+
+              const elecStatus =
+                row.electricityStatus ||
+                (row.electricityBill === 0
+                  ? 'N/A'
+                  : row.paymentStatus === 'Paid'
+                  ? 'Paid'
+                  : 'Not Paid');
+
+              return (
+                <div
+                  key={`owner-mobile-card-${row.id}`}
+                  className="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-shadow overflow-hidden"
+                >
+                  {/* Card Header */}
+                  <div className="p-4 bg-slate-50/70 border-b border-slate-200/80 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="px-3 py-1 bg-blue-900 text-white font-mono font-black text-sm rounded-xl shadow-xs">
+                        {row.flatId}
+                      </div>
+                      <div>
+                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+                          {row.blockName || blockName}
+                        </span>
+                        <h4 className="font-extrabold text-slate-900 text-sm leading-tight">
+                          {row.tenantName}
+                        </h4>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setItemToEditManual(row);
+                          setIsManualModalOpen(true);
+                        }}
+                        className="min-w-[40px] min-h-[40px] flex items-center justify-center p-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl transition-colors cursor-pointer"
+                        title="Edit Ledger Entry"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openRecordPaymentModal(row)}
+                        className="min-w-[40px] min-h-[40px] flex items-center justify-center p-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs transition-colors cursor-pointer"
+                        title="Record Payment"
+                      >
+                        <Wallet className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Card Body */}
+                  <div className="p-4 space-y-3.5 text-xs">
+                    {/* Contact & Move-in Info */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                      {row.tenantPhone && row.tenantPhone !== '--' ? (
+                        <a
+                          href={`tel:${row.tenantPhone}`}
+                          className="min-h-[44px] px-3.5 py-2 inline-flex items-center gap-2 bg-blue-50/80 hover:bg-blue-100 text-blue-700 font-bold rounded-xl border border-blue-200 transition-colors text-xs cursor-pointer active:scale-95"
+                          title="Call Tenant"
+                        >
+                          <Phone className="w-3.5 h-3.5 text-blue-600" />
+                          <span className="font-mono">{row.tenantPhone}</span>
+                        </a>
+                      ) : (
+                        <span className="text-slate-400 font-mono">No phone</span>
+                      )}
+
+                      <div className="text-right">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Entry Date</span>
+                        <span className="font-mono text-slate-600 font-semibold text-xs">
+                          {formatDateDDMMYYYY(row.entryDate)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Financial Items Grid */}
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {/* Advance Escrow */}
+                      <div className="bg-slate-50/70 p-3 rounded-xl border border-slate-200/80 flex flex-col justify-between">
+                        <div>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                            Advance Escrow
+                          </span>
+                          <span className="text-sm font-black text-indigo-700 font-mono tabular-nums block mt-0.5">
+                            {formatBDT(effectiveAdvAmount)}
+                          </span>
+                        </div>
+                        <div className="mt-2 flex flex-col gap-1.5">
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold text-center ${
+                              advStatus === 'Paid'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : advStatus === 'Partially Paid'
+                                ? 'bg-amber-100 text-amber-800'
+                                : advStatus === 'Adjusted'
+                                ? 'bg-purple-100 text-purple-800'
+                                : 'bg-rose-100 text-rose-800'
+                            }`}
+                          >
+                            {advStatus}
+                          </span>
+                          {(advStatus === 'Paid' || advStatus === 'Partially Paid' || hasAdvAmount) && advStatus !== 'N/A' && advStatus !== 'Not Paid' && !isOwnerFlat && (
+                            <button
+                              type="button"
+                              onClick={() => handleGenerateAdvanceReceipt({ ...row, advancePayment: effectiveAdvAmount })}
+                              className="min-h-[40px] w-full px-2 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-lg text-[10px] flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                            >
+                              <Receipt className="w-3 h-3" />
+                              <span>Advance Receipt</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Flat Rent */}
+                      <div className="bg-slate-50/70 p-3 rounded-xl border border-slate-200/80 flex flex-col justify-between">
+                        <div>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                            Flat Rent
+                          </span>
+                          <span className="text-sm font-black text-slate-900 font-mono tabular-nums block mt-0.5">
+                            {formatBDT(row.flatRent)}
+                          </span>
+                        </div>
+                        <div className="mt-2 flex flex-col gap-1.5">
+                          <select
+                            value={rentStatus}
+                            onChange={(e) => {
+                              const newStatus = e.target.value as 'Paid' | 'Not Paid' | 'Partially Paid' | 'Adjusted' | 'N/A';
+                              handleQuickUpdateRentStatus(row, newStatus);
+                            }}
+                            className={`w-full min-h-[44px] px-2 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer text-center ${
+                              rentStatus === 'Paid'
+                                ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                : rentStatus === 'Partially Paid'
+                                ? 'bg-amber-100 text-amber-800 border-amber-300'
+                                : rentStatus === 'Adjusted'
+                                ? 'bg-purple-100 text-purple-800 border-purple-300'
+                                : rentStatus === 'N/A'
+                                ? 'bg-slate-100 text-slate-600 border-slate-300'
+                                : 'bg-rose-100 text-rose-800 border-rose-300'
+                            }`}
+                          >
+                            <option value="Paid">Paid</option>
+                            <option value="Not Paid">Not Paid</option>
+                            <option value="Partially Paid">Partially Paid</option>
+                            <option value="Adjusted">Adjusted</option>
+                            <option value="N/A">N/A</option>
+                          </select>
+                          {rentStatus === 'Paid' && row.flatRent > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => handleGenerateRentReceipt(row)}
+                              className="min-h-[44px] w-full px-2 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-lg text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                            >
+                              <Receipt className="w-3.5 h-3.5" />
+                              <span>Rent Receipt</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Electricity Item Banner */}
+                    <div className="bg-amber-50/60 p-3 rounded-xl border border-amber-200/80 flex items-center justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <Zap className="w-3.5 h-3.5 text-amber-600 fill-current" />
+                          <span className="text-[10px] font-bold text-amber-900 uppercase tracking-wider">
+                            Electricity ({getPostpaidElectricityPeriod(data.selectedMonth, data.selectedYear).monthName.slice(0, 3)})
+                          </span>
+                        </div>
+                        <div className="flex items-baseline gap-2 mt-1">
+                          <span className="text-sm font-black text-amber-950 font-mono tabular-nums">
+                            {row.electricityBill > 0 ? formatBDT(row.electricityBill) : '৳0'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        {row.electricityBill > 0 && elecStatus === 'Paid' && (
+                          <button
+                            type="button"
+                            onClick={() => handleGenerateElectricityReceipt(row)}
+                            className="min-h-[44px] px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-lg text-xs flex items-center gap-1 transition-colors cursor-pointer"
+                          >
+                            <Receipt className="w-3.5 h-3.5" />
+                            <span>Receipt</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Card Footer: Total Due & Full-Width Action Button */}
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-3">
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Net Due</span>
+                        <span className={`text-base font-black font-mono tabular-nums ${row.totalDue > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                          {row.totalDue > 0 ? formatBDT(row.totalDue) : '৳0 Paid'}
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => openRecordPaymentModal(row)}
+                        className="min-h-[44px] px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer active:scale-95"
+                      >
+                        <Wallet className="w-4 h-4" />
+                        <span>Record Payment</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+
       {/* Spreadsheet Ledger Table for Block Owner (8 Columns) */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+      <div className={`bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden ${mobileLayoutMode === 'cards' ? 'hidden md:block' : 'block'}`}>
         {/* Table controls */}
         <div className="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-slate-50/50">
           <div>
@@ -1011,7 +1326,7 @@ export const OwnerDashboard: React.FC<Props> = ({
 
           <div className="flex flex-wrap items-center gap-2">
             {/* Quick Month Selector for Owner with Bold Month Display */}
-            <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border-2 border-slate-300 shadow-xs">
+            <div className="flex items-center gap-1.5 bg-white px-3 py-2 rounded-xl border-2 border-slate-300 shadow-xs min-h-[44px]">
               <Calendar className="w-4 h-4 text-blue-600 mx-0.5 shrink-0" />
               <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider">Month:</span>
               <select
@@ -1041,10 +1356,10 @@ export const OwnerDashboard: React.FC<Props> = ({
             {/* Record Payment Button */}
             <button
               onClick={() => openRecordPaymentModal()}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-xs transition-all cursor-pointer"
+              className="min-h-[44px] flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
               title="Record payment & generate official receipt"
             >
-              <Wallet className="w-3.5 h-3.5" />
+              <Wallet className="w-4 h-4" />
               <span>Record Payment</span>
             </button>
 
@@ -1054,28 +1369,28 @@ export const OwnerDashboard: React.FC<Props> = ({
                 setItemToEditManual(null);
                 setIsManualModalOpen(true);
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-xs transition-all cursor-pointer"
+              className="min-h-[44px] flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
               title="Add or update ledger data manually"
             >
-              <PlusCircle className="w-3.5 h-3.5" />
-              <span>+ Manual Ledger Entry</span>
+              <PlusCircle className="w-4 h-4" />
+              <span>+ Manual Entry</span>
             </button>
 
             <div className="relative">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
               <input
                 type="text"
                 placeholder="Search Flat or Tenant..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 pr-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                className="min-h-[44px] pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-xl text-base sm:text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
               />
             </div>
 
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-white border border-slate-300 text-xs rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+              className="min-h-[44px] bg-white border border-slate-300 text-base sm:text-xs rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-hidden cursor-pointer"
             >
               <option value="all">All Statuses</option>
               <option value="Paid">Paid</option>
@@ -1086,12 +1401,12 @@ export const OwnerDashboard: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Ledger Table (8 Columns - Godown, Total Payable, Total Paid, Total Due, Status, and Actions removed) */}
-        <div className="overflow-x-auto">
+        {/* Ledger Table (8 Columns) */}
+        <div className="table-scroll-container">
           <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-slate-900 text-white font-semibold">
+            <thead className="bg-slate-900 text-white font-semibold sticky top-0 z-20">
               <tr>
-                <th className="py-3 px-4 whitespace-nowrap">1. Flat ID</th>
+                <th className="py-3 px-4 whitespace-nowrap sticky left-0 bg-slate-900 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.35)]">1. Flat ID</th>
                 <th className="py-3 px-4 whitespace-nowrap">2. Tenant Name</th>
                 <th className="py-3 px-4 whitespace-nowrap">3. Mobile</th>
                 <th className="py-3 px-4 whitespace-nowrap">4. Entry Date</th>
@@ -1171,10 +1486,10 @@ export const OwnerDashboard: React.FC<Props> = ({
                       : 'Not Paid');
 
                   return (
-                    <tr key={row.id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="py-3 px-4 font-bold text-blue-700 font-sans whitespace-nowrap">
+                    <tr key={row.id} className="group hover:bg-slate-50/70 transition-colors">
+                      <td className="py-3 px-4 font-bold text-blue-700 font-sans whitespace-nowrap sticky left-0 bg-white group-hover:bg-slate-50 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="font-extrabold">{row.flatId}</span>
+                          <span className="font-extrabold text-blue-800">{row.flatId}</span>
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() => openRecordPaymentModal(row)}
@@ -1186,6 +1501,7 @@ export const OwnerDashboard: React.FC<Props> = ({
                             </button>
                             <button
                               onClick={() => {
+                                itemToEditManual && setItemToEditManual(row);
                                 setItemToEditManual(row);
                                 setIsManualModalOpen(true);
                               }}
@@ -1210,7 +1526,7 @@ export const OwnerDashboard: React.FC<Props> = ({
 
                       {/* 5. Advance Payment Status & Receipt */}
                       <td className="py-3 px-4 text-right font-sans whitespace-nowrap">
-                        <span className="font-mono font-bold text-indigo-700 block">
+                        <span className="font-mono tabular-nums font-bold text-indigo-700 block">
                           {formatBDT(effectiveAdvAmount)}
                         </span>
                         <span
@@ -1383,12 +1699,12 @@ export const OwnerDashboard: React.FC<Props> = ({
               )}
             </tbody>
             {/* Summary Footer */}
-            <tfoot className="bg-slate-100 border-t-2 border-slate-300 font-bold font-mono">
+            <tfoot className="bg-slate-100/90 border-t-2 border-slate-300/90 font-bold font-mono sticky bottom-0 z-10 shadow-xs">
               <tr>
-                <td colSpan={4} className="py-3 px-4 text-slate-900 font-sans text-right">
+                <td colSpan={4} className="py-3 px-4 text-slate-900 font-sans text-right font-extrabold sticky left-0 bg-slate-100 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]">
                   Block Totals:
                 </td>
-                <td className="py-3 px-4 text-right text-indigo-700 whitespace-nowrap">
+                <td className="py-3 px-4 text-right text-indigo-700 whitespace-nowrap tabular-nums">
                   {formatBDT(
                     filteredLedger.reduce((acc, curr) => {
                       const advAcc = data.advanceAccounts.find((a) => a.flatId === curr.flatId);
@@ -1396,10 +1712,10 @@ export const OwnerDashboard: React.FC<Props> = ({
                     }, 0)
                   )}
                 </td>
-                <td className="py-3 px-4 text-right text-slate-900 whitespace-nowrap">
+                <td className="py-3 px-4 text-right text-slate-900 whitespace-nowrap tabular-nums">
                   {formatBDT(filteredLedger.reduce((acc, curr) => acc + curr.flatRent, 0))}
                 </td>
-                <td className="py-3 px-4 text-right text-slate-900 whitespace-nowrap">
+                <td className="py-3 px-4 text-right text-slate-900 whitespace-nowrap tabular-nums">
                   {formatBDT(filteredLedger.reduce((acc, curr) => acc + curr.electricityBill, 0))}
                 </td>
               </tr>
