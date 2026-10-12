@@ -31,6 +31,26 @@ const MONTH_KEYS = [
   'july', 'august', 'september', 'october', 'november', 'december'
 ];
 
+export const getOwnerSignName = (
+  sigBy: string = '',
+  blockName: string = '',
+  sigTitle: string = ''
+): string => {
+  const combined = `${sigBy} ${sigTitle} ${blockName}`.toLowerCase();
+  if (combined.includes('block a') || combined.includes('rashed')) return 'Rashed';
+  if (combined.includes('block b') || combined.includes('raju')) return 'Raju';
+  if (combined.includes('block c') || combined.includes('rony')) return 'Rony';
+
+  // Strip prefixes like Md, Md., Mohammad, Mohammed, Dr, Mr
+  const cleaned = sigBy
+    .replace(/[\(\)\[\]]/g, '')
+    .replace(/\bowner\b/gi, '')
+    .replace(/^(md\.?|mohammad|mohammed|dr\.?|mr\.?)\s+/i, '')
+    .trim();
+  const words = cleaned.split(/\s+/).filter(Boolean);
+  return words[words.length - 1] || 'Owner';
+};
+
 export const PrintableReceiptModal: React.FC<Props> = ({ receipt, onClose }) => {
   const receiptWrapRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -210,10 +230,10 @@ export const PrintableReceiptModal: React.FC<Props> = ({ receipt, onClose }) => 
   // Signatory details - Manager name is Russell (never write Manager for the signature itself)
   const isOwner = receipt.authorizedSignatureRole === 'owner';
   const signatoryFirstName = isOwner
-    ? ((receipt.authorizedSignatureBy || '').replace(/[\(\)\[\]]/g, '').replace(/\bowner\b/gi, '').trim().split(' ')[0] || 'Owner')
+    ? getOwnerSignName(receipt.authorizedSignatureBy, receipt.blockName, receipt.signatureTitle)
     : 'Russell';
   const signatoryTitle = isOwner
-    ? (receipt.signatureTitle || `${receipt.authorizedSignatureBy || 'Owner'} (${receipt.blockName || 'Block'} Owner)`)
+    ? (receipt.signatureTitle || `${signatoryFirstName} (${receipt.blockName || 'Block'} Owner)`)
     : 'Russell (Manager)';
 
   return (

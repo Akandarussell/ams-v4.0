@@ -226,14 +226,26 @@ export const MainLedger: React.FC<Props> = ({
   // Signature Metadata: Owners get Owner's sign, Manager and Tenant get Manager's sign
   const getSignatureMeta = () => {
     if (userRole === 'owner') {
+      const block = assignedBlock || currentUser?.assignedBlock || 'Block A';
+      const ownerLastName =
+        block === 'Block A'
+          ? 'Rashed'
+          : block === 'Block B'
+          ? 'Raju'
+          : block === 'Block C'
+          ? 'Rony'
+          : currentUser?.fullName?.toLowerCase().includes('rashed')
+          ? 'Rashed'
+          : currentUser?.fullName?.toLowerCase().includes('raju')
+          ? 'Raju'
+          : currentUser?.fullName?.toLowerCase().includes('rony')
+          ? 'Rony'
+          : 'Owner';
+
       return {
         authorizedSignatureRole: 'owner' as const,
-        signatureTitle: "Owner's Signature",
-        authorizedSignatureBy: currentUser?.fullName
-          ? `${currentUser.fullName} (Owner)`
-          : assignedBlock
-          ? `Block Owner (${assignedBlock})`
-          : 'Building Owner',
+        signatureTitle: `${ownerLastName} (${block} Owner)`,
+        authorizedSignatureBy: ownerLastName,
       };
     }
     // manager and tenant accounts
@@ -954,14 +966,16 @@ export const MainLedger: React.FC<Props> = ({
               <span>Excel</span>
             </button>
 
-            <button
-              onClick={() => exportAllCredentialsToExcel(data, { blockFilter: blockFilter !== 'all' ? blockFilter : undefined })}
-              className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white text-xs font-bold rounded-xl transition-all shadow-xs cursor-pointer"
-              title="1-Click export all flat IDs and login passwords for tenants and authority accounts (.xlsx)"
-            >
-              <KeyRound className="w-4 h-4 text-blue-200" />
-              <span>Export Passwords</span>
-            </button>
+            {userRole === 'manager' && (
+              <button
+                onClick={() => exportAllCredentialsToExcel(data, { blockFilter: blockFilter !== 'all' ? blockFilter : undefined })}
+                className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white text-xs font-bold rounded-xl transition-all shadow-xs cursor-pointer"
+                title="1-Click export all flat IDs and login passwords for tenants and authority accounts (.xlsx)"
+              >
+                <KeyRound className="w-4 h-4 text-blue-200" />
+                <span>Export Passwords</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

@@ -20,6 +20,8 @@ import {
   ShieldAlert,
   Phone,
   Lock,
+  LayoutGrid,
+  Table,
 } from 'lucide-react';
 import {
   AppDatabaseState,
@@ -115,19 +117,43 @@ export const TenantPortal: React.FC<Props> = ({
   // Historical ledger records strictly filtered to current tenant's staying period
   const flatLedgerHistory = data.ledgerItems
     .filter((item) => {
-      if (item.flatId.toLowerCase().trim() !== cleanFlatId) return false;
+      const itemFlat = item.flatId.toLowerCase().trim();
+      const targetFlat = cleanFlatId;
+      const isDirectMatch = itemFlat === targetFlat;
+      const isOwnerVariant =
+        (targetFlat.includes('owner') || (tenant?.fullName?.toLowerCase().includes('owner') ?? false)) &&
+        (itemFlat === targetFlat || itemFlat.replace(/\s*\(owner\)/, '') === targetFlat.replace(/\s*\(owner\)/, ''));
+      const isCleanMatch = itemFlat.replace(/[^a-z0-9]/g, '') === targetFlat.replace(/[^a-z0-9]/g, '');
+
+      if (!isDirectMatch && !isOwnerVariant && !isCleanMatch) return false;
       return isWithinStayingPeriod(item.month, item.year, item.tenantName);
     })
     .sort((a, b) => b.year - a.year || b.month - a.month);
 
+  // Fallback to all matching flat records if staying period filter returned 0 items (prevents empty view on smartphones)
+  const displayLedgerHistory = flatLedgerHistory.length > 0
+    ? flatLedgerHistory
+    : data.ledgerItems
+        .filter((item) => {
+          const itemFlat = item.flatId.toLowerCase().trim();
+          const targetFlat = cleanFlatId;
+          return itemFlat === targetFlat || itemFlat.replace(/[^a-z0-9]/g, '') === targetFlat.replace(/[^a-z0-9]/g, '');
+        })
+        .sort((a, b) => b.year - a.year || b.month - a.month);
+
   // Active month ledger entry: strictly match selected month/year or tenant's latest ledger record
   const selectedLedgerItem = data.ledgerItems.find(
-    (item) => item.flatId.toLowerCase().trim() === cleanFlatId && item.month === data.selectedMonth && item.year === data.selectedYear
+    (item) => {
+      const itemFlat = item.flatId.toLowerCase().trim();
+      const targetFlat = cleanFlatId;
+      const isMatch = itemFlat === targetFlat || itemFlat.replace(/[^a-z0-9]/g, '') === targetFlat.replace(/[^a-z0-9]/g, '');
+      return isMatch && item.month === data.selectedMonth && item.year === data.selectedYear;
+    }
   );
   const currentLedgerItem =
     (selectedLedgerItem && isWithinStayingPeriod(selectedLedgerItem.month, selectedLedgerItem.year, selectedLedgerItem.tenantName))
       ? selectedLedgerItem
-      : flatLedgerHistory[0] || selectedLedgerItem || null;
+      : displayLedgerHistory[0] || selectedLedgerItem || null;
 
   // Electricity bills strictly filtered to consumption during current tenant's staying period
   const flatElectricityBills = data.electricityBills.filter((b) => {
@@ -197,6 +223,7 @@ export const TenantPortal: React.FC<Props> = ({
   const [payTrxId, setPayTrxId] = useState<string>('');
   const [paySuccessMsg, setPaySuccessMsg] = useState<string>('');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [historyLayoutMode, setHistoryLayoutMode] = useState<'table' | 'cards'>('table');
 
   useEffect(() => {
     if (currentLedgerItem) {
@@ -369,10 +396,17 @@ export const TenantPortal: React.FC<Props> = ({
     );
   }
 
-  // 1. Security Advance: Strictly follow current active ledger item (with fallback to advance account / monthly rent)
-  const isOwnerFlat = flatId.toLowerCase().includes('owner');
+  // 1. Security Advance: Strictly follow current active ledger item (with fallback to advance account)
+  const isOwnerFlat =
+    flatId.toLowerCase().includes('owner') ||
+    (activeTenant?.fullName?.toLowerCase().includes('owner') ?? false) ||
+    (tenant?.fullName?.toLowerCase().includes('owner') ?? false);
+
   const matchingAdv = data.advanceAccounts.find(
-    (a) => a.flatId.toLowerCase().trim() === cleanFlatId && (!a.tenantId || a.tenantId === activeTenant?.id || a.tenantId === tenant?.id)
+    (a) =>
+      (a.flatId.toLowerCase().trim() === cleanFlatId ||
+        a.flatId.toLowerCase().replace(/[\s()_-]+/g, '') === cleanFlatId.replace(/[\s()_-]+/g, '')) &&
+      (!a.tenantId || a.tenantId === activeTenant?.id || a.tenantId === tenant?.id)
   );
 
   const rawLedgerAdv =
@@ -382,20 +416,20 @@ export const TenantPortal: React.FC<Props> = ({
       ? Number(currentLedgerItem.advancePayment)
       : null;
 
-  const displayAdvanceAmount = (() => {
-    if (isOwnerFlat) return 0;
-    if (rawLedgerAdv !== null && rawLedgerAdv > 0) {
-      return rawLedgerAdv;
-    }
-    if (matchingAdv) {
-      return matchingAdv.amountPaid || matchingAdv.totalRequired || 0;
-    }
-    return unit?.monthlyRent || 0;
-  })();
-
   const rawAdvStatus = (currentLedgerItem?.advanceStatus || '').trim().toLowerCase();
+
+  const isAdvNA =
+    isOwnerFlat ||
+    rawAdvStatus === 'n/a' ||
+    rawAdvStatus === 'na' ||
+    rawAdvStatus === 'not applicable' ||
+    matchingAdv?.status?.toLowerCase() === 'n/a' ||
+    matchingAdv?.status?.toLowerCase() === 'na' ||
+    matchingAdv?.status?.toLowerCase() === 'not applicable' ||
+    (matchingAdv !== undefined && matchingAdv.totalRequired === 0 && matchingAdv.amountPaid === 0);
+
   const advStatus: 'Paid' | 'Not Paid' | 'Partially Paid' | 'Adjusted' | 'N/A' =
-    isOwnerFlat
+    isAdvNA
       ? 'N/A'
       : rawAdvStatus === 'paid'
       ? 'Paid'
@@ -405,17 +439,27 @@ export const TenantPortal: React.FC<Props> = ({
       ? 'Partially Paid'
       : rawAdvStatus === 'adjusted'
       ? 'Adjusted'
-      : rawAdvStatus === 'n/a'
-      ? 'N/A'
       : matchingAdv?.status === 'paid'
       ? 'Paid'
       : matchingAdv?.status === 'partially_paid'
       ? 'Partially Paid'
       : matchingAdv?.status === 'not_paid'
       ? 'Not Paid'
-      : displayAdvanceAmount > 0
+      : (rawLedgerAdv !== null && rawLedgerAdv > 0)
       ? 'Paid'
       : 'Not Paid';
+
+  // Strict Rule: If security advance is N/A (Not Applicable), the amount is strictly 0. Never show any non-zero amount.
+  const displayAdvanceAmount = (() => {
+    if (advStatus === 'N/A' || isAdvNA) return 0;
+    if (rawLedgerAdv !== null && rawLedgerAdv > 0) {
+      return rawLedgerAdv;
+    }
+    if (matchingAdv && (matchingAdv.amountPaid || matchingAdv.totalRequired)) {
+      return matchingAdv.amountPaid || matchingAdv.totalRequired || 0;
+    }
+    return 0;
+  })();
 
   // 2. Current Month Flat Rent: Strictly follow current ledger item
   const currentFlatRent = currentLedgerItem ? currentLedgerItem.flatRent : (unit?.monthlyRent ?? 0);
@@ -461,15 +505,15 @@ export const TenantPortal: React.FC<Props> = ({
 
   const previousDuesList: PreviousDueItem[] = [];
 
-  // Security Advance Due (if unpaid or partially paid)
-  if (!isOwnerFlat) {
+  // Security Advance Due (if unpaid or partially paid and not N/A)
+  if (!isOwnerFlat && advStatus !== 'N/A' && !isAdvNA) {
     let advDue = 0;
     if (advStatus === 'Not Paid') {
       advDue = (matchingAdv?.totalRequired && matchingAdv.totalRequired > 0)
         ? matchingAdv.totalRequired
         : displayAdvanceAmount > 0
         ? displayAdvanceAmount
-        : (unit?.monthlyRent || 0);
+        : 0;
     } else if (advStatus === 'Partially Paid') {
       const totalReq = (matchingAdv?.totalRequired && matchingAdv.totalRequired > 0)
         ? matchingAdv.totalRequired
@@ -1083,7 +1127,7 @@ export const TenantPortal: React.FC<Props> = ({
 
       {/* MONTHLY LEDGER HISTORY (From entry month onward) */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+        <div className="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
           <div>
             <h3 className="font-bold text-slate-900 text-base">
               My Financial History & Monthly Ledgers
@@ -1092,201 +1136,92 @@ export const TenantPortal: React.FC<Props> = ({
               Complete historical record from tenant entry date ({formatDateDDMMYYYY(tenant?.entryDate)}) to present
             </p>
           </div>
-          <button
-            onClick={() => window.print()}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
-          >
-            <Printer className="w-4 h-4" />
-            Print Statement
-          </button>
+          <div className="flex items-center gap-2">
+            {/* View Switcher (Table vs Cards) */}
+            <div className="inline-flex items-center bg-white p-1 rounded-xl border border-slate-200 shadow-xs">
+              <button
+                type="button"
+                onClick={() => setHistoryLayoutMode('table')}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  historyLayoutMode === 'table'
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                }`}
+                title="View Ledger in Table Format (Scrollable on Smartphone & PC)"
+              >
+                <Table className="w-3.5 h-3.5" />
+                <span>Table</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setHistoryLayoutMode('cards')}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  historyLayoutMode === 'cards'
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                }`}
+                title="View Ledger as Individual Monthly Cards"
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                <span>Cards</span>
+              </button>
+            </div>
+
+            <button
+              onClick={() => window.print()}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer shadow-xs"
+            >
+              <Printer className="w-4 h-4" />
+              <span className="hidden sm:inline">Print Statement</span>
+            </button>
+          </div>
         </div>
 
-        {/* Mobile Financial History Cards (< md) */}
-        <div className="md:hidden divide-y divide-slate-100">
-          {flatLedgerHistory.map((item) => {
-            const isOwnerFlat = item.flatId.toLowerCase().includes('owner');
-            const rawAdvStatus = (item.advanceStatus || '').trim();
-            const matchingAdv = data.advanceAccounts.find((a) => a.flatId === item.flatId || a.flatId === flatId);
-            const isMarkedPaid = rawAdvStatus.toLowerCase() === 'paid';
-            const isMarkedPartial = rawAdvStatus.toLowerCase() === 'partially paid' || rawAdvStatus.toLowerCase() === 'partially_paid';
-
-            const effectiveAdvAmount =
-              item.advancePayment !== undefined && item.advancePayment !== null
-                ? Number(item.advancePayment)
-                : (matchingAdv?.amountPaid && matchingAdv.amountPaid > 0)
-                ? matchingAdv.amountPaid
-                : (matchingAdv?.totalRequired && matchingAdv.totalRequired > 0)
-                ? matchingAdv.totalRequired
-                : 0;
-
-            const hasAdvAmount = effectiveAdvAmount > 0;
-            const isNotPaid =
-              rawAdvStatus.toLowerCase() === 'not paid' ||
-              rawAdvStatus.toLowerCase() === 'not_paid';
-
-            const advStatus =
-              isOwnerFlat
-                ? 'N/A'
-                : isNotPaid
-                ? 'Not Paid'
-                : isMarkedPaid
-                ? 'Paid'
-                : isMarkedPartial || matchingAdv?.status === 'partially_paid'
-                ? 'Partially Paid'
-                : rawAdvStatus.toLowerCase() === 'adjusted'
-                ? 'Adjusted'
-                : rawAdvStatus.toLowerCase() === 'n/a'
-                ? 'N/A'
-                : (matchingAdv?.status === 'paid' || (!rawAdvStatus && hasAdvAmount))
-                ? 'Paid'
-                : 'Not Paid';
-            const rentStatus =
-              item.rentStatus ||
-              (item.paymentStatus === 'Paid' || item.paymentStatus === 'Adjusted'
-                ? 'Paid'
-                : item.paymentStatus === 'Partially Paid'
-                ? 'Partially Paid'
-                : item.paymentStatus === 'N/A'
-                ? 'N/A'
-                : 'Not Paid');
-            const elecStatus =
-              item.electricityStatus ||
-              (item.electricityBill === 0
-                ? 'N/A'
-                : item.paymentStatus === 'Paid'
-                ? 'Paid'
-                : 'Not Paid');
-
-            return (
-              <div key={item.id} className="p-4 space-y-3 bg-white">
-                <div className="flex items-center justify-between pb-1">
-                  <span className="font-extrabold text-sm text-slate-900 font-sans">
-                    {getMonthName(item.month)} {item.year}
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    {calculateItemTotalDue(item) > 0 ? (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">
-                        Due: {formatBDT(calculateItemTotalDue(item))}
-                      </span>
-                    ) : (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                        Cleared
-                      </span>
-                    )}
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        rentStatus === 'Paid'
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : rentStatus === 'Partially Paid'
-                          ? 'bg-amber-100 text-amber-800'
-                          : rentStatus === 'N/A'
-                          ? 'bg-slate-100 text-slate-500'
-                          : 'bg-rose-100 text-rose-800'
-                      }`}
-                    >
-                      Rent: {rentStatus}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-                  {/* Rent Block */}
-                  <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 flex flex-col justify-between">
-                    <div>
-                      <span className="text-[10px] font-sans text-slate-500 uppercase block font-bold">Flat Rent</span>
-                      <span className="font-bold text-slate-900 text-sm mt-0.5 block">{formatBDT(item.flatRent)}</span>
-                    </div>
-                    {rentStatus === 'Paid' && item.flatRent > 0 && (
-                      <button
-                        onClick={() => handleGenerateRentReceipt(item)}
-                        className="mt-2 min-h-[38px] w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-bold transition-colors cursor-pointer"
-                        title="Generate Official Flat Rent Receipt"
-                      >
-                        <Receipt className="w-3.5 h-3.5" />
-                        <span>Receipt</span>
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Electricity Block */}
-                  <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 flex flex-col justify-between">
-                    <div>
-                      <span className="text-[10px] font-sans text-slate-500 uppercase block font-bold">Electricity</span>
-                      <span className="font-bold text-slate-900 text-sm mt-0.5 block">
-                        {item.electricityBill > 0 ? formatBDT(item.electricityBill) : '৳0'}
-                      </span>
-                      <span
-                        className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold ${
-                          elecStatus === 'Paid'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : elecStatus === 'N/A'
-                            ? 'bg-slate-100 text-slate-500'
-                            : 'bg-rose-100 text-rose-800'
-                        }`}
-                      >
-                        {elecStatus}
-                      </span>
-                    </div>
-                    {elecStatus === 'Paid' && item.electricityBill > 0 && (
-                      <button
-                        onClick={() => handleGenerateElectricityReceipt(item)}
-                        className="mt-2 min-h-[38px] w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg text-xs font-bold transition-colors cursor-pointer"
-                        title="Generate Official Electricity Receipt"
-                      >
-                        <Receipt className="w-3.5 h-3.5" />
-                        <span>Receipt</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Advance and Parking Footer */}
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px]">Advance: <strong className="font-mono text-indigo-700">{formatBDT(effectiveAdvAmount)}</strong></span>
-                    {(advStatus === 'Paid' || advStatus === 'Partially Paid' || hasAdvAmount) && advStatus !== 'N/A' && advStatus !== 'Not Paid' && !isOwnerFlat && (
-                      <button
-                        onClick={() => handleGenerateAdvanceReceipt({ ...item, advancePayment: effectiveAdvAmount })}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded text-[10px] font-bold transition-colors cursor-pointer"
-                        title="Generate Advance Receipt"
-                      >
-                        <Receipt className="w-3 h-3" />
-                        <span>Receipt</span>
-                      </button>
-                    )}
-                  </div>
-                  {item.parkingRent > 0 && (
-                    <span className="text-[11px]">Parking: <strong className="font-mono text-slate-800">{formatBDT(item.parkingRent)}</strong></span>
-                  )}
-                </div>
+        {historyLayoutMode === 'cards' ? (
+          /* Mobile Financial History Cards */
+          <div className="divide-y divide-slate-100">
+            {displayLedgerHistory.length === 0 ? (
+              <div className="p-8 text-center text-slate-500 text-xs font-sans">
+                No financial ledger records found for Flat {flatId}.
               </div>
-            );
-          })}
-        </div>
-
-        {/* Desktop Table (hidden md:block) */}
-        <div className="hidden md:block table-scroll-container">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-slate-900 text-white font-semibold sticky top-0 z-10">
-              <tr>
-                <th className="py-3 px-4 whitespace-nowrap">Period</th>
-                <th className="py-3 px-4 text-right whitespace-nowrap">Security Advance</th>
-                <th className="py-3 px-4 text-right whitespace-nowrap">Flat Rent</th>
-                <th className="py-3 px-4 text-right whitespace-nowrap">Electricity</th>
-                <th className="py-3 px-4 text-right whitespace-nowrap">Parking</th>
-                <th className="py-3 px-4 text-right whitespace-nowrap">Month Due</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 font-mono">
-              {flatLedgerHistory.map((item) => {
-                const isOwnerFlat = item.flatId.toLowerCase().includes('owner');
-                const rawAdvStatus = (item.advanceStatus || '').trim();
+            ) : (
+              displayLedgerHistory.map((item) => {
+                const isOwnerFlat = item.flatId.toLowerCase().includes('owner') || (tenant?.fullName?.toLowerCase().includes('owner') ?? false);
+                const rawAdvStatus = (item.advanceStatus || '').trim().toLowerCase();
                 const matchingAdv = data.advanceAccounts.find((a) => a.flatId === item.flatId || a.flatId === flatId);
-                const isMarkedPaid = rawAdvStatus.toLowerCase() === 'paid';
-                const isMarkedPartial = rawAdvStatus.toLowerCase() === 'partially paid' || rawAdvStatus.toLowerCase() === 'partially_paid';
+
+                const isAdvNA =
+                  isOwnerFlat ||
+                  rawAdvStatus === 'n/a' ||
+                  rawAdvStatus === 'na' ||
+                  rawAdvStatus === 'not applicable' ||
+                  matchingAdv?.status?.toLowerCase() === 'n/a' ||
+                  matchingAdv?.status?.toLowerCase() === 'na' ||
+                  (matchingAdv !== undefined && matchingAdv.totalRequired === 0 && matchingAdv.amountPaid === 0);
+
+                const isMarkedPaid = rawAdvStatus === 'paid';
+                const isMarkedPartial = rawAdvStatus === 'partially paid' || rawAdvStatus === 'partially_paid';
+                const isNotPaid = rawAdvStatus === 'not paid' || rawAdvStatus === 'not_paid';
+
+                const advStatus =
+                  isAdvNA
+                    ? 'N/A'
+                    : isNotPaid
+                    ? 'Not Paid'
+                    : isMarkedPaid
+                    ? 'Paid'
+                    : isMarkedPartial || matchingAdv?.status === 'partially_paid'
+                    ? 'Partially Paid'
+                    : rawAdvStatus === 'adjusted'
+                    ? 'Adjusted'
+                    : (matchingAdv?.status === 'paid' || (!rawAdvStatus && Number(item.advancePayment) > 0))
+                    ? 'Paid'
+                    : 'Not Paid';
 
                 const effectiveAdvAmount =
-                  item.advancePayment !== undefined && item.advancePayment !== null
+                  advStatus === 'N/A' || isAdvNA
+                    ? 0
+                    : item.advancePayment !== undefined && item.advancePayment !== null
                     ? Number(item.advancePayment)
                     : (matchingAdv?.amountPaid && matchingAdv.amountPaid > 0)
                     ? matchingAdv.amountPaid
@@ -1295,26 +1230,6 @@ export const TenantPortal: React.FC<Props> = ({
                     : 0;
 
                 const hasAdvAmount = effectiveAdvAmount > 0;
-                const isNotPaid =
-                  rawAdvStatus.toLowerCase() === 'not paid' ||
-                  rawAdvStatus.toLowerCase() === 'not_paid';
-
-                const advStatus =
-                  isOwnerFlat
-                    ? 'N/A'
-                    : isNotPaid
-                    ? 'Not Paid'
-                    : isMarkedPaid
-                    ? 'Paid'
-                    : isMarkedPartial || matchingAdv?.status === 'partially_paid'
-                    ? 'Partially Paid'
-                    : rawAdvStatus.toLowerCase() === 'adjusted'
-                    ? 'Adjusted'
-                    : rawAdvStatus.toLowerCase() === 'n/a'
-                    ? 'N/A'
-                    : (matchingAdv?.status === 'paid' || (!rawAdvStatus && hasAdvAmount))
-                    ? 'Paid'
-                    : 'Not Paid';
                 const rentStatus =
                   item.rentStatus ||
                   (item.paymentStatus === 'Paid' || item.paymentStatus === 'Adjusted'
@@ -1333,92 +1248,65 @@ export const TenantPortal: React.FC<Props> = ({
                     : 'Not Paid');
 
                 return (
-                  <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3 px-4 font-bold text-slate-900 font-sans whitespace-nowrap">
-                      {getMonthName(item.month)} {item.year}
-                    </td>
+                  <div key={item.id} className="p-4 space-y-3 bg-white">
+                    <div className="flex items-center justify-between pb-1">
+                      <span className="font-extrabold text-sm text-slate-900 font-sans">
+                        {getMonthName(item.month)} {item.year}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {calculateItemTotalDue(item) > 0 ? (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">
+                            Due: {formatBDT(calculateItemTotalDue(item))}
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                            Cleared
+                          </span>
+                        )}
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            rentStatus === 'Paid'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : rentStatus === 'Partially Paid'
+                              ? 'bg-amber-100 text-amber-800'
+                              : rentStatus === 'N/A'
+                              ? 'bg-slate-100 text-slate-500'
+                              : 'bg-rose-100 text-rose-800'
+                          }`}
+                        >
+                          Rent: {rentStatus}
+                        </span>
+                      </div>
+                    </div>
 
-                    {/* Advance Paid with Status & Receipt */}
-                    <td className="py-3 px-4 text-right font-sans whitespace-nowrap">
-                      <span className="font-mono tabular-nums font-bold text-indigo-700 block">
-                        {formatBDT(effectiveAdvAmount)}
-                      </span>
-                      <span
-                        className={`inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold ${
-                          advStatus === 'Paid'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : advStatus === 'Partially Paid'
-                            ? 'bg-amber-100 text-amber-800'
-                            : advStatus === 'Adjusted'
-                            ? 'bg-purple-100 text-purple-800'
-                            : 'bg-rose-100 text-rose-800'
-                        }`}
-                      >
-                        {advStatus}
-                      </span>
-                      {(advStatus === 'Paid' || advStatus === 'Partially Paid' || hasAdvAmount) && advStatus !== 'N/A' && advStatus !== 'Not Paid' && !isOwnerFlat && (
-                        <div className="mt-1">
-                          <button
-                            onClick={() => handleGenerateAdvanceReceipt({ ...item, advancePayment: effectiveAdvAmount })}
-                            className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded text-[10px] font-bold transition-colors cursor-pointer"
-                            title="Generate Official Security Advance Receipt (Manager Signed)"
-                          >
-                            <Receipt className="w-3 h-3" />
-                            <span>Generate Receipt</span>
-                          </button>
+                    <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+                      {/* Rent Block */}
+                      <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 flex flex-col justify-between">
+                        <div>
+                          <span className="text-[10px] font-sans text-slate-500 uppercase block font-bold">Flat Rent</span>
+                          <span className="font-bold text-slate-900 text-sm mt-0.5 block">{formatBDT(item.flatRent)}</span>
                         </div>
-                      )}
-                    </td>
-
-                    {/* Flat Rent with Status & Receipt */}
-                    <td className="py-3 px-4 text-right font-sans whitespace-nowrap">
-                      <span className="font-mono tabular-nums font-bold text-slate-800 block">
-                        {formatBDT(item.flatRent)}
-                      </span>
-                      <span
-                        className={`inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold ${
-                          rentStatus === 'Paid'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : rentStatus === 'Partially Paid'
-                            ? 'bg-amber-100 text-amber-800'
-                            : rentStatus === 'N/A'
-                            ? 'bg-slate-100 text-slate-500'
-                            : 'bg-rose-100 text-rose-800'
-                        }`}
-                      >
-                        {rentStatus}
-                      </span>
-                      {rentStatus === 'Paid' && item.flatRent > 0 && (
-                        <div className="mt-1">
+                        {rentStatus === 'Paid' && item.flatRent > 0 && (
                           <button
                             onClick={() => handleGenerateRentReceipt(item)}
-                            className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded text-[10px] font-bold transition-colors cursor-pointer"
-                            title="Generate Official Flat Rent Receipt (Manager Signed)"
+                            className="mt-2 min-h-[38px] w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                            title="Generate Official Flat Rent Receipt"
                           >
-                            <Receipt className="w-3 h-3" />
-                            <span>Generate Receipt</span>
+                            <Receipt className="w-3.5 h-3.5" />
+                            <span>Receipt</span>
                           </button>
-                        </div>
-                      )}
-                    </td>
+                        )}
+                      </div>
 
-                    {/* Electricity with Status & Receipt */}
-                    <td className="py-3 px-4 text-right font-sans whitespace-nowrap">
-                      {!isUnitElecOn && item.electricityBill === 0 ? (
-                        <div className="flex flex-col items-end">
-                          <span className="font-mono tabular-nums font-medium text-slate-400 block">৳0</span>
-                          <span className="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200">
-                            OFF
-                          </span>
-                          <span className="text-[9px] text-slate-400 block mt-0.5">No Bill</span>
-                        </div>
-                      ) : (
-                        <>
-                          <span className="font-mono tabular-nums font-bold text-slate-800 block">
+                      {/* Electricity Block */}
+                      <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 flex flex-col justify-between">
+                        <div>
+                          <span className="text-[10px] font-sans text-slate-500 uppercase block font-bold">Electricity</span>
+                          <span className="font-bold text-slate-900 text-sm mt-0.5 block">
                             {item.electricityBill > 0 ? formatBDT(item.electricityBill) : '৳0'}
                           </span>
                           <span
-                            className={`inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold ${
+                            className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold ${
                               elecStatus === 'Paid'
                                 ? 'bg-emerald-100 text-emerald-800'
                                 : elecStatus === 'N/A'
@@ -1428,57 +1316,279 @@ export const TenantPortal: React.FC<Props> = ({
                           >
                             {elecStatus}
                           </span>
-                          {item.electricityBill > 0 && (
-                            <span className="text-[9px] text-slate-500 font-medium block mt-0.5">
-                              {getPostpaidElectricityPeriod(item.month, item.year).monthName.slice(0, 3)} Bill
-                            </span>
-                          )}
-                          {elecStatus === 'Paid' && item.electricityBill > 0 && (
+                        </div>
+                        {elecStatus === 'Paid' && item.electricityBill > 0 && (
+                          <button
+                            onClick={() => handleGenerateElectricityReceipt(item)}
+                            className="mt-2 min-h-[38px] w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                            title="Generate Official Electricity Receipt"
+                          >
+                            <Receipt className="w-3.5 h-3.5" />
+                            <span>Receipt</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Advance and Parking Footer */}
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px]">Advance: <strong className="font-mono text-indigo-700">{formatBDT(effectiveAdvAmount)}</strong></span>
+                        {(advStatus === 'Paid' || advStatus === 'Partially Paid' || hasAdvAmount) && advStatus !== 'N/A' && advStatus !== 'Not Paid' && !isOwnerFlat && (
+                          <button
+                            onClick={() => handleGenerateAdvanceReceipt({ ...item, advancePayment: effectiveAdvAmount })}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded text-[10px] font-bold transition-colors cursor-pointer"
+                            title="Generate Advance Receipt"
+                          >
+                            <Receipt className="w-3 h-3" />
+                            <span>Receipt</span>
+                          </button>
+                        )}
+                      </div>
+                      {item.parkingRent > 0 && (
+                        <span className="text-[11px]">Parking: <strong className="font-mono text-slate-800">{formatBDT(item.parkingRent)}</strong></span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        ) : (
+          /* Financial History Table - Fully responsive & horizontally scrollable on mobile smartphones and desktop */
+          <div className="table-scroll-container">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead className="bg-slate-900 text-white font-semibold sticky top-0 z-10">
+                <tr>
+                  <th className="py-3 px-4 whitespace-nowrap">Period</th>
+                  <th className="py-3 px-4 text-right whitespace-nowrap">Security Advance</th>
+                  <th className="py-3 px-4 text-right whitespace-nowrap">Flat Rent</th>
+                  <th className="py-3 px-4 text-right whitespace-nowrap">Electricity</th>
+                  <th className="py-3 px-4 text-right whitespace-nowrap">Parking</th>
+                  <th className="py-3 px-4 text-right whitespace-nowrap">Month Due</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-mono">
+                {displayLedgerHistory.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-slate-500 font-sans">
+                      No financial ledger records found for Flat {flatId}.
+                    </td>
+                  </tr>
+                ) : (
+                  displayLedgerHistory.map((item) => {
+                    const isOwnerFlat = item.flatId.toLowerCase().includes('owner') || (tenant?.fullName?.toLowerCase().includes('owner') ?? false);
+                    const rawAdvStatus = (item.advanceStatus || '').trim().toLowerCase();
+                    const matchingAdv = data.advanceAccounts.find((a) => a.flatId === item.flatId || a.flatId === flatId);
+
+                    const isAdvNA =
+                      isOwnerFlat ||
+                      rawAdvStatus === 'n/a' ||
+                      rawAdvStatus === 'na' ||
+                      rawAdvStatus === 'not applicable' ||
+                      matchingAdv?.status?.toLowerCase() === 'n/a' ||
+                      matchingAdv?.status?.toLowerCase() === 'na' ||
+                      (matchingAdv !== undefined && matchingAdv.totalRequired === 0 && matchingAdv.amountPaid === 0);
+
+                    const isMarkedPaid = rawAdvStatus === 'paid';
+                    const isMarkedPartial = rawAdvStatus === 'partially paid' || rawAdvStatus === 'partially_paid';
+                    const isNotPaid = rawAdvStatus === 'not paid' || rawAdvStatus === 'not_paid';
+
+                    const advStatus =
+                      isAdvNA
+                        ? 'N/A'
+                        : isNotPaid
+                        ? 'Not Paid'
+                        : isMarkedPaid
+                        ? 'Paid'
+                        : isMarkedPartial || matchingAdv?.status === 'partially_paid'
+                        ? 'Partially Paid'
+                        : rawAdvStatus === 'adjusted'
+                        ? 'Adjusted'
+                        : (matchingAdv?.status === 'paid' || (!rawAdvStatus && Number(item.advancePayment) > 0))
+                        ? 'Paid'
+                        : 'Not Paid';
+
+                    const effectiveAdvAmount =
+                      advStatus === 'N/A' || isAdvNA
+                        ? 0
+                        : item.advancePayment !== undefined && item.advancePayment !== null
+                        ? Number(item.advancePayment)
+                        : (matchingAdv?.amountPaid && matchingAdv.amountPaid > 0)
+                        ? matchingAdv.amountPaid
+                        : (matchingAdv?.totalRequired && matchingAdv.totalRequired > 0)
+                        ? matchingAdv.totalRequired
+                        : 0;
+
+                    const hasAdvAmount = effectiveAdvAmount > 0;
+                    const rentStatus =
+                      item.rentStatus ||
+                      (item.paymentStatus === 'Paid' || item.paymentStatus === 'Adjusted'
+                        ? 'Paid'
+                        : item.paymentStatus === 'Partially Paid'
+                        ? 'Partially Paid'
+                        : item.paymentStatus === 'N/A'
+                        ? 'N/A'
+                        : 'Not Paid');
+                    const elecStatus =
+                      item.electricityStatus ||
+                      (item.electricityBill === 0
+                        ? 'N/A'
+                        : item.paymentStatus === 'Paid'
+                        ? 'Paid'
+                        : 'Not Paid');
+
+                    return (
+                      <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
+                        <td className="py-3 px-4 font-bold text-slate-900 font-sans whitespace-nowrap">
+                          {getMonthName(item.month)} {item.year}
+                        </td>
+
+                        {/* Advance Paid with Status & Receipt */}
+                        <td className="py-3 px-4 text-right font-sans whitespace-nowrap">
+                          <span className="font-mono tabular-nums font-bold text-indigo-700 block">
+                            {formatBDT(effectiveAdvAmount)}
+                          </span>
+                          <span
+                            className={`inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold ${
+                              advStatus === 'Paid'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : advStatus === 'Partially Paid'
+                                ? 'bg-amber-100 text-amber-800'
+                                : advStatus === 'Adjusted'
+                                ? 'bg-purple-100 text-purple-800'
+                                : advStatus === 'N/A'
+                                ? 'bg-slate-100 text-slate-500'
+                                : 'bg-rose-100 text-rose-800'
+                            }`}
+                          >
+                            {advStatus}
+                          </span>
+                          {(advStatus === 'Paid' || advStatus === 'Partially Paid' || hasAdvAmount) && advStatus !== 'N/A' && advStatus !== 'Not Paid' && !isOwnerFlat && (
                             <div className="mt-1">
                               <button
-                                onClick={() => handleGenerateElectricityReceipt(item)}
+                                onClick={() => handleGenerateAdvanceReceipt({ ...item, advancePayment: effectiveAdvAmount })}
                                 className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded text-[10px] font-bold transition-colors cursor-pointer"
-                                title="Generate Official Electricity Bill Receipt (Manager Signed)"
+                                title="Generate Official Security Advance Receipt (Manager Signed)"
                               >
                                 <Receipt className="w-3 h-3" />
                                 <span>Generate Receipt</span>
                               </button>
                             </div>
                           )}
-                        </>
-                      )}
-                    </td>
+                        </td>
 
-                    {/* Parking Rent */}
-                    <td className="py-3 px-4 text-right text-slate-600 font-mono tabular-nums whitespace-nowrap">
-                      {item.parkingRent > 0 ? formatBDT(item.parkingRent) : '-'}
-                    </td>
+                        {/* Flat Rent with Status & Receipt */}
+                        <td className="py-3 px-4 text-right font-sans whitespace-nowrap">
+                          <span className="font-mono tabular-nums font-bold text-slate-800 block">
+                            {formatBDT(item.flatRent)}
+                          </span>
+                          <span
+                            className={`inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold ${
+                              rentStatus === 'Paid'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : rentStatus === 'Partially Paid'
+                                ? 'bg-amber-100 text-amber-800'
+                                : rentStatus === 'N/A'
+                                ? 'bg-slate-100 text-slate-500'
+                                : 'bg-rose-100 text-rose-800'
+                            }`}
+                          >
+                            {rentStatus}
+                          </span>
+                          {rentStatus === 'Paid' && item.flatRent > 0 && (
+                            <div className="mt-1">
+                              <button
+                                onClick={() => handleGenerateRentReceipt(item)}
+                                className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded text-[10px] font-bold transition-colors cursor-pointer"
+                                title="Generate Official Flat Rent Receipt (Manager Signed)"
+                              >
+                                <Receipt className="w-3 h-3" />
+                                <span>Generate Receipt</span>
+                              </button>
+                            </div>
+                          )}
+                        </td>
 
-                    {/* Month Due */}
-                    <td className="py-3 px-4 text-right font-sans whitespace-nowrap">
-                      <span
-                        className={`font-mono tabular-nums font-bold block ${
-                          calculateItemTotalDue(item) > 0 ? 'text-rose-600' : 'text-emerald-700'
-                        }`}
-                      >
-                        {formatBDT(calculateItemTotalDue(item))}
-                      </span>
-                      <span
-                        className={`inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold ${
-                          calculateItemTotalDue(item) === 0
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-rose-100 text-rose-800'
-                        }`}
-                      >
-                        {calculateItemTotalDue(item) === 0 ? 'Cleared' : 'Unpaid'}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                        {/* Electricity with Status & Receipt */}
+                        <td className="py-3 px-4 text-right font-sans whitespace-nowrap">
+                          {!isUnitElecOn && item.electricityBill === 0 ? (
+                            <div className="flex flex-col items-end">
+                              <span className="font-mono tabular-nums font-medium text-slate-400 block">৳0</span>
+                              <span className="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200">
+                                OFF
+                              </span>
+                              <span className="text-[9px] text-slate-400 block mt-0.5">No Bill</span>
+                            </div>
+                          ) : (
+                            <>
+                              <span className="font-mono tabular-nums font-bold text-slate-800 block">
+                                {item.electricityBill > 0 ? formatBDT(item.electricityBill) : '৳0'}
+                              </span>
+                              <span
+                                className={`inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold ${
+                                  elecStatus === 'Paid'
+                                    ? 'bg-emerald-100 text-emerald-800'
+                                    : elecStatus === 'N/A'
+                                    ? 'bg-slate-100 text-slate-500'
+                                    : 'bg-rose-100 text-rose-800'
+                                }`}
+                              >
+                                {elecStatus}
+                              </span>
+                              {item.electricityBill > 0 && (
+                                <span className="text-[9px] text-slate-500 font-medium block mt-0.5">
+                                  {getPostpaidElectricityPeriod(item.month, item.year).monthName.slice(0, 3)} Bill
+                                </span>
+                              )}
+                              {elecStatus === 'Paid' && item.electricityBill > 0 && (
+                                <div className="mt-1">
+                                  <button
+                                    onClick={() => handleGenerateElectricityReceipt(item)}
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded text-[10px] font-bold transition-colors cursor-pointer"
+                                    title="Generate Official Electricity Bill Receipt (Manager Signed)"
+                                  >
+                                    <Receipt className="w-3 h-3" />
+                                    <span>Generate Receipt</span>
+                                  </button>
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </td>
+
+                        {/* Parking Rent */}
+                        <td className="py-3 px-4 text-right text-slate-600 font-mono tabular-nums whitespace-nowrap">
+                          {item.parkingRent > 0 ? formatBDT(item.parkingRent) : '-'}
+                        </td>
+
+                        {/* Month Due */}
+                        <td className="py-3 px-4 text-right font-sans whitespace-nowrap">
+                          <span
+                            className={`font-mono tabular-nums font-bold block ${
+                              calculateItemTotalDue(item) > 0 ? 'text-rose-600' : 'text-emerald-700'
+                            }`}
+                          >
+                            {formatBDT(calculateItemTotalDue(item))}
+                          </span>
+                          <span
+                            className={`inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold ${
+                              calculateItemTotalDue(item) === 0
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : 'bg-rose-100 text-rose-800'
+                            }`}
+                          >
+                            {calculateItemTotalDue(item) === 0 ? 'Cleared' : 'Unpaid'}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* ELECTRICITY BILLS SECTION */}

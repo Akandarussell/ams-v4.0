@@ -34,7 +34,6 @@ import { formatBDT, formatDateDDMMYYYY, getMonthName, MONTH_NAMES, getPostpaidEl
 import { COMPLEX_CONFIG } from '../lib/complexConfig';
 import { formatBillingPeriod } from '../lib/api';
 import { INITIAL_BLOCK_MFS_CONFIGS, getEffectiveRemainingAdvance, calculateItemTotalDue, compareFlatIdSerial } from '../lib/storage';
-import { exportAllCredentialsToExcel } from '../lib/exportCredentials';
 import { ManualLedgerEntryModal } from './ManualLedgerEntryModal';
 import { RecordPaymentModal } from './RecordPaymentModal';
 import { ExcelImportModal } from './ExcelImportModal';
@@ -184,11 +183,26 @@ export const OwnerDashboard: React.FC<Props> = ({
     setIsRecordPaymentModalOpen(true);
   };
 
-  // Signature Metadata: Always Owner's Signature for Owner Account
+  // Signature Metadata: Always Owner's Signature for Owner Account with Last Name (Rashed, Raju, Rony)
+  const ownerLastName =
+    blockName === 'Block A'
+      ? 'Rashed'
+      : blockName === 'Block B'
+      ? 'Raju'
+      : blockName === 'Block C'
+      ? 'Rony'
+      : currentUser.fullName?.toLowerCase().includes('rashed')
+      ? 'Rashed'
+      : currentUser.fullName?.toLowerCase().includes('raju')
+      ? 'Raju'
+      : currentUser.fullName?.toLowerCase().includes('rony')
+      ? 'Rony'
+      : 'Owner';
+
   const ownerSignatureMeta = {
     authorizedSignatureRole: 'owner' as const,
-    signatureTitle: "Owner's Signature",
-    authorizedSignatureBy: currentUser.fullName ? `${currentUser.fullName} (Owner)` : `${blockName} Owner`,
+    signatureTitle: `${ownerLastName} (${blockName} Owner)`,
+    authorizedSignatureBy: ownerLastName,
   };
 
   const handleGenerateAdvanceReceipt = (item: MonthlyLedgerItem) => {
@@ -518,14 +532,6 @@ export const OwnerDashboard: React.FC<Props> = ({
             >
               <Download className="w-4 h-4" />
               Export CSV
-            </button>
-            <button
-              onClick={() => exportAllCredentialsToExcel(data, { blockFilter: blockName })}
-              className="min-h-[44px] flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-xl shadow-sm transition-all cursor-pointer"
-              title={`1-Click Export Passwords for ${blockName} & Authority accounts (.xlsx)`}
-            >
-              <KeyRound className="w-4 h-4 text-emerald-100" />
-              Export Passwords
             </button>
           </div>
         </div>

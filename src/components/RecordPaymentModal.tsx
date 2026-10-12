@@ -377,13 +377,26 @@ export const RecordPaymentModal: React.FC<Props> = ({
     // 4. Generate printable receipt if requested
     if (autoOpenReceipt && onViewReceipt && totalPaidCollecting > 0) {
       const isOwner = userRole === 'owner';
+      const ownerLastName =
+        activeBlockName === 'Block A'
+          ? 'Rashed'
+          : activeBlockName === 'Block B'
+          ? 'Raju'
+          : activeBlockName === 'Block C'
+          ? 'Rony'
+          : currentUser?.fullName?.toLowerCase().includes('rashed')
+          ? 'Rashed'
+          : currentUser?.fullName?.toLowerCase().includes('raju')
+          ? 'Raju'
+          : currentUser?.fullName?.toLowerCase().includes('rony')
+          ? 'Rony'
+          : 'Owner';
+
       const signatureMeta = isOwner
         ? {
             authorizedSignatureRole: 'owner' as const,
-            signatureTitle: "Owner's Signature",
-            authorizedSignatureBy: currentUser?.fullName
-              ? `${currentUser.fullName} (Owner)`
-              : `${activeBlockName} Owner`,
+            signatureTitle: `${ownerLastName} (${activeBlockName} Owner)`,
+            authorizedSignatureBy: ownerLastName,
           }
         : {
             authorizedSignatureRole: 'manager' as const,
