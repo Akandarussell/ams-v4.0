@@ -552,7 +552,11 @@ const STORAGE_KEY = 'ams_mbd_v4_database';
 
 export function getInitialDatabaseState(): AppDatabaseState {
   if (bundledDatabase && Array.isArray(bundledDatabase.units) && bundledDatabase.units.length > 0) {
-    return JSON.parse(JSON.stringify(bundledDatabase)) as AppDatabaseState;
+    const state = JSON.parse(JSON.stringify(bundledDatabase)) as AppDatabaseState;
+    if (!state.chatMessages || state.chatMessages.length === 0) {
+      state.chatMessages = [...INITIAL_CHAT_MESSAGES];
+    }
+    return state;
   }
   return {
     profiles: INITIAL_PROFILES,
@@ -813,16 +817,7 @@ export function purgePreviousTenantChatMessages(
         }
       }
 
-      // 2. If message timestamp is before active tenant entry date
-      if (activeTenant.entryDate && activeTenant.entryDate.includes('-')) {
-        const entryTime = new Date(`${activeTenant.entryDate}T00:00:00Z`).getTime();
-        const msgTime = new Date(m.timestamp).getTime();
-        if (!isNaN(entryTime) && !isNaN(msgTime) && msgTime < entryTime) {
-          flatsWithPreviousTenantMessages.add(matchedFlat);
-        }
-      }
-
-      // 3. Known former mock tenants check
+      // 2. Known former mock tenants check
       const lowerSender = (m.senderName || '').toLowerCase();
       const lowerMsg = (m.message || '').toLowerCase();
       if (
@@ -879,16 +874,7 @@ export function purgePreviousTenantChatMessages(
         return false;
       }
 
-      // 2. If message timestamp is before active tenant entry date, purge it
-      if (activeTenant.entryDate && activeTenant.entryDate.includes('-')) {
-        const entryTime = new Date(`${activeTenant.entryDate}T00:00:00Z`).getTime();
-        const msgTime = new Date(m.timestamp).getTime();
-        if (!isNaN(entryTime) && !isNaN(msgTime) && msgTime < entryTime) {
-          return false;
-        }
-      }
-
-      // 3. If flat had previous tenant messages in that thread (e.g. Tanvir in Flat A2, Farhana in Flat B3),
+      // 2. If flat had previous tenant messages in that thread (e.g. Tanvir in Flat A2, Farhana in Flat B3),
       // purge any message from that former conversation thread
       if (flatsWithPreviousTenantMessages.has(matchedFlat)) {
         const lowerSender = (m.senderName || '').toLowerCase();
@@ -903,11 +889,6 @@ export function purgePreviousTenantChatMessages(
           (lowerSender.includes('farhana') || lowerMsg.includes('farhana')) &&
           !activeTenant.fullName.toLowerCase().includes('farhana')
         ) {
-          return false;
-        }
-        // If message was between manager and this flat prior to active tenant entry date
-        // or part of the previous tenant thread:
-        if (m.id === 'msg-1' || m.id === 'msg-2' || m.id === 'msg-3' || m.id === 'msg-4' || m.id === 'msg-5') {
           return false;
         }
       }
@@ -1500,6 +1481,9 @@ export function loadDatabaseState(): AppDatabaseState {
       parsed.securityCredentials = secCreds;
     }
     if (parsed) {
+      if (!parsed.chatMessages || parsed.chatMessages.length === 0) {
+        parsed.chatMessages = [...INITIAL_CHAT_MESSAGES];
+      }
       parsed = syncTenantsWithCurrentLedger(parsed);
     }
     return parsed;
@@ -1536,6 +1520,9 @@ export async function fetchDatabaseFromServer(): Promise<AppDatabaseState | null
     const json = await res.json();
     if (json && json.success && json.data) {
       let serverData = json.data as AppDatabaseState;
+      if (!serverData.chatMessages || serverData.chatMessages.length === 0) {
+        serverData.chatMessages = [...INITIAL_CHAT_MESSAGES];
+      }
       // Auto-upgrade tariff configuration if outdated on server
       if (!isTariffUpToDate(serverData.tariffConfig)) {
         serverData.tariffConfig = upgradeTariffConfig(serverData.tariffConfig);

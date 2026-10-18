@@ -582,6 +582,116 @@ export const MainLedger: React.FC<Props> = ({
 
   // Postpaid electricity consumption period rule
   const currentPostpaidPeriod = getPostpaidElectricityPeriod(data.selectedMonth, data.selectedYear);
+
+  // 1. Advance (Paid vs Due) for units in filtered ledger
+  const advancePaid = filteredItems.reduce((sum, item) => {
+    if (item.flatId.toLowerCase().includes('owner')) return sum;
+    const a = data.advanceAccounts.find((acc) => acc.flatId.toLowerCase().trim() === item.flatId.toLowerCase().trim());
+    if (a) {
+      return sum + getEffectiveRemainingAdvance(a, data.ledgerItems);
+    }
+    const rawAdvStatus = (item.advanceStatus || '').trim().toLowerCase();
+    if (rawAdvStatus === 'paid' || rawAdvStatus === 'adjusted') {
+      return sum + (item.advancePayment || 0);
+    }
+    if (rawAdvStatus === 'partially paid' || rawAdvStatus === 'partially_paid') {
+      return sum + Math.round((item.advancePayment || 0) / 2);
+    }
+    return sum + (item.advancePayment || 0);
+  }, 0);
+
+  const advanceDue = filteredItems.reduce((sum, item) => {
+    if (item.flatId.toLowerCase().includes('owner')) return sum;
+    const a = data.advanceAccounts.find((acc) => acc.flatId.toLowerCase().trim() === item.flatId.toLowerCase().trim());
+    if (a) {
+      if (a.status === 'not_paid') {
+        return sum + (a.totalRequired || 0);
+      }
+      if (a.status === 'partially_paid') {
+        return sum + Math.max(0, (a.totalRequired || 0) - (a.amountPaid || 0));
+      }
+      return sum;
+    }
+    const rawAdvStatus = (item.advanceStatus || '').trim().toLowerCase();
+    if (rawAdvStatus === 'not paid' || rawAdvStatus === 'not_paid') {
+      return sum + (item.advancePayment || (item.flatRent * 2) || 0);
+    }
+    if (rawAdvStatus === 'partially paid' || rawAdvStatus === 'partially_paid') {
+      return sum + Math.round((item.advancePayment || 0) / 2);
+    }
+    return sum;
+  }, 0);
+
+  const advanceTotalRequired = advancePaid + advanceDue;
+
+  const advancePaidCount = filteredItems.filter((item) => {
+    if (item.flatId.toLowerCase().includes('owner')) return false;
+    const a = data.advanceAccounts.find((acc) => acc.flatId.toLowerCase().trim() === item.flatId.toLowerCase().trim());
+    if (a) return a.status === 'paid' || a.amountPaid > 0;
+    const rawAdvStatus = (item.advanceStatus || '').trim().toLowerCase();
+    return rawAdvStatus === 'paid' || rawAdvStatus === 'adjusted' || item.advancePayment > 0;
+  }).length;
+
+  const advanceDueCount = filteredItems.filter((item) => {
+    if (item.flatId.toLowerCase().includes('owner')) return false;
+    const a = data.advanceAccounts.find((acc) => acc.flatId.toLowerCase().trim() === item.flatId.toLowerCase().trim());
+    if (a) return a.status === 'not_paid' || a.status === 'partially_paid';
+    const rawAdvStatus = (item.advanceStatus || '').trim().toLowerCase();
+    return rawAdvStatus === 'not paid' || rawAdvStatus === 'not_paid';
+  }).length;
+
+  // 2. Current Month Flat Rent (Paid vs Due)
+  const rentPaid = filteredItems.reduce((sum, item) => {
+    if (item.rentStatus === 'Paid' || item.rentStatus === 'Adjusted') return sum + (item.flatRent || 0);
+    if (item.rentStatus === 'Partially Paid') {
+      const elecPaid = item.electricityStatus === 'Paid' ? (item.electricityBill || 0) : 0;
+      return sum + Math.max(0, (item.totalPaid || 0) - elecPaid);
+    }
+    if (item.paymentStatus === 'Paid' || item.paymentStatus === 'Adjusted') return sum + (item.flatRent || 0);
+    return sum;
+  }, 0);
+
+  const rentDue = filteredItems.reduce((sum, item) => {
+    if (item.rentStatus === 'Adjusted' || item.rentStatus === 'Paid' || item.rentStatus === 'N/A') return sum;
+    if (item.paymentStatus === 'Adjusted' || item.paymentStatus === 'Paid' || item.paymentStatus === 'N/A') return sum;
+    if (item.rentStatus === 'Partially Paid') {
+      const elecPaid = item.electricityStatus === 'Paid' ? (item.electricityBill || 0) : 0;
+      const paidRent = Math.max(0, (item.totalPaid || 0) - elecPaid);
+      return sum + Math.max(0, (item.flatRent || 0) - paidRent);
+    }
+    return sum + (item.flatRent || 0);
+  }, 0);
+
+  const rentTotalRequired = rentPaid + rentDue;
+
+  const rentPaidCount = filteredItems.filter(
+    (i) => i.rentStatus === 'Paid' || i.rentStatus === 'Adjusted' || (!i.rentStatus && (i.paymentStatus === 'Paid' || i.paymentStatus === 'Adjusted'))
+  ).length;
+  const rentDueCount = filteredItems.filter(
+    (i) => i.rentStatus !== 'Paid' && i.rentStatus !== 'Adjusted' && i.rentStatus !== 'N/A' && (i.flatRent || 0) > 0
+  ).length;
+
+  // 3. Current Month Electricity Bill (Paid vs Due)
+  const elecPaid = filteredItems.reduce((sum, item) => {
+    if (item.electricityStatus === 'Paid') return sum + (item.electricityBill || 0);
+    if (item.electricityStatus === 'Partially Paid') return sum + Math.round((item.electricityBill || 0) / 2);
+    return sum;
+  }, 0);
+
+  const elecDue = filteredItems.reduce((sum, item) => {
+    if (item.electricityStatus === 'Paid' || item.electricityStatus === 'N/A') return sum;
+    if (item.electricityStatus === 'Partially Paid') return sum + Math.round((item.electricityBill || 0) / 2);
+    return sum + (item.electricityBill || 0);
+  }, 0);
+
+  const elecTotalRequired = elecPaid + elecDue;
+
+  const elecPaidCount = filteredItems.filter(
+    (i) => i.electricityStatus === 'Paid' && (i.electricityBill || 0) > 0
+  ).length;
+  const elecDueCount = filteredItems.filter(
+    (i) => i.electricityStatus !== 'Paid' && i.electricityStatus !== 'N/A' && (i.electricityBill || 0) > 0
+  ).length;
   const totalConsumedKwh = filteredItems.reduce((acc, curr) => {
     const existingBill = data.electricityBills.find(
       (b) =>
@@ -1282,42 +1392,160 @@ export const MainLedger: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Live Metrics Ribbon & Filter Status Bar */}
-        <div className="px-5 py-3.5 bg-slate-50/80 border-t border-slate-200/90 flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-xs">
-          <div className="flex items-center gap-2 text-slate-600">
-            <span className="font-semibold text-slate-500">Showing:</span>
-            <span className="px-2.5 py-1 bg-blue-50 border border-blue-200/80 text-blue-700 rounded-lg font-bold text-xs">
-              {filteredItems.length} of {scopedLedger.length} Units
-            </span>
-            {isAnyFilterActive && (
-              <span className="text-[11px] text-amber-700 font-semibold px-2 py-0.5 bg-amber-50 rounded-md border border-amber-200/70">
-                Filtered view active
+        {/* Live Metrics Ribbon & Filter Status Bar with Paid vs Due Boxes */}
+        <div className="px-4 sm:px-5 py-4 bg-slate-50/90 border-t border-slate-200/90 flex flex-col gap-3.5 text-xs">
+          {/* Top Info Bar: Showing count & Total Collection Progress */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+            <div className="flex items-center gap-2 text-slate-600 flex-wrap">
+              <span className="font-semibold text-slate-500">Showing:</span>
+              <span className="px-2.5 py-1 bg-blue-50 border border-blue-200/80 text-blue-700 rounded-lg font-bold text-xs">
+                {filteredItems.length} of {scopedLedger.length} Units
               </span>
-            )}
+              {isAnyFilterActive && (
+                <span className="text-[11px] text-amber-700 font-semibold px-2 py-0.5 bg-amber-50 rounded-md border border-amber-200/70">
+                  Filtered view active
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2.5 font-sans">
+              <span className="text-xs font-bold text-slate-700">{collectionPercentage}% Total Collected</span>
+              <div className="w-24 sm:w-32 bg-slate-200 rounded-full h-2 overflow-hidden shadow-inner">
+                <div
+                  className="bg-emerald-500 h-2 rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min(100, collectionPercentage)}%` }}
+                ></div>
+              </div>
+            </div>
           </div>
 
-          {/* Quick Financial Summary of Filtered View */}
-          <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs">
-            <div className="bg-white px-3 py-1.5 rounded-xl border border-slate-200/80 shadow-2xs">
-              <span className="text-[10px] text-slate-400 font-sans block uppercase font-bold tracking-wider">Payable</span>
-              <span className="font-bold text-slate-900 font-mono tabular-nums text-sm">{formatBDT(totalPayable)}</span>
-            </div>
-            <div className="bg-white px-3 py-1.5 rounded-xl border border-emerald-200/80 shadow-2xs">
-              <span className="text-[10px] text-emerald-600 font-sans block uppercase font-bold tracking-wider">Collected</span>
-              <span className="font-bold text-emerald-600 font-mono tabular-nums text-sm">{formatBDT(totalPaid)}</span>
-            </div>
-            <div className="bg-white px-3 py-1.5 rounded-xl border border-rose-200/80 shadow-2xs">
-              <span className="text-[10px] text-rose-500 font-sans block uppercase font-bold tracking-wider">Due</span>
-              <span className={`font-bold font-mono tabular-nums text-sm ${totalDue > 0 ? 'text-rose-600' : 'text-slate-500'}`}>
-                {formatBDT(totalDue)}
-              </span>
-            </div>
-            <div className="hidden lg:flex items-center gap-2.5 pl-3 border-l border-slate-200 font-sans">
-              <span className="text-xs font-bold text-slate-700">{collectionPercentage}% Collected</span>
-              <div className="w-24 bg-slate-200 rounded-full h-2.5 overflow-hidden shadow-inner">
+          {/* 3 Monthly Accounting KPI Boxes: Advance Paid vs Due, Flat Rent Paid vs Due, Electricity Bill Paid vs Due */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
+            {/* Box 1: Advance Paid vs Due */}
+            <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
+                    <Wallet className="w-3.5 h-3.5 text-indigo-600" />
+                    Advance (Paid vs Due)
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/80">
+                    Security Escrow
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mt-2.5 pt-2 border-t border-slate-100">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Paid (Escrow)</span>
+                    <div className="text-base sm:text-lg font-black text-indigo-700 font-mono tabular-nums">
+                      {formatBDT(advancePaid)}
+                    </div>
+                  </div>
+                  <div className="border-l border-slate-100 pl-2">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Advance Due</span>
+                    <div className={`text-base sm:text-lg font-black font-mono tabular-nums ${advanceDue > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
+                      {formatBDT(advanceDue)}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-slate-500 mt-2">
+                  <span>{advancePaidCount} Paid &bull; {advanceDueCount} Due</span>
+                  <span className="font-mono text-slate-400 text-[10px]">Req: {formatBDT(advanceTotalRequired)}</span>
+                </div>
+              </div>
+              <div className="mt-2.5 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden flex shadow-inner">
                 <div
-                  className="bg-emerald-500 h-2.5 rounded-full transition-all duration-500"
-                  style={{ width: `${Math.min(100, collectionPercentage)}%` }}
+                  className="bg-indigo-600 h-1.5 transition-all"
+                  style={{ width: `${advanceTotalRequired > 0 ? (advancePaid / advanceTotalRequired) * 100 : 100}%` }}
+                ></div>
+                <div
+                  className="bg-rose-500 h-1.5 transition-all"
+                  style={{ width: `${advanceTotalRequired > 0 ? (advanceDue / advanceTotalRequired) * 100 : 0}%` }}
+                ></div>
+              </div>
+            </div>
+
+            {/* Box 2: Current Month Flat Rent Paid vs Due */}
+            <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
+                    <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
+                    {getMonthName(data.selectedMonth)} Flat Rent
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                    Paid vs Due
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mt-2.5 pt-2 border-t border-slate-100">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Rent Paid</span>
+                    <div className="text-base sm:text-lg font-black text-emerald-600 font-mono tabular-nums">
+                      {formatBDT(rentPaid)}
+                    </div>
+                  </div>
+                  <div className="border-l border-slate-100 pl-2">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Rent Due</span>
+                    <div className={`text-base sm:text-lg font-black font-mono tabular-nums ${rentDue > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
+                      {formatBDT(rentDue)}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-slate-500 mt-2">
+                  <span>{rentPaidCount} Paid (incl. adj) &bull; {rentDueCount} Due</span>
+                  <span className="font-mono text-slate-400 text-[10px]">Req: {formatBDT(rentTotalRequired)}</span>
+                </div>
+              </div>
+              <div className="mt-2.5 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden flex shadow-inner">
+                <div
+                  className="bg-emerald-500 h-1.5 transition-all"
+                  style={{ width: `${rentTotalRequired > 0 ? (rentPaid / rentTotalRequired) * 100 : 100}%` }}
+                ></div>
+                <div
+                  className="bg-rose-500 h-1.5 transition-all"
+                  style={{ width: `${rentTotalRequired > 0 ? (rentDue / rentTotalRequired) * 100 : 0}%` }}
+                ></div>
+              </div>
+            </div>
+
+            {/* Box 3: Electricity Bill Paid vs Due */}
+            <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between sm:col-span-2 lg:col-span-1">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                    {currentPostpaidPeriod.monthName} Electricity
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/80">
+                    Postpaid Bill
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mt-2.5 pt-2 border-t border-slate-100">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Bill Paid</span>
+                    <div className="text-base sm:text-lg font-black text-emerald-600 font-mono tabular-nums">
+                      {formatBDT(elecPaid)}
+                    </div>
+                  </div>
+                  <div className="border-l border-slate-100 pl-2">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Bill Due</span>
+                    <div className={`text-base sm:text-lg font-black font-mono tabular-nums ${elecDue > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
+                      {formatBDT(elecDue)}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-slate-500 mt-2">
+                  <span>{elecPaidCount} Paid &bull; {elecDueCount} Due</span>
+                  <span className="font-mono text-slate-400 text-[10px]">Req: {formatBDT(elecTotalRequired)}</span>
+                </div>
+              </div>
+              <div className="mt-2.5 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden flex shadow-inner">
+                <div
+                  className="bg-emerald-500 h-1.5 transition-all"
+                  style={{ width: `${elecTotalRequired > 0 ? (elecPaid / elecTotalRequired) * 100 : 100}%` }}
+                ></div>
+                <div
+                  className="bg-rose-500 h-1.5 transition-all"
+                  style={{ width: `${elecTotalRequired > 0 ? (elecDue / elecTotalRequired) * 100 : 0}%` }}
                 ></div>
               </div>
             </div>

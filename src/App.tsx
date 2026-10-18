@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Building2,
   LayoutDashboard,
@@ -64,7 +64,7 @@ import {
   getEffectiveRemainingAdvance,
 } from './lib/storage';
 import { formatBDT, getMonthName, calculateNescoElectricityBill, getPostpaidElectricityPeriod } from './lib/nescoTariff';
-import { getSupabaseCredentials } from './lib/supabase';
+import { getSupabaseCredentials, getSupabaseClient } from './lib/supabase';
 import { COMPLEX_CONFIG } from './lib/complexConfig';
 import {
   formatBillingPeriod,
@@ -125,6 +125,10 @@ export default function App() {
   const [isTariffModalOpen, setIsTariffModalOpen] = useState(false);
   const [isDbModalOpen, setIsDbModalOpen] = useState(false);
 
+  // Realtime communication channels for multi-tab and multi-device messaging
+  const broadcastChannelRef = useRef<BroadcastChannel | null>(null);
+  const chatChannelRef = useRef<any>(null);
+
   // Fetch latest persistent state from server database and Supabase on mount
   useEffect(() => {
     fetchDatabaseFromServer()
@@ -182,6 +186,131 @@ export default function App() {
       .catch((err) => {
         console.warn('Could not sync with server database:', err);
       });
+  }, []);
+
+  // Realtime multi-tab and multi-device chat synchronization
+  useEffect(() => {
+    // 1. Cross-tab sync via BroadcastChannel
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      try {
+        const bc = new BroadcastChannel('ams_chat_channel');
+        bc.onmessage = (event) => {
+          if (event.data?.type === 'NEW_CHAT_MESSAGE' && event.data.payload) {
+            const incomingMsg: ChatMessage = event.data.payload;
+            setData((prev) => {
+              const existing = prev.chatMessages || [];
+              if (existing.some((m) => m.id === incomingMsg.id)) {
+                return prev;
+              }
+              const next = {
+                ...prev,
+                chatMessages: [...existing, incomingMsg],
+              };
+              saveDatabaseState(next);
+              return next;
+            });
+          } else if (event.data?.type === 'CLEAR_TENANT_CHAT' && event.data.payload?.flatId) {
+            const clearFlatId = event.data.payload.flatId;
+            setData((prev) => {
+              const next = {
+                ...prev,
+                chatMessages: (prev.chatMessages || []).filter((m) => !isMessageAssociatedWithFlat(m, clearFlatId)),
+              };
+              saveDatabaseState(next);
+              return next;
+            });
+          }
+        };
+        broadcastChannelRef.current = bc;
+      } catch (e) {
+        console.warn('BroadcastChannel initialization error:', e);
+      }
+    }
+
+    // 2. Storage event listener for cross-tab sync when localStorage changes
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'mbd_apartment_db_v3_state' && e.newValue) {
+        try {
+          const parsed: AppDatabaseState = JSON.parse(e.newValue);
+          if (parsed?.chatMessages) {
+            setData((prev) => {
+              const existingIds = new Set((prev.chatMessages || []).map((m) => m.id));
+              const newItems = parsed.chatMessages.filter((m) => !existingIds.has(m.id));
+              if (newItems.length > 0) {
+                return {
+                  ...prev,
+                  chatMessages: [...(prev.chatMessages || []), ...newItems],
+                };
+              }
+              return prev;
+            });
+          }
+        } catch (err) {}
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    // 3. Supabase Realtime Broadcast for cross-device sync
+    try {
+      const client = getSupabaseClient();
+      if (client) {
+        const channel = client.channel('ams_chat_realtime');
+        channel
+          .on('broadcast', { event: 'new_chat_message' }, (payload: any) => {
+            const incomingMsg: ChatMessage = payload?.payload;
+            if (incomingMsg && incomingMsg.id) {
+              setData((prev) => {
+                const existing = prev.chatMessages || [];
+                if (existing.some((m) => m.id === incomingMsg.id)) {
+                  return prev;
+                }
+                const next = {
+                  ...prev,
+                  chatMessages: [...existing, incomingMsg],
+                };
+                saveDatabaseState(next);
+                return next;
+              });
+            }
+          })
+          .on('broadcast', { event: 'clear_tenant_chat' }, (payload: any) => {
+            const clearFlatId = payload?.payload?.flatId;
+            if (clearFlatId) {
+              setData((prev) => {
+                const next = {
+                  ...prev,
+                  chatMessages: (prev.chatMessages || []).filter((m) => !isMessageAssociatedWithFlat(m, clearFlatId)),
+                };
+                saveDatabaseState(next);
+                return next;
+              });
+            }
+          })
+          .subscribe((status: string) => {
+            console.log('[Supabase Realtime Chat] Status:', status);
+          });
+        chatChannelRef.current = channel;
+      }
+    } catch (err) {
+      console.warn('[Realtime Chat] Supabase listener error:', err);
+    }
+
+    return () => {
+      if (broadcastChannelRef.current) {
+        try {
+          broadcastChannelRef.current.close();
+        } catch (e) {}
+        broadcastChannelRef.current = null;
+      }
+      window.removeEventListener('storage', handleStorage);
+      if (chatChannelRef.current) {
+        try {
+          const client = getSupabaseClient();
+          if (client) client.removeChannel(chatChannelRef.current);
+        } catch (e) {}
+        chatChannelRef.current = null;
+      }
+    };
   }, []);
 
   // Save changes to storage whenever data changes
@@ -1668,38 +1797,62 @@ export default function App() {
 
   // Send Direct Chat Message
   const handleSendMessage = (recipientId: string, recipientName: string, message: string) => {
-    updateData((prev) => {
-      // Find tenant or flat if message involves a tenant
-      const targetTenant = prev.tenants.find(
-        (t) => t.id === recipientId || t.flatId.toLowerCase() === recipientId.toLowerCase()
-      );
-      const isSenderTenant = activeUserRole === 'tenant';
-      const senderTenant = isSenderTenant
-        ? prev.tenants.find((t) => t.id === activeUserId || (currentUser?.flatId && t.flatId === currentUser.flatId))
-        : undefined;
+    // Find tenant or flat if message involves a tenant
+    const targetTenant = data.tenants.find(
+      (t) => t.id === recipientId || t.flatId.toLowerCase() === recipientId.toLowerCase()
+    );
+    const isSenderTenant = activeUserRole === 'tenant';
+    const senderTenant = isSenderTenant
+      ? data.tenants.find((t) => t.id === activeUserId || (currentUser?.flatId && t.flatId === currentUser.flatId))
+      : undefined;
 
-      const flatId = targetTenant?.flatId || senderTenant?.flatId || (isSenderTenant ? currentUser?.flatId : undefined);
-      const tenantId = targetTenant?.id || senderTenant?.id || (isSenderTenant ? activeUserId : undefined);
-      const conversationId = flatId ? `conv-${flatId.toLowerCase().replace(/[^a-z0-9]/g, '-')}` : `conv-${recipientId}`;
+    const flatId = targetTenant?.flatId || senderTenant?.flatId || (isSenderTenant ? currentUser?.flatId : undefined);
+    const tenantId = targetTenant?.id || senderTenant?.id || (isSenderTenant ? activeUserId : undefined);
+    const conversationId = flatId ? `conv-${flatId.toLowerCase().replace(/[^a-z0-9]/g, '-')}` : `conv-${recipientId}`;
 
-      const newMsg: ChatMessage = {
-        id: `msg-${Date.now()}`,
-        conversationId,
-        senderId: activeUserId,
-        senderName: activeUserFullName,
-        senderRole: activeUserRole,
-        recipientId,
-        message,
-        timestamp: new Date().toISOString(),
-        isRead: false,
-        flatId,
-        tenantId,
-      };
-      return {
-        ...prev,
-        chatMessages: [...(prev.chatMessages || []), newMsg],
-      };
-    });
+    const newMsg: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      conversationId,
+      senderId: activeUserId,
+      senderName: activeUserFullName,
+      senderRole: activeUserRole,
+      recipientId,
+      message,
+      timestamp: new Date().toISOString(),
+      isRead: false,
+      flatId,
+      tenantId,
+    };
+
+    updateData((prev) => ({
+      ...prev,
+      chatMessages: [...(prev.chatMessages || []), newMsg],
+    }));
+
+    // Broadcast across tabs
+    if (broadcastChannelRef.current) {
+      try {
+        broadcastChannelRef.current.postMessage({
+          type: 'NEW_CHAT_MESSAGE',
+          payload: newMsg,
+        });
+      } catch (e) {
+        console.warn('BroadcastChannel error:', e);
+      }
+    }
+
+    // Broadcast across devices / networks via Supabase Realtime Broadcast
+    if (chatChannelRef.current) {
+      try {
+        chatChannelRef.current.send({
+          type: 'broadcast',
+          event: 'new_chat_message',
+          payload: newMsg,
+        }).catch((err: any) => console.warn('Supabase broadcast error:', err));
+      } catch (e) {
+        console.warn('Supabase broadcast error:', e);
+      }
+    }
   };
 
   // Explicitly purge conversation messages for a rental unit (e.g. upon new tenant entry or manager request)
@@ -1722,6 +1875,25 @@ export default function App() {
         auditLogs: [audit, ...prev.auditLogs],
       };
     });
+
+    if (broadcastChannelRef.current) {
+      try {
+        broadcastChannelRef.current.postMessage({
+          type: 'CLEAR_TENANT_CHAT',
+          payload: { flatId },
+        });
+      } catch (e) {}
+    }
+
+    if (chatChannelRef.current) {
+      try {
+        chatChannelRef.current.send({
+          type: 'broadcast',
+          event: 'clear_tenant_chat',
+          payload: { flatId },
+        }).catch(() => {});
+      } catch (e) {}
+    }
   };
 
   // Submit Online Payment Request (bKash/Nagad/Rocket with 1.8% fee)

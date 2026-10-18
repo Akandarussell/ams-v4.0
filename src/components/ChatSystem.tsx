@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   MessageSquare,
   Send,
@@ -28,16 +28,6 @@ export const ChatSystem: React.FC<Props> = ({
   onSendMessage,
   onClearTenantMessages,
 }) => {
-  const [activeRecipientId, setActiveRecipientId] = useState<string>(() => {
-    if (currentUser.role === 'tenant') {
-      return 'user-manager-russell';
-    }
-    return data.tenants[0]?.id || 't-a2';
-  });
-
-  const [messageText, setMessageText] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-
   // Eligible contact list based on user role
   const getContacts = () => {
     if (currentUser.role === 'manager') {
@@ -91,7 +81,26 @@ export const ChatSystem: React.FC<Props> = ({
     c.fullName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const [activeRecipientId, setActiveRecipientId] = useState<string>(() => {
+    if (currentUser.role === 'tenant') {
+      return 'user-manager-russell';
+    }
+    const initialList = getContacts();
+    return initialList[0]?.id || 'user-manager-russell';
+  });
+
+  const [messageText, setMessageText] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
   const activeContact = contacts.find((c) => c.id === activeRecipientId) || contacts[0];
+
+  // Keep activeRecipientId in sync whenever activeContact changes or contacts list updates
+  useEffect(() => {
+    if (activeContact && activeContact.id !== activeRecipientId) {
+      setActiveRecipientId(activeContact.id);
+    }
+  }, [activeContact?.id]);
 
   // Resolve active tenant for the active contact if it is a tenant
   const activeTenant = activeContact?.role === 'tenant'
@@ -103,75 +112,112 @@ export const ChatSystem: React.FC<Props> = ({
     : undefined;
 
   // Messages between current user and active contact
-  // Strictly removes any previous tenant conversation when new tenant enters the rental unit
   const conversationMessages = (data.chatMessages || []).filter((m) => {
-    // 1. Basic participant match
-    const isDirectMatch =
-      (m.senderId === currentUser.id && m.recipientId === activeRecipientId) ||
-      (m.senderId === activeRecipientId && m.recipientId === currentUser.id) ||
-      (currentUser.role === 'tenant' && (m.recipientId === currentUser.flatId || m.senderId === currentUser.flatId)) ||
-      (activeContact?.role === 'tenant' && activeContact.flatId && (
-        (m.flatId && m.flatId.toLowerCase() === activeContact.flatId.toLowerCase()) ||
-        (m.conversationId && m.conversationId.toLowerCase() === `conv-${activeContact.flatId.toLowerCase()}`)
-      ));
+    if (!activeContact) return false;
 
-    if (!isDirectMatch) return false;
+    const currentFlat = currentUser.flatId?.trim().toUpperCase();
+    const activeContactFlat = activeContact.flatId?.trim().toUpperCase();
+    const msgFlat = m.flatId?.trim().toUpperCase();
 
-    // 2. Strict previous tenant removal when chatting with a tenant
-    if (activeTenant) {
-      // If message was sent by a tenant, sender name MUST match active tenant
-      if (m.senderRole === 'tenant' && !isSameTenantPerson(m.senderName, activeTenant.fullName)) {
-        return false;
-      }
-      // If message was sent before active tenant entry date, purge it
-      if (activeTenant.entryDate && activeTenant.entryDate.includes('-')) {
-        const entryTime = new Date(`${activeTenant.entryDate}T00:00:00Z`).getTime();
-        const msgTime = new Date(m.timestamp).getTime();
-        if (!isNaN(entryTime) && !isNaN(msgTime) && msgTime < entryTime) {
-          return false;
-        }
-      }
-      // Check if former mock tenant names are referenced in this flat
-      const lowerSender = (m.senderName || '').toLowerCase();
-      const lowerMsg = (m.message || '').toLowerCase();
-      if (
-        (lowerSender.includes('tanvir') || lowerMsg.includes('tanvir')) &&
-        !activeTenant.fullName.toLowerCase().includes('tanvir')
-      ) {
-        return false;
-      }
-      if (
-        (lowerSender.includes('farhana') || lowerMsg.includes('farhana')) &&
-        !activeTenant.fullName.toLowerCase().includes('farhana')
-      ) {
-        return false;
-      }
-      if (m.id === 'msg-1' || m.id === 'msg-2' || m.id === 'msg-3' || m.id === 'msg-4' || m.id === 'msg-5') {
-        return false;
-      }
-    }
+    let isMatch = false;
 
-    // 3. Strict previous tenant removal when currentUser is a tenant
     if (currentUser.role === 'tenant') {
-      const myTenantRecord = data.tenants.find(
-        (t) => t.id === currentUser.id || t.flatId === currentUser.flatId
-      );
-      if (myTenantRecord) {
-        if (m.senderRole === 'tenant' && !isSameTenantPerson(m.senderName, myTenantRecord.fullName)) {
+      // 1. Current user is Tenant chatting with an Authority (Manager or Owner)
+      const isWithActiveAuthority =
+        m.recipientId === activeContact.id ||
+        m.senderId === activeContact.id ||
+        (activeContact.role === 'manager' && (
+          m.recipientId === 'user-manager-russell' ||
+          m.senderId === 'user-manager-russell' ||
+          m.recipientRole === 'manager' ||
+          m.senderRole === 'manager'
+        )) ||
+        (activeContact.role === 'owner' && (
+          m.recipientId === activeContact.id ||
+          m.senderId === activeContact.id ||
+          m.recipientRole === 'owner' ||
+          m.senderRole === 'owner'
+        ));
+
+      const isMyMessage =
+        m.senderId === currentUser.id ||
+        m.recipientId === currentUser.id ||
+        (msgFlat && currentFlat && msgFlat === currentFlat) ||
+        (currentFlat ? isMessageAssociatedWithFlat(m, currentFlat) : false);
+
+      isMatch = Boolean(isWithActiveAuthority && isMyMessage);
+
+      // Ensure Tenant only sees current messages (purging previous occupant mock names)
+      if (isMatch && m.senderRole === 'tenant') {
+        if (!isSameTenantPerson(m.senderName, currentUser.fullName)) {
           return false;
         }
-        if (myTenantRecord.entryDate && myTenantRecord.entryDate.includes('-')) {
-          const entryTime = new Date(`${myTenantRecord.entryDate}T00:00:00Z`).getTime();
-          const msgTime = new Date(m.timestamp).getTime();
-          if (!isNaN(entryTime) && !isNaN(msgTime) && msgTime < entryTime) {
-            return false;
-          }
+      }
+    } else if (activeContact.role === 'tenant') {
+      // 2. Current user is Authority (Manager/Owner) chatting with a Tenant
+      const isForActiveFlat =
+        (msgFlat && activeContactFlat && msgFlat === activeContactFlat) ||
+        (activeContactFlat ? isMessageAssociatedWithFlat(m, activeContactFlat) : false) ||
+        m.recipientId === activeContact.id ||
+        m.senderId === activeContact.id;
+
+      const isBetweenMeAndFlat =
+        m.senderId === currentUser.id ||
+        m.recipientId === currentUser.id ||
+        (currentUser.role === 'manager' && (
+          m.recipientId === 'user-manager-russell' ||
+          m.senderId === 'user-manager-russell' ||
+          (!m.recipientId?.includes('owner') && !m.senderId?.includes('owner'))
+        )) ||
+        (currentUser.role === 'owner' && (
+          m.senderId === currentUser.id ||
+          m.recipientId === currentUser.id
+        ));
+
+      isMatch = Boolean(isForActiveFlat && isBetweenMeAndFlat);
+
+      // Filter out former mock tenants if flat had occupant change
+      if (isMatch && activeTenant) {
+        if (m.senderRole === 'tenant' && !isSameTenantPerson(m.senderName, activeTenant.fullName)) {
+          return false;
+        }
+        const lowerSender = (m.senderName || '').toLowerCase();
+        const lowerMsg = (m.message || '').toLowerCase();
+        if (
+          (lowerSender.includes('tanvir') || lowerMsg.includes('tanvir')) &&
+          !activeTenant.fullName.toLowerCase().includes('tanvir')
+        ) {
+          return false;
+        }
+        if (
+          (lowerSender.includes('farhana') || lowerMsg.includes('farhana')) &&
+          !activeTenant.fullName.toLowerCase().includes('farhana')
+        ) {
+          return false;
         }
       }
+    } else {
+      // 3. Both are Authorities (Manager <-> Owner)
+      isMatch =
+        (m.senderId === currentUser.id && m.recipientId === activeContact.id) ||
+        (m.senderId === activeContact.id && m.recipientId === currentUser.id) ||
+        Boolean(
+          m.conversationId && (
+            m.conversationId === `conv-${activeContact.id}` ||
+            m.conversationId === `conv-${currentUser.id}` ||
+            (activeContact.id.includes('owner') && m.conversationId.includes(activeContact.id.replace('user-', ''))) ||
+            (currentUser.id.includes('owner') && m.conversationId.includes(currentUser.id.replace('user-', '')))
+          )
+        );
     }
 
-    return true;
+    return isMatch;
   });
+
+  // Scroll to bottom whenever messages update
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [conversationMessages.length]);
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
@@ -298,7 +344,12 @@ export const ChatSystem: React.FC<Props> = ({
             </div>
           ) : (
             conversationMessages.map((m) => {
-              const isMine = m.senderId === currentUser.id;
+              const isMine =
+                m.senderId === currentUser.id ||
+                (currentUser.role === 'tenant' &&
+                  m.senderRole === 'tenant' &&
+                  ((m.flatId && currentUser.flatId && m.flatId.toLowerCase() === currentUser.flatId.toLowerCase()) ||
+                    isSameTenantPerson(m.senderName, currentUser.fullName)));
               return (
                 <div
                   key={m.id}
@@ -328,6 +379,7 @@ export const ChatSystem: React.FC<Props> = ({
               );
             })
           )}
+          <div ref={messagesEndRef} />
         </div>
 
         {/* Input Bar */}
