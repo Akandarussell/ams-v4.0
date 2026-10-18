@@ -257,6 +257,9 @@ export const NescoBillGeneratorModal: React.FC<Props> = ({
           unitType: matchingUnit?.unitType || 'residential',
           isElectricityEnabled: matchingUnit?.isElectricityEnabled,
           electricityBillingType: matchingUnit?.electricityBillingType,
+          billingSystem: matchingUnit?.billingSystem,
+          fixedUnitRate: matchingUnit?.fixedUnitRate,
+          fixedElectricityAmount: matchingUnit?.fixedElectricityAmount,
         };
       }),
       ...remainingUnits.map((u) => {
@@ -271,6 +274,9 @@ export const NescoBillGeneratorModal: React.FC<Props> = ({
           unitType: u.unitType,
           isElectricityEnabled: u.isElectricityEnabled,
           electricityBillingType: u.electricityBillingType,
+          billingSystem: u.billingSystem,
+          fixedUnitRate: u.fixedUnitRate,
+          fixedElectricityAmount: u.fixedElectricityAmount,
         };
       }),
     ];
@@ -338,13 +344,18 @@ export const NescoBillGeneratorModal: React.FC<Props> = ({
         mr?.currentReading ??
         (isElecEnabled ? prevReading + 220 : prevReading);
 
-      // Determine system
-      let initialSystem: NescoBillingSystem = 'regular_nesco';
-      if (existingBill?.slabBreakdown?.[0]?.slabName?.includes('Fixed Price')) {
-        initialSystem = 'fixed_price_bill';
-      } else if (existingBill?.slabBreakdown?.[0]?.slabName?.includes('Fixed Unit')) {
-        initialSystem = 'fixed_unit_price';
-      }
+      // Determine unit's default billing system:
+      // Unit's own configured billingSystem is the default! (or existing bill if generated previously)
+      let initialSystem: NescoBillingSystem =
+        (existingBill?.billingSystem as NescoBillingSystem) ||
+        (existingBill?.slabBreakdown?.[0]?.slabName?.includes('Fixed Price')
+          ? 'fixed_price_bill'
+          : existingBill?.slabBreakdown?.[0]?.slabName?.includes('Fixed Unit')
+          ? 'fixed_unit_price'
+          : (u.billingSystem || (u.electricityBillingType === 'fixed' ? 'fixed_price_bill' : 'regular_nesco')));
+
+      const unitFixedRate = u.fixedUnitRate || globalFixedUnitRate || 15.01;
+      const unitFixedAmount = u.fixedElectricityAmount || existingBill?.totalBill || globalFixedBillAmount || 1500;
 
       return recalculateDraft({
         unitId: u.unitId,
@@ -355,8 +366,8 @@ export const NescoBillGeneratorModal: React.FC<Props> = ({
         billingSystem: initialSystem,
         previousReading: isElecEnabled ? prevReading : 0,
         currentReading: isElecEnabled ? currReading : 0,
-        fixedUnitRate: isElecEnabled ? 15.01 : 0,
-        fixedBillAmount: isElecEnabled ? (existingBill?.totalBill || 1500) : 0,
+        fixedUnitRate: isElecEnabled ? unitFixedRate : 0,
+        fixedBillAmount: isElecEnabled ? unitFixedAmount : 0,
         sanctionedLoad: 3,
         lastMonthReadingAvailable: lastMonthAvailable,
         lastMonthReadingValue: lastMonthReading,
@@ -654,6 +665,8 @@ export const NescoBillGeneratorModal: React.FC<Props> = ({
       meterRent: d.isEnabled ? d.meterRent : 0,
       rebateAmount: 0,
       billingSystem: d.billingSystem,
+      fixedUnitRate: d.fixedUnitRate,
+      fixedBillAmount: d.fixedBillAmount,
       isBillingEnabled: d.isEnabled,
     }));
 

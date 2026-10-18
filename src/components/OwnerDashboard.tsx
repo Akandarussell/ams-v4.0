@@ -35,7 +35,6 @@ import { COMPLEX_CONFIG } from '../lib/complexConfig';
 import { formatBillingPeriod } from '../lib/api';
 import { INITIAL_BLOCK_MFS_CONFIGS, getEffectiveRemainingAdvance, calculateItemTotalDue, compareFlatIdSerial } from '../lib/storage';
 import { ManualLedgerEntryModal } from './ManualLedgerEntryModal';
-import { RecordPaymentModal } from './RecordPaymentModal';
 import { ExcelImportModal } from './ExcelImportModal';
 
 interface Props {
@@ -173,15 +172,6 @@ export const OwnerDashboard: React.FC<Props> = ({
   // Manual Entry / Edit Modal State
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
   const [itemToEditManual, setItemToEditManual] = useState<MonthlyLedgerItem | null>(null);
-
-  // Record Payment Modal State
-  const [isRecordPaymentModalOpen, setIsRecordPaymentModalOpen] = useState(false);
-  const [recordPaymentItem, setRecordPaymentItem] = useState<MonthlyLedgerItem | null>(null);
-
-  const openRecordPaymentModal = (item?: MonthlyLedgerItem) => {
-    setRecordPaymentItem(item || null);
-    setIsRecordPaymentModalOpen(true);
-  };
 
   // Signature Metadata: Always Owner's Signature for Owner Account with Last Name (Rashed, Raju, Rony)
   const ownerLastName =
@@ -1172,14 +1162,6 @@ export const OwnerDashboard: React.FC<Props> = ({
                       >
                         <Edit3 className="w-4 h-4" />
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => openRecordPaymentModal(row)}
-                        className="min-w-[40px] min-h-[40px] flex items-center justify-center p-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs transition-colors cursor-pointer"
-                        title="Record Payment"
-                      >
-                        <Wallet className="w-4 h-4" />
-                      </button>
                     </div>
                   </div>
 
@@ -1258,13 +1240,8 @@ export const OwnerDashboard: React.FC<Props> = ({
                           </span>
                         </div>
                         <div className="mt-2 flex flex-col gap-1.5">
-                          <select
-                            value={rentStatus}
-                            onChange={(e) => {
-                              const newStatus = e.target.value as 'Paid' | 'Not Paid' | 'Partially Paid' | 'Adjusted' | 'N/A';
-                              handleQuickUpdateRentStatus(row, newStatus);
-                            }}
-                            className={`w-full min-h-[44px] px-2 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer text-center ${
+                          <span
+                            className={`w-full py-1.5 rounded-lg text-xs font-bold border text-center ${
                               rentStatus === 'Paid'
                                 ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                                 : rentStatus === 'Partially Paid'
@@ -1276,12 +1253,8 @@ export const OwnerDashboard: React.FC<Props> = ({
                                 : 'bg-rose-100 text-rose-800 border-rose-300'
                             }`}
                           >
-                            <option value="Paid">Paid</option>
-                            <option value="Not Paid">Not Paid</option>
-                            <option value="Partially Paid">Partially Paid</option>
-                            <option value="Adjusted">Adjusted</option>
-                            <option value="N/A">N/A</option>
-                          </select>
+                            {rentStatus}
+                          </span>
                           {rentStatus === 'Paid' && row.flatRent > 0 && (
                             <button
                               type="button"
@@ -1326,7 +1299,7 @@ export const OwnerDashboard: React.FC<Props> = ({
                       </div>
                     </div>
 
-                    {/* Card Footer: Total Due & Full-Width Action Button */}
+                    {/* Card Footer: Total Due & Edit Action */}
                     <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-3">
                       <div>
                         <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Net Due</span>
@@ -1337,11 +1310,14 @@ export const OwnerDashboard: React.FC<Props> = ({
 
                       <button
                         type="button"
-                        onClick={() => openRecordPaymentModal(row)}
-                        className="min-h-[44px] px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer active:scale-95"
+                        onClick={() => {
+                          setItemToEditManual(row);
+                          setIsManualModalOpen(true);
+                        }}
+                        className="min-h-[44px] px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95"
                       >
-                        <Wallet className="w-4 h-4" />
-                        <span>Record Payment</span>
+                        <Edit3 className="w-4 h-4" />
+                        <span>Edit Entry</span>
                       </button>
                     </div>
                   </div>
@@ -1399,15 +1375,7 @@ export const OwnerDashboard: React.FC<Props> = ({
               </select>
             </div>
 
-            {/* Record Payment Button */}
-            <button
-              onClick={() => openRecordPaymentModal()}
-              className="min-h-[44px] flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
-              title="Record payment & generate official receipt"
-            >
-              <Wallet className="w-4 h-4" />
-              <span>Record Payment</span>
-            </button>
+
 
             {/* Manual Entry Button for Owner */}
             <button
@@ -1538,16 +1506,7 @@ export const OwnerDashboard: React.FC<Props> = ({
                           <span className="font-extrabold text-blue-800">{row.flatId}</span>
                           <div className="flex items-center gap-1">
                             <button
-                              onClick={() => openRecordPaymentModal(row)}
-                              title="Record Payment & Generate Receipt"
-                              className="px-1.5 py-0.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded text-[10px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
-                            >
-                              <Wallet className="w-3 h-3" />
-                              <span>Pay</span>
-                            </button>
-                            <button
                               onClick={() => {
-                                itemToEditManual && setItemToEditManual(row);
                                 setItemToEditManual(row);
                                 setIsManualModalOpen(true);
                               }}
@@ -1599,17 +1558,6 @@ export const OwnerDashboard: React.FC<Props> = ({
                               <span>Generate Receipt</span>
                             </button>
                           </div>
-                        ) : !isOwnerFlat && (advStatus === 'Not Paid' || advStatus === 'Partially Paid') ? (
-                          <div className="mt-1">
-                            <button
-                              onClick={() => openRecordPaymentModal(row)}
-                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 rounded text-[10px] font-bold transition-colors cursor-pointer"
-                              title="Record Security Advance Payment"
-                            >
-                              <Wallet className="w-3 h-3 text-indigo-600" />
-                              <span>Pay Advance</span>
-                            </button>
-                          </div>
                         ) : null}
                       </td>
 
@@ -1618,33 +1566,22 @@ export const OwnerDashboard: React.FC<Props> = ({
                         <span className="font-mono font-bold text-slate-800 block">
                           {formatBDT(row.flatRent)}
                         </span>
-                        <div className="mt-0.5 inline-block">
-                          <select
-                            value={rentStatus}
-                            onChange={(e) => {
-                              const newStatus = e.target.value as 'Paid' | 'Not Paid' | 'Partially Paid' | 'Adjusted' | 'N/A';
-                              handleQuickUpdateRentStatus(row, newStatus);
-                            }}
-                            className={`text-[10px] font-bold px-1.5 py-0.5 rounded border focus:outline-hidden cursor-pointer ${
-                              rentStatus === 'Paid'
-                                ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                                : rentStatus === 'Partially Paid'
-                                ? 'bg-amber-50 text-amber-800 border-amber-300'
-                                : rentStatus === 'Adjusted'
-                                ? 'bg-purple-50 text-purple-800 border-purple-300'
-                                : rentStatus === 'N/A'
-                                ? 'bg-slate-50 text-slate-500 border-slate-200'
-                                : 'bg-rose-50 text-rose-800 border-rose-300'
-                            }`}
-                          >
-                            <option value="Paid">Paid</option>
-                            <option value="Not Paid">Not Paid</option>
-                            <option value="Partially Paid">Partially Paid</option>
-                            <option value="Adjusted">Adjusted</option>
-                            <option value="N/A">N/A</option>
-                          </select>
-                        </div>
-                        {rentStatus === 'Paid' && row.flatRent > 0 ? (
+                        <span
+                          className={`inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold ${
+                            rentStatus === 'Paid'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : rentStatus === 'Partially Paid'
+                              ? 'bg-amber-100 text-amber-800'
+                              : rentStatus === 'Adjusted'
+                              ? 'bg-purple-100 text-purple-800'
+                              : rentStatus === 'N/A'
+                              ? 'bg-slate-100 text-slate-500'
+                              : 'bg-rose-100 text-rose-800'
+                          }`}
+                        >
+                          {rentStatus}
+                        </span>
+                        {rentStatus === 'Paid' && row.flatRent > 0 && (
                           <div className="mt-1">
                             <button
                               onClick={() => handleGenerateRentReceipt(row)}
@@ -1655,18 +1592,7 @@ export const OwnerDashboard: React.FC<Props> = ({
                               <span>Generate Receipt</span>
                             </button>
                           </div>
-                        ) : row.flatRent > 0 && rentStatus !== 'N/A' ? (
-                          <div className="mt-1">
-                            <button
-                              onClick={() => openRecordPaymentModal(row)}
-                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded text-[10px] font-bold transition-colors cursor-pointer"
-                              title="Record Flat Rent Payment"
-                            >
-                              <Wallet className="w-3 h-3 text-emerald-600" />
-                              <span>Pay Rent</span>
-                            </button>
-                          </div>
-                        ) : null}
+                        )}
                       </td>
 
                       {/* 7. Electricity Bill Status & Receipt */}
@@ -1676,7 +1602,7 @@ export const OwnerDashboard: React.FC<Props> = ({
                           const isUnitElecOn =
                             row.electricityBill > 0 ||
                             ((unit?.unitType === 'residential' || unit?.unitType === 'godown' || !unit) &&
-                             (unit?.isElectricityEnabled ?? (unit?.electricityBillingType === 'nesco_submeter' || !unit?.electricityBillingType)) &&
+                             (unit?.isElectricityEnabled ?? true) &&
                              unit?.electricityBillingType !== 'none');
 
                           if (!isUnitElecOn) {
@@ -1712,7 +1638,7 @@ export const OwnerDashboard: React.FC<Props> = ({
                                   {getPostpaidElectricityPeriod(data.selectedMonth, data.selectedYear).monthName.slice(0, 3)} Bill
                                 </span>
                               )}
-                              {elecStatus === 'Paid' && row.electricityBill > 0 ? (
+                              {elecStatus === 'Paid' && row.electricityBill > 0 && (
                                 <div className="mt-1">
                                   <button
                                     onClick={() => handleGenerateElectricityReceipt(row)}
@@ -1723,18 +1649,7 @@ export const OwnerDashboard: React.FC<Props> = ({
                                     <span>Generate Receipt</span>
                                   </button>
                                 </div>
-                              ) : row.electricityBill > 0 && elecStatus !== 'N/A' ? (
-                                <div className="mt-1">
-                                  <button
-                                    onClick={() => openRecordPaymentModal(row)}
-                                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded text-[10px] font-bold transition-colors cursor-pointer"
-                                    title="Record Electricity Bill Payment"
-                                  >
-                                    <Wallet className="w-3 h-3 text-amber-600" />
-                                    <span>Pay Bill</span>
-                                  </button>
-                                </div>
-                              ) : null}
+                              )}
                             </>
                           );
                         })()}
@@ -1788,24 +1703,7 @@ export const OwnerDashboard: React.FC<Props> = ({
         assignedBlock={blockName}
       />
 
-      {/* RECORD PAYMENT MODAL FOR OWNER */}
-      <RecordPaymentModal
-        isOpen={isRecordPaymentModalOpen}
-        onClose={() => {
-          setIsRecordPaymentModalOpen(false);
-          setRecordPaymentItem(null);
-        }}
-        data={data}
-        initialItem={recordPaymentItem}
-        selectedMonth={data.selectedMonth}
-        selectedYear={data.selectedYear}
-        userRole="owner"
-        assignedBlock={blockName}
-        currentUser={currentUser}
-        onSaveLedgerItem={onSaveLedgerItem}
-        onRecordPayment={onRecordPayment}
-        onViewReceipt={onViewReceipt}
-      />
+
 
       {/* COPY PREVIOUS MONTH CONFIRMATION MODAL */}
       {isCopyModalOpen && (

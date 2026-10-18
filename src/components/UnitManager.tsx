@@ -12,7 +12,7 @@ import {
   CheckCircle2,
   X,
 } from 'lucide-react';
-import { AppDatabaseState, Unit, UnitType, ElectricityBillingType } from '../types';
+import { AppDatabaseState, Unit, UnitType, ElectricityBillingType, NescoBillingSystem } from '../types';
 import { formatBDT } from '../lib/nescoTariff';
 import { COMPLEX_CONFIG } from '../lib/complexConfig';
 
@@ -45,6 +45,9 @@ export const UnitManager: React.FC<Props> = ({
   const [newType, setNewType] = useState<UnitType>('residential');
   const [newRentAmount, setNewRentAmount] = useState(25000);
   const [newElecType, setNewElecType] = useState<ElectricityBillingType>('nesco_submeter');
+  const [newBillingSystem, setNewBillingSystem] = useState<NescoBillingSystem>('regular_nesco');
+  const [newFixedUnitRate, setNewFixedUnitRate] = useState<number>(15.01);
+  const [newFixedBillAmount, setNewFixedBillAmount] = useState<number>(1500);
 
   const filteredUnits = data.units.filter((u) => {
     if (filterType !== 'all' && u.unitType !== filterType) return false;
@@ -75,7 +78,11 @@ export const UnitManager: React.FC<Props> = ({
       unitType: newType,
       monthlyRent: newRentAmount,
       isOccupied: false,
-      electricityBillingType: newElecType,
+      electricityBillingType: newBillingSystem === 'fixed_price_bill' ? 'fixed' : newBillingSystem === 'none' ? 'none' : 'nesco_submeter',
+      billingSystem: newBillingSystem,
+      fixedUnitRate: newFixedUnitRate,
+      fixedElectricityAmount: newFixedBillAmount,
+      isElectricityEnabled: newBillingSystem !== 'none',
     });
     setNewFlatId('');
     setIsAddModalOpen(false);
@@ -368,17 +375,49 @@ export const UnitManager: React.FC<Props> = ({
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold mb-1">Electricity Billing Type</label>
+                <label className="block text-slate-700 font-semibold mb-1">Electricity Billing System</label>
                 <select
-                  value={newElecType}
-                  onChange={(e) => setNewElecType(e.target.value as any)}
+                  value={newBillingSystem}
+                  onChange={(e) => {
+                    const sys = e.target.value as NescoBillingSystem;
+                    setNewBillingSystem(sys);
+                    if (sys === 'fixed_price_bill') setNewElecType('fixed');
+                    else if (sys === 'none') setNewElecType('none');
+                    else setNewElecType('nesco_submeter');
+                  }}
                   className="w-full min-h-[44px] px-3.5 py-2.5 border border-slate-300 rounded-xl text-slate-900 font-semibold text-base sm:text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden cursor-pointer"
                 >
-                  <option value="nesco_submeter">NESCO Postpaid Sub-meter</option>
-                  <option value="fixed">Fixed Monthly Charge</option>
-                  <option value="none">No Electricity Billing (Parking/Godown)</option>
+                  <option value="regular_nesco">System 1: Regular NESCO Tariff Slabs (Sub-meter kWh)</option>
+                  <option value="fixed_unit_price">System 2: Fixed Unit Price (e.g. ৳15.01 per kWh)</option>
+                  <option value="fixed_price_bill">System 3: Fixed Price Bill (e.g. ৳1,500/month flat)</option>
+                  <option value="none">System 4: Electricity Billing OFF (Parking/Godown)</option>
                 </select>
               </div>
+
+              {newBillingSystem === 'fixed_unit_price' && (
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">Fixed Rate per kWh (BDT / ৳)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={newFixedUnitRate}
+                    onChange={(e) => setNewFixedUnitRate(Number(e.target.value))}
+                    className="w-full min-h-[44px] px-3.5 py-2.5 border border-slate-300 rounded-xl font-mono text-slate-900 text-base sm:text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                  />
+                </div>
+              )}
+
+              {newBillingSystem === 'fixed_price_bill' && (
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">Fixed Monthly Electricity Bill (BDT / ৳)</label>
+                  <input
+                    type="number"
+                    value={newFixedBillAmount}
+                    onChange={(e) => setNewFixedBillAmount(Number(e.target.value))}
+                    className="w-full min-h-[44px] px-3.5 py-2.5 border border-slate-300 rounded-xl font-mono text-slate-900 text-base sm:text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+                  />
+                </div>
+              )}
 
               <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2">
                 <button

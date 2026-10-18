@@ -35,6 +35,8 @@ export interface Block {
   description?: string;
 }
 
+export type NescoBillingSystem = 'regular_nesco' | 'fixed_unit_price' | 'fixed_price_bill';
+
 export interface Unit {
   id: string;
   flatId: string; // e.g. "A1", "A5 Owner", "A5 Sublet", "B2", "P1", "G1"
@@ -46,6 +48,8 @@ export interface Unit {
   tenantId?: string;
   isOccupied: boolean;
   electricityBillingType: ElectricityBillingType;
+  billingSystem?: NescoBillingSystem;
+  fixedUnitRate?: number;
   isElectricityEnabled?: boolean;
   fixedElectricityAmount?: number;
   parkingSlot?: string;
@@ -200,6 +204,7 @@ export interface ElectricityBill {
   receiptNo?: string;
   tariffSnapshotTitle: string;
   sanctionedLoadKW?: number;
+  billingSystem?: string;
 }
 
 export interface PaymentTransaction {

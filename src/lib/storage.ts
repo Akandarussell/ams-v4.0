@@ -119,40 +119,40 @@ export const INITIAL_BLOCKS: Block[] = [
 
 export const INITIAL_UNITS: Unit[] = [
   // Block A
-  { id: 'u-a1', flatId: 'A1', blockId: 'block-a', blockName: 'Block A', floor: 1, unitType: 'residential', monthlyRent: 22000, isOccupied: true, electricityBillingType: 'nesco_submeter', isElectricityEnabled: true },
-  { id: 'u-a2', flatId: 'A2', blockId: 'block-a', blockName: 'Block A', floor: 2, unitType: 'residential', monthlyRent: 24000, isOccupied: true, electricityBillingType: 'nesco_submeter', isElectricityEnabled: true, parkingSlot: 'P1' },
-  { id: 'u-a3', flatId: 'A3', blockId: 'block-a', blockName: 'Block A', floor: 3, unitType: 'residential', monthlyRent: 24000, isOccupied: true, electricityBillingType: 'nesco_submeter', isElectricityEnabled: true },
-  { id: 'u-a4', flatId: 'A4', blockId: 'block-a', blockName: 'Block A', floor: 4, unitType: 'residential', monthlyRent: 25000, isOccupied: true, electricityBillingType: 'nesco_submeter', isElectricityEnabled: true, godownSlot: 'G1' },
-  { id: 'u-a5', flatId: 'A5', blockId: 'block-a', blockName: 'Block A', floor: 5, unitType: 'residential', monthlyRent: 25000, isOccupied: true, electricityBillingType: 'nesco_submeter', isElectricityEnabled: true },
-  { id: 'u-a5-owner', flatId: 'A5 (Owner)', blockId: 'block-a', blockName: 'Block A', floor: 5, unitType: 'residential', monthlyRent: 0, isOccupied: true, electricityBillingType: 'nesco_submeter', isElectricityEnabled: true, fixedElectricityAmount: 0, notes: 'Owner residence' },
-  { id: 'u-a5-sublet', flatId: 'A5 Sublet', blockId: 'block-a', blockName: 'Block A', floor: 5, unitType: 'residential', monthlyRent: 4500, isOccupied: true, electricityBillingType: 'nesco_submeter', isElectricityEnabled: true },
-  { id: 'u-a6', flatId: 'A6', blockId: 'block-a', blockName: 'Block A', floor: 6, unitType: 'residential', monthlyRent: 25000, isOccupied: true, electricityBillingType: 'nesco_submeter', isElectricityEnabled: true },
-  { id: 'u-a7', flatId: 'A7', blockId: 'block-a', blockName: 'Block A', floor: 7, unitType: 'residential', monthlyRent: 26000, isOccupied: true, electricityBillingType: 'nesco_submeter', isElectricityEnabled: true },
+  { id: 'u-a1', flatId: 'A1', blockId: 'block-a', blockName: 'Block A', floor: 1, unitType: 'residential', monthlyRent: 22000, isOccupied: true, electricityBillingType: 'nesco_submeter', billingSystem: 'regular_nesco', isElectricityEnabled: true },
+  { id: 'u-a2', flatId: 'A2', blockId: 'block-a', blockName: 'Block A', floor: 2, unitType: 'residential', monthlyRent: 24000, isOccupied: true, electricityBillingType: 'nesco_submeter', billingSystem: 'regular_nesco', isElectricityEnabled: true, parkingSlot: 'P1' },
+  { id: 'u-a3', flatId: 'A3', blockId: 'block-a', blockName: 'Block A', floor: 3, unitType: 'residential', monthlyRent: 24000, isOccupied: true, electricityBillingType: 'nesco_submeter', billingSystem: 'regular_nesco', isElectricityEnabled: true },
+  { id: 'u-a4', flatId: 'A4', blockId: 'block-a', blockName: 'Block A', floor: 4, unitType: 'residential', monthlyRent: 25000, isOccupied: true, electricityBillingType: 'nesco_submeter', billingSystem: 'regular_nesco', isElectricityEnabled: true, godownSlot: 'G1' },
+  { id: 'u-a5', flatId: 'A5', blockId: 'block-a', blockName: 'Block A', floor: 5, unitType: 'residential', monthlyRent: 25000, isOccupied: true, electricityBillingType: 'nesco_submeter', billingSystem: 'regular_nesco', isElectricityEnabled: true },
+  { id: 'u-a5-owner', flatId: 'A5 (Owner)', blockId: 'block-a', blockName: 'Block A', floor: 5, unitType: 'residential', monthlyRent: 0, isOccupied: true, electricityBillingType: 'nesco_submeter', billingSystem: 'regular_nesco', isElectricityEnabled: true, fixedElectricityAmount: 0, notes: 'Owner residence' },
+  { id: 'u-a5-sublet', flatId: 'A5 Sublet', blockId: 'block-a', blockName: 'Block A', floor: 5, unitType: 'residential', monthlyRent: 4500, isOccupied: true, electricityBillingType: 'nesco_submeter', billingSystem: 'fixed_price_bill', fixedElectricityAmount: 1500, isElectricityEnabled: true },
+  { id: 'u-a6', flatId: 'A6', blockId: 'block-a', blockName: 'Block A', floor: 6, unitType: 'residential', monthlyRent: 25000, isOccupied: true, electricityBillingType: 'nesco_submeter', billingSystem: 'regular_nesco', isElectricityEnabled: true },
+  { id: 'u-a7', flatId: 'A7', blockId: 'block-a', blockName: 'Block A', floor: 7, unitType: 'residential', monthlyRent: 26000, isOccupied: true, electricityBillingType: 'nesco_submeter', billingSystem: 'regular_nesco', isElectricityEnabled: true },
 
   // Block B
-  { id: 'u-b1', flatId: 'B1', blockId: 'block-b', blockName: 'Block B', floor: 1, unitType: 'residential', monthlyRent: 21000, isOccupied: true, electricityBillingType: 'nesco_submeter', isElectricityEnabled: true },
-  { id: 'u-b2', flatId: 'B2', blockId: 'block-b', blockName: 'Block B', floor: 2, unitType: 'residential', monthlyRent: 23000, isOccupied: true, electricityBillingType: 'nesco_submeter', isElectricityEnabled: true, parkingSlot: 'P2' },
-  { id: 'u-b3', flatId: 'B3', blockId: 'block-b', blockName: 'Block B', floor: 3, unitType: 'residential', monthlyRent: 23000, isOccupied: true, electricityBillingType: 'nesco_submeter', isElectricityEnabled: true },
-  { id: 'u-b4', flatId: 'B4', blockId: 'block-b', blockName: 'Block B', floor: 4, unitType: 'residential', monthlyRent: 24000, isOccupied: true, electricityBillingType: 'nesco_submeter', isElectricityEnabled: true, godownSlot: 'G2' },
-  { id: 'u-b5', flatId: 'B5', blockId: 'block-b', blockName: 'Block B', floor: 5, unitType: 'residential', monthlyRent: 24000, isOccupied: true, electricityBillingType: 'nesco_submeter', isElectricityEnabled: true },
-  { id: 'u-b6', flatId: 'B6', blockId: 'block-b', blockName: 'Block B', floor: 6, unitType: 'residential', monthlyRent: 25000, isOccupied: true, electricityBillingType: 'nesco_submeter', isElectricityEnabled: true },
-  { id: 'u-b7', flatId: 'B7', blockId: 'block-b', blockName: 'Block B', floor: 7, unitType: 'residential', monthlyRent: 25000, isOccupied: false, electricityBillingType: 'nesco_submeter', isElectricityEnabled: true },
+  { id: 'u-b1', flatId: 'B1', blockId: 'block-b', blockName: 'Block B', floor: 1, unitType: 'residential', monthlyRent: 21000, isOccupied: true, electricityBillingType: 'nesco_submeter', billingSystem: 'regular_nesco', isElectricityEnabled: true },
+  { id: 'u-b2', flatId: 'B2', blockId: 'block-b', blockName: 'Block B', floor: 2, unitType: 'residential', monthlyRent: 23000, isOccupied: true, electricityBillingType: 'nesco_submeter', billingSystem: 'regular_nesco', isElectricityEnabled: true, parkingSlot: 'P2' },
+  { id: 'u-b3', flatId: 'B3', blockId: 'block-b', blockName: 'Block B', floor: 3, unitType: 'residential', monthlyRent: 23000, isOccupied: true, electricityBillingType: 'nesco_submeter', billingSystem: 'regular_nesco', isElectricityEnabled: true },
+  { id: 'u-b4', flatId: 'B4', blockId: 'block-b', blockName: 'Block B', floor: 4, unitType: 'residential', monthlyRent: 24000, isOccupied: true, electricityBillingType: 'nesco_submeter', billingSystem: 'regular_nesco', isElectricityEnabled: true, godownSlot: 'G2' },
+  { id: 'u-b5', flatId: 'B5', blockId: 'block-b', blockName: 'Block B', floor: 5, unitType: 'residential', monthlyRent: 24000, isOccupied: true, electricityBillingType: 'nesco_submeter', billingSystem: 'regular_nesco', isElectricityEnabled: true },
+  { id: 'u-b6', flatId: 'B6', blockId: 'block-b', blockName: 'Block B', floor: 6, unitType: 'residential', monthlyRent: 25000, isOccupied: true, electricityBillingType: 'nesco_submeter', billingSystem: 'regular_nesco', isElectricityEnabled: true },
+  { id: 'u-b7', flatId: 'B7', blockId: 'block-b', blockName: 'Block B', floor: 7, unitType: 'residential', monthlyRent: 25000, isOccupied: false, electricityBillingType: 'nesco_submeter', billingSystem: 'regular_nesco', isElectricityEnabled: true },
 
   // Block C
-  { id: 'u-c1', flatId: 'C1', blockId: 'block-c', blockName: 'Block C', floor: 1, unitType: 'residential', monthlyRent: 20000, isOccupied: true, electricityBillingType: 'nesco_submeter', isElectricityEnabled: true },
-  { id: 'u-c2', flatId: 'C2', blockId: 'block-c', blockName: 'Block C', floor: 2, unitType: 'residential', monthlyRent: 22000, isOccupied: true, electricityBillingType: 'nesco_submeter', isElectricityEnabled: true, parkingSlot: 'P3' },
-  { id: 'u-c3', flatId: 'C3', blockId: 'block-c', blockName: 'Block C', floor: 3, unitType: 'residential', monthlyRent: 22000, isOccupied: true, electricityBillingType: 'nesco_submeter', isElectricityEnabled: true },
-  { id: 'u-c4', flatId: 'C4', blockId: 'block-c', blockName: 'Block C', floor: 4, unitType: 'residential', monthlyRent: 23000, isOccupied: true, electricityBillingType: 'nesco_submeter', isElectricityEnabled: true },
-  { id: 'u-c5-owner', flatId: 'C5 Owner', blockId: 'block-c', blockName: 'Block C', floor: 5, unitType: 'residential', monthlyRent: 0, isOccupied: true, electricityBillingType: 'fixed', isElectricityEnabled: false, fixedElectricityAmount: 0, notes: 'Owner residence' },
-  { id: 'u-c6', flatId: 'C6', blockId: 'block-c', blockName: 'Block C', floor: 6, unitType: 'residential', monthlyRent: 24000, isOccupied: true, electricityBillingType: 'nesco_submeter', isElectricityEnabled: true },
-  { id: 'u-c7', flatId: 'C7', blockId: 'block-c', blockName: 'Block C', floor: 7, unitType: 'residential', monthlyRent: 25000, isOccupied: false, electricityBillingType: 'nesco_submeter', isElectricityEnabled: true },
+  { id: 'u-c1', flatId: 'C1', blockId: 'block-c', blockName: 'Block C', floor: 1, unitType: 'residential', monthlyRent: 20000, isOccupied: true, electricityBillingType: 'nesco_submeter', billingSystem: 'regular_nesco', isElectricityEnabled: true },
+  { id: 'u-c2', flatId: 'C2', blockId: 'block-c', blockName: 'Block C', floor: 2, unitType: 'residential', monthlyRent: 22000, isOccupied: true, electricityBillingType: 'nesco_submeter', billingSystem: 'regular_nesco', isElectricityEnabled: true, parkingSlot: 'P3' },
+  { id: 'u-c3', flatId: 'C3', blockId: 'block-c', blockName: 'Block C', floor: 3, unitType: 'residential', monthlyRent: 22000, isOccupied: true, electricityBillingType: 'nesco_submeter', billingSystem: 'regular_nesco', isElectricityEnabled: true },
+  { id: 'u-c4', flatId: 'C4', blockId: 'block-c', blockName: 'Block C', floor: 4, unitType: 'residential', monthlyRent: 23000, isOccupied: true, electricityBillingType: 'nesco_submeter', billingSystem: 'regular_nesco', isElectricityEnabled: true },
+  { id: 'u-c5-owner', flatId: 'C5 Owner', blockId: 'block-c', blockName: 'Block C', floor: 5, unitType: 'residential', monthlyRent: 0, isOccupied: true, electricityBillingType: 'fixed', billingSystem: 'fixed_price_bill', isElectricityEnabled: false, fixedElectricityAmount: 0, notes: 'Owner residence' },
+  { id: 'u-c6', flatId: 'C6', blockId: 'block-c', blockName: 'Block C', floor: 6, unitType: 'residential', monthlyRent: 24000, isOccupied: true, electricityBillingType: 'nesco_submeter', billingSystem: 'regular_nesco', isElectricityEnabled: true },
+  { id: 'u-c7', flatId: 'C7', blockId: 'block-c', blockName: 'Block C', floor: 7, unitType: 'residential', monthlyRent: 25000, isOccupied: false, electricityBillingType: 'nesco_submeter', billingSystem: 'regular_nesco', isElectricityEnabled: true },
 
   // Parking & Godowns (Flats and Godowns can be toggled ON/OFF; Parking has no electricity)
-  { id: 'u-p1', flatId: 'P1', blockId: 'block-a', blockName: 'Block A', floor: 0, unitType: 'parking', monthlyRent: 2500, isOccupied: true, electricityBillingType: 'none', isElectricityEnabled: false },
-  { id: 'u-p2', flatId: 'P2', blockId: 'block-b', blockName: 'Block B', floor: 0, unitType: 'parking', monthlyRent: 2500, isOccupied: true, electricityBillingType: 'none', isElectricityEnabled: false },
-  { id: 'u-p3', flatId: 'P3', blockId: 'block-c', blockName: 'Block C', floor: 0, unitType: 'parking', monthlyRent: 2500, isOccupied: true, electricityBillingType: 'none', isElectricityEnabled: false },
-  { id: 'u-g1', flatId: 'G1', blockId: 'block-a', blockName: 'Block A', floor: 0, unitType: 'godown', monthlyRent: 6000, isOccupied: true, electricityBillingType: 'none', isElectricityEnabled: false },
-  { id: 'u-g2', flatId: 'G2', blockId: 'block-b', blockName: 'Block B', floor: 0, unitType: 'godown', monthlyRent: 6000, isOccupied: true, electricityBillingType: 'none', isElectricityEnabled: false },
+  { id: 'u-p1', flatId: 'P1', blockId: 'block-a', blockName: 'Block A', floor: 0, unitType: 'parking', monthlyRent: 2500, isOccupied: true, electricityBillingType: 'none', billingSystem: 'regular_nesco', isElectricityEnabled: false },
+  { id: 'u-p2', flatId: 'P2', blockId: 'block-b', blockName: 'Block B', floor: 0, unitType: 'parking', monthlyRent: 2500, isOccupied: true, electricityBillingType: 'none', billingSystem: 'regular_nesco', isElectricityEnabled: false },
+  { id: 'u-p3', flatId: 'P3', blockId: 'block-c', blockName: 'Block C', floor: 0, unitType: 'parking', monthlyRent: 2500, isOccupied: true, electricityBillingType: 'none', billingSystem: 'regular_nesco', isElectricityEnabled: false },
+  { id: 'u-g1', flatId: 'G1', blockId: 'block-a', blockName: 'Block A', floor: 0, unitType: 'godown', monthlyRent: 6000, isOccupied: true, electricityBillingType: 'none', billingSystem: 'fixed_price_bill', fixedElectricityAmount: 1000, isElectricityEnabled: false },
+  { id: 'u-g2', flatId: 'G2', blockId: 'block-b', blockName: 'Block B', floor: 0, unitType: 'godown', monthlyRent: 6000, isOccupied: true, electricityBillingType: 'none', billingSystem: 'fixed_price_bill', fixedElectricityAmount: 1000, isElectricityEnabled: false },
 ];
 
 export const INITIAL_TENANTS: Tenant[] = [
@@ -1148,6 +1148,9 @@ export function loadDatabaseState(): AppDatabaseState {
       if (Array.isArray(parsed.units)) {
         parsed.units = parsed.units.map((u) => ({
           ...u,
+          billingSystem:
+            u.billingSystem ||
+            (u.electricityBillingType === 'fixed' ? 'fixed_price_bill' : 'regular_nesco'),
           isElectricityEnabled:
             u.isElectricityEnabled !== undefined
               ? u.isElectricityEnabled
@@ -1155,7 +1158,7 @@ export function loadDatabaseState(): AppDatabaseState {
               ? false
               : u.flatId.includes('Owner')
               ? false
-              : u.electricityBillingType === 'nesco_submeter',
+              : u.electricityBillingType !== 'none',
         }));
         // Ensure Block A units have A1-A7 and A5 (Owner)
         const hasA5 = parsed.units.some((u) => u.flatId === 'A5');

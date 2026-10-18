@@ -155,11 +155,14 @@ export const TenantPortal: React.FC<Props> = ({
       ? selectedLedgerItem
       : displayLedgerHistory[0] || selectedLedgerItem || null;
 
-  // Electricity bills strictly filtered to consumption during current tenant's staying period
-  const flatElectricityBills = data.electricityBills.filter((b) => {
+  // Electricity bills filtered to consumption during current tenant's staying period (with fallback to all matching flat bills)
+  const stayingPeriodBills = data.electricityBills.filter((b) => {
     if (b.flatId.toLowerCase().trim() !== cleanFlatId) return false;
     return isWithinStayingPeriod(b.consumptionMonth, b.consumptionYear, b.tenantName);
   });
+  const flatElectricityBills = stayingPeriodBills.length > 0
+    ? stayingPeriodBills
+    : data.electricityBills.filter((b) => b.flatId.toLowerCase().trim() === cleanFlatId);
 
   // Strict unit electricity active toggle check - completely hides when disabled on unit
   const isUnitElecOn = Boolean(

@@ -1031,31 +1031,29 @@ export default function App() {
           const matchingUnit = prev.units.find((u) => u.flatId.toLowerCase().trim() === key);
           const currentTenant = prev.tenants.find((t) => t.flatId.toLowerCase().trim() === key);
           const currentName = cr.tenantName || currentTenant?.fullName || 'Resident';
-          const billedTenantName = getPriorMonthTenantName(key, currentName);
           targetFlatsList.push({
             flatId: cr.flatId,
             unitId: matchingUnit?.id || `u-${key.replace(/\s+/g, '-')}`,
             tenantId: currentTenant?.id || '',
-            tenantName: billedTenantName,
+            tenantName: currentName,
           });
         });
       } else {
         const nescoUnits = prev.units.filter(
           (u) =>
             (u.unitType === 'residential' || u.unitType === 'godown') &&
-            (u.isElectricityEnabled ?? (u.electricityBillingType === 'nesco_submeter')) &&
+            (u.isElectricityEnabled ?? true) &&
             u.electricityBillingType !== 'none'
         );
         nescoUnits.forEach((u) => {
           const key = u.flatId.toLowerCase().trim();
           const currentTenant = prev.tenants.find((t) => t.flatId.toLowerCase().trim() === key);
           const currentName = currentTenant?.fullName || 'Resident';
-          const billedTenantName = getPriorMonthTenantName(key, currentName);
           targetFlatsList.push({
             flatId: u.flatId,
             unitId: u.id,
             tenantId: currentTenant?.id || '',
-            tenantName: billedTenantName,
+            tenantName: currentName,
           });
         });
       }
@@ -1098,6 +1096,7 @@ export default function App() {
           paymentStatus: 'Not Paid',
           generatedDate: new Date().toISOString().split('T')[0],
           tariffSnapshotTitle: prev.tariffConfig.title,
+          billingSystem: custom?.billingSystem,
         };
       });
 
@@ -1135,17 +1134,21 @@ export default function App() {
           .map((i) => i.flatId.toLowerCase().trim())
       );
 
-      // Update unit electricity billing enabled settings so they carry forward to subsequent months
+      // Update unit electricity billing enabled settings and billingSystem so they carry forward to subsequent months
       let updatedUnits = prev.units.map((u) => {
         const custom = customReadings?.find((cr) => cr.flatId.toLowerCase().trim() === u.flatId.toLowerCase().trim());
         if (custom) {
           const isCustomEnabled = (custom as any).isBillingEnabled !== undefined
             ? Boolean((custom as any).isBillingEnabled)
             : (custom.billAmount !== undefined ? custom.billAmount > 0 : (u.isElectricityEnabled ?? true));
+          const billingSys = ((custom as any).billingSystem as any) || u.billingSystem || 'regular_nesco';
           return {
             ...u,
             isElectricityEnabled: isCustomEnabled,
-            electricityBillingType: isCustomEnabled ? ('nesco_submeter' as const) : ('none' as const),
+            electricityBillingType: isCustomEnabled ? (billingSys === 'fixed_price_bill' ? ('fixed' as const) : ('nesco_submeter' as const)) : ('none' as const),
+            billingSystem: billingSys,
+            fixedUnitRate: (custom as any).fixedUnitRate !== undefined ? Number((custom as any).fixedUnitRate) : u.fixedUnitRate,
+            fixedElectricityAmount: (custom as any).fixedBillAmount !== undefined ? Number((custom as any).fixedBillAmount) : u.fixedElectricityAmount,
           };
         }
         return u;
@@ -1196,7 +1199,7 @@ export default function App() {
           : custom?.billAmount !== undefined
           ? custom.billAmount > 0
           : (unit?.unitType === 'residential' || unit?.unitType === 'godown' || !unit) &&
-            (unit?.isElectricityEnabled ?? (unit?.electricityBillingType === 'nesco_submeter' || !unit?.electricityBillingType)) &&
+            (unit?.isElectricityEnabled ?? true) &&
             unit?.electricityBillingType !== 'none';
 
         if (item.month === billingMonth && item.year === billingYear) {
@@ -1316,6 +1319,8 @@ export default function App() {
 
       return {
         ...prev,
+        selectedMonth: billingMonth,
+        selectedYear: billingYear,
         units: updatedUnits,
         meterReadings: updatedMeterReadings,
         electricityBills: updatedBills,

@@ -16,7 +16,7 @@ import {
   ArrowRight,
   ShieldCheck,
 } from 'lucide-react';
-import { AppDatabaseState, UnitType, ElectricityBillingType } from '../types';
+import { AppDatabaseState, UnitType, ElectricityBillingType, NescoBillingSystem } from '../types';
 import { formatBDT } from '../lib/nescoTariff';
 
 export interface NewRentalUnitPayload {
@@ -28,6 +28,9 @@ export interface NewRentalUnitPayload {
   parkingSlot?: string;
   godownSlot?: string;
   electricityBillingType: ElectricityBillingType;
+  billingSystem?: NescoBillingSystem;
+  fixedUnitRate?: number;
+  fixedElectricityAmount?: number;
   meterPreviousReading: number;
   meterCurrentReading: number;
   sanctionedLoad: number;
@@ -70,6 +73,9 @@ export const CreateUnitModal: React.FC<Props> = ({
 
   // NESCO Electricity Sub-Meter Setup
   const [electricityBillingType, setElectricityBillingType] = useState<ElectricityBillingType>('nesco_submeter');
+  const [billingSystem, setBillingSystem] = useState<NescoBillingSystem>('regular_nesco');
+  const [fixedUnitRate, setFixedUnitRate] = useState<number>(15.01);
+  const [fixedElectricityAmount, setFixedElectricityAmount] = useState<number>(1500);
   const [meterPreviousReading, setMeterPreviousReading] = useState<number>(0);
   const [meterCurrentReading, setMeterCurrentReading] = useState<number>(0);
   const [sanctionedLoad, setSanctionedLoad] = useState<number>(2);
@@ -117,7 +123,10 @@ export const CreateUnitModal: React.FC<Props> = ({
       monthlyRent,
       parkingSlot: hasParking ? parkingSlot : undefined,
       godownSlot: hasGodown ? godownSlot : undefined,
-      electricityBillingType,
+      electricityBillingType: billingSystem === 'fixed_price_bill' ? 'fixed' : electricityBillingType,
+      billingSystem,
+      fixedUnitRate: billingSystem === 'fixed_unit_price' ? Number(fixedUnitRate) || 15.01 : undefined,
+      fixedElectricityAmount: billingSystem === 'fixed_price_bill' ? Number(fixedElectricityAmount) || 1500 : undefined,
       meterPreviousReading: Number(meterPreviousReading) || 0,
       meterCurrentReading: Number(meterCurrentReading) || Number(meterPreviousReading) || 0,
       sanctionedLoad: Number(sanctionedLoad) || 2,
@@ -329,39 +338,84 @@ export const CreateUnitModal: React.FC<Props> = ({
               When created, this unit will immediately appear in the <strong>Electricity (NESCO)</strong> bills table, sub-meter readings entry list, and bill calculator.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Electricity Billing Mode</label>
+                <label className="block font-bold text-slate-700 mb-1">Default Billing System</label>
                 <select
-                  value={electricityBillingType}
-                  onChange={(e) => setElectricityBillingType(e.target.value as any)}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl font-semibold text-slate-900 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
+                  value={electricityBillingType === 'none' ? 'none' : billingSystem}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === 'none') {
+                      setElectricityBillingType('none');
+                    } else {
+                      setElectricityBillingType(val === 'fixed_price_bill' ? 'fixed' : 'nesco_submeter');
+                      setBillingSystem(val as NescoBillingSystem);
+                    }
+                  }}
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl font-semibold text-slate-900 focus:ring-2 focus:ring-amber-500 focus:outline-hidden text-xs"
                 >
-                  <option value="nesco_submeter">NESCO Sub-Meter (Progressive Slabs)</option>
-                  <option value="fixed">Fixed Electricity Rate</option>
-                  <option value="none">No Electricity Billing</option>
+                  <option value="regular_nesco">1. Regular NESCO Slabs</option>
+                  <option value="fixed_unit_price">2. Fixed Unit Price</option>
+                  <option value="fixed_price_bill">3. Fixed Price Bill</option>
+                  <option value="none">No Electricity Billing (OFF)</option>
                 </select>
               </div>
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Starting / Previous Reading (kWh)
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={meterPreviousReading}
-                  onChange={(e) => {
-                    const val = Number(e.target.value);
-                    setMeterPreviousReading(val);
-                    if (meterCurrentReading < val) {
-                      setMeterCurrentReading(val);
-                    }
-                  }}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl font-mono font-bold text-slate-900 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
-                  placeholder="e.g. 0 or 1500"
-                />
-              </div>
+              {billingSystem === 'fixed_unit_price' && electricityBillingType !== 'none' && (
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Fixed Rate (৳/kWh)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="1"
+                    value={fixedUnitRate}
+                    onChange={(e) => setFixedUnitRate(Number(e.target.value))}
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl font-mono font-bold text-slate-900 focus:ring-2 focus:ring-amber-500 focus:outline-hidden text-xs"
+                    placeholder="e.g. 15.01"
+                  />
+                </div>
+              )}
+
+              {billingSystem === 'fixed_price_bill' && electricityBillingType !== 'none' && (
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Fixed Monthly Bill (৳)
+                  </label>
+                  <input
+                    type="number"
+                    step="50"
+                    min="0"
+                    value={fixedElectricityAmount}
+                    onChange={(e) => setFixedElectricityAmount(Number(e.target.value))}
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl font-mono font-bold text-slate-900 focus:ring-2 focus:ring-amber-500 focus:outline-hidden text-xs"
+                    placeholder="e.g. 1500"
+                  />
+                </div>
+              )}
+
+              {billingSystem !== 'fixed_price_bill' && electricityBillingType !== 'none' && (
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">
+                    Starting Reading (kWh)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={meterPreviousReading}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      setMeterPreviousReading(val);
+                      if (meterCurrentReading < val) {
+                        setMeterCurrentReading(val);
+                      }
+                    }}
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl font-mono font-bold text-slate-900 focus:ring-2 focus:ring-amber-500 focus:outline-hidden text-xs"
+                    placeholder="e.g. 0 or 1500"
+                  />
+                </div>
+              )}
 
               <div>
                 <label className="block font-bold text-slate-700 mb-1">
@@ -373,7 +427,7 @@ export const CreateUnitModal: React.FC<Props> = ({
                   max="10"
                   value={sanctionedLoad}
                   onChange={(e) => setSanctionedLoad(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl font-mono font-bold text-slate-900 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl font-mono font-bold text-slate-900 focus:ring-2 focus:ring-amber-500 focus:outline-hidden text-xs"
                 />
               </div>
             </div>
