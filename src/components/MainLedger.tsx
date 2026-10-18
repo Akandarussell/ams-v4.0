@@ -574,71 +574,72 @@ export const MainLedger: React.FC<Props> = ({
   const totalPayable = filteredItems.reduce((acc, curr) => acc + curr.totalPayable, 0);
   const totalPaid = filteredItems.reduce((acc, curr) => acc + curr.totalPaid, 0);
   const totalDue = filteredItems.reduce((acc, curr) => acc + calculateItemTotalDue(curr), 0);
-  const totalAdvance = filteredItems.reduce((acc, curr) => {
-    const advAcc = data.advanceAccounts.find((a) => a.flatId.toLowerCase().trim() === curr.flatId.toLowerCase().trim());
-    return acc + (advAcc ? getEffectiveRemainingAdvance(advAcc, data.ledgerItems) : (curr.advancePayment || 0));
-  }, 0);
   const collectionPercentage = totalPayable > 0 ? Math.round((totalPaid / totalPayable) * 100) : 0;
 
   // Postpaid electricity consumption period rule
   const currentPostpaidPeriod = getPostpaidElectricityPeriod(data.selectedMonth, data.selectedYear);
 
-  // 1. Advance (Paid vs Due) for units in filtered ledger
-  const advancePaid = filteredItems.reduce((sum, item) => {
-    if (item.flatId.toLowerCase().includes('owner')) return sum;
-    const a = data.advanceAccounts.find((acc) => acc.flatId.toLowerCase().trim() === item.flatId.toLowerCase().trim());
-    if (a) {
-      return sum + getEffectiveRemainingAdvance(a, data.ledgerItems);
-    }
-    const rawAdvStatus = (item.advanceStatus || '').trim().toLowerCase();
-    if (rawAdvStatus === 'paid' || rawAdvStatus === 'adjusted') {
-      return sum + (item.advancePayment || 0);
-    }
-    if (rawAdvStatus === 'partially paid' || rawAdvStatus === 'partially_paid') {
-      return sum + Math.round((item.advancePayment || 0) / 2);
-    }
-    return sum + (item.advancePayment || 0);
-  }, 0);
+  // 1. Advance (Paid vs Due) for units in filtered ledger:
+  // Count all paid subtotal amount in the month as paid amount and not paid subtotal amount in the month as due
+  let advancePaid = 0;
+  let advanceDue = 0;
+  let advancePaidCount = 0;
+  let advanceDueCount = 0;
 
-  const advanceDue = filteredItems.reduce((sum, item) => {
-    if (item.flatId.toLowerCase().includes('owner')) return sum;
-    const a = data.advanceAccounts.find((acc) => acc.flatId.toLowerCase().trim() === item.flatId.toLowerCase().trim());
-    if (a) {
-      if (a.status === 'not_paid') {
-        return sum + (a.totalRequired || 0);
-      }
-      if (a.status === 'partially_paid') {
-        return sum + Math.max(0, (a.totalRequired || 0) - (a.amountPaid || 0));
-      }
-      return sum;
-    }
+  filteredItems.forEach((item) => {
+    if (item.flatId.toLowerCase().includes('owner')) return;
     const rawAdvStatus = (item.advanceStatus || '').trim().toLowerCase();
-    if (rawAdvStatus === 'not paid' || rawAdvStatus === 'not_paid') {
-      return sum + (item.advancePayment || (item.flatRent * 2) || 0);
+    const matchingAdv = data.advanceAccounts.find(
+      (a) => a.flatId.toLowerCase().trim() === item.flatId.toLowerCase().trim()
+    );
+    const isMarkedPaid = rawAdvStatus === 'paid';
+    const isMarkedPartial = rawAdvStatus === 'partially paid' || rawAdvStatus === 'partially_paid';
+    const isNotPaid = rawAdvStatus === 'not paid' || rawAdvStatus === 'not_paid';
+
+    const effectiveAdvAmount =
+      item.advancePayment !== undefined && item.advancePayment !== null && Number(item.advancePayment) > 0
+        ? Number(item.advancePayment)
+        : (matchingAdv?.amountPaid && matchingAdv.amountPaid > 0)
+        ? matchingAdv.amountPaid
+        : (matchingAdv?.totalRequired && matchingAdv.totalRequired > 0)
+        ? matchingAdv.totalRequired
+        : (item.flatRent > 0 ? item.flatRent * 2 : 0);
+
+    const advStatus =
+      rawAdvStatus === 'n/a'
+        ? 'N/A'
+        : isNotPaid
+        ? 'Not Paid'
+        : isMarkedPaid
+        ? 'Paid'
+        : isMarkedPartial || matchingAdv?.status === 'partially_paid'
+        ? 'Partially Paid'
+        : rawAdvStatus === 'adjusted'
+        ? 'Adjusted'
+        : (matchingAdv?.status === 'paid' || (!rawAdvStatus && effectiveAdvAmount > 0))
+        ? 'Paid'
+        : 'Not Paid';
+
+    if (advStatus === 'Paid' || advStatus === 'Adjusted') {
+      advancePaid += effectiveAdvAmount;
+      if (effectiveAdvAmount > 0) advancePaidCount++;
+    } else if (advStatus === 'Not Paid') {
+      advanceDue += effectiveAdvAmount;
+      if (effectiveAdvAmount > 0) advanceDueCount++;
+    } else if (advStatus === 'Partially Paid') {
+      const paidPart = (matchingAdv?.amountPaid && matchingAdv.amountPaid > 0)
+        ? Math.min(matchingAdv.amountPaid, effectiveAdvAmount)
+        : Math.round(effectiveAdvAmount / 2);
+      const duePart = Math.max(0, (matchingAdv?.totalRequired || effectiveAdvAmount) - paidPart);
+      advancePaid += paidPart;
+      advanceDue += duePart;
+      if (paidPart > 0) advancePaidCount++;
+      if (duePart > 0) advanceDueCount++;
     }
-    if (rawAdvStatus === 'partially paid' || rawAdvStatus === 'partially_paid') {
-      return sum + Math.round((item.advancePayment || 0) / 2);
-    }
-    return sum;
-  }, 0);
+  });
 
   const advanceTotalRequired = advancePaid + advanceDue;
-
-  const advancePaidCount = filteredItems.filter((item) => {
-    if (item.flatId.toLowerCase().includes('owner')) return false;
-    const a = data.advanceAccounts.find((acc) => acc.flatId.toLowerCase().trim() === item.flatId.toLowerCase().trim());
-    if (a) return a.status === 'paid' || a.amountPaid > 0;
-    const rawAdvStatus = (item.advanceStatus || '').trim().toLowerCase();
-    return rawAdvStatus === 'paid' || rawAdvStatus === 'adjusted' || item.advancePayment > 0;
-  }).length;
-
-  const advanceDueCount = filteredItems.filter((item) => {
-    if (item.flatId.toLowerCase().includes('owner')) return false;
-    const a = data.advanceAccounts.find((acc) => acc.flatId.toLowerCase().trim() === item.flatId.toLowerCase().trim());
-    if (a) return a.status === 'not_paid' || a.status === 'partially_paid';
-    const rawAdvStatus = (item.advanceStatus || '').trim().toLowerCase();
-    return rawAdvStatus === 'not paid' || rawAdvStatus === 'not_paid';
-  }).length;
+  const totalAdvance = advancePaid;
 
   // 2. Current Month Flat Rent (Paid vs Due)
   const rentPaid = filteredItems.reduce((sum, item) => {
@@ -1430,12 +1431,12 @@ export const MainLedger: React.FC<Props> = ({
                     Advance (Paid vs Due)
                   </span>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/80">
-                    Security Escrow
+                    Paid vs Due
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-2 mt-2.5 pt-2 border-t border-slate-100">
                   <div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Paid (Escrow)</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Advance Paid</span>
                     <div className="text-base sm:text-lg font-black text-indigo-700 font-mono tabular-nums">
                       {formatBDT(advancePaid)}
                     </div>
@@ -1449,7 +1450,7 @@ export const MainLedger: React.FC<Props> = ({
                 </div>
                 <div className="flex items-center justify-between text-[11px] text-slate-500 mt-2">
                   <span>{advancePaidCount} Paid &bull; {advanceDueCount} Due</span>
-                  <span className="font-mono text-slate-400 text-[10px]">Req: {formatBDT(advanceTotalRequired)}</span>
+                  <span className="font-mono text-slate-400 text-[10px]">Total: {formatBDT(advanceTotalRequired)}</span>
                 </div>
               </div>
               <div className="mt-2.5 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden flex shadow-inner">
@@ -1603,13 +1604,13 @@ export const MainLedger: React.FC<Props> = ({
               const isMarkedPartial = rawAdvStatus.toLowerCase() === 'partially paid' || rawAdvStatus.toLowerCase() === 'partially_paid';
 
               const effectiveAdvAmount =
-                item.advancePayment !== undefined && item.advancePayment !== null
+                item.advancePayment !== undefined && item.advancePayment !== null && Number(item.advancePayment) > 0
                   ? Number(item.advancePayment)
                   : (matchingAdv?.amountPaid && matchingAdv.amountPaid > 0)
                   ? matchingAdv.amountPaid
                   : (matchingAdv?.totalRequired && matchingAdv.totalRequired > 0)
                   ? matchingAdv.totalRequired
-                  : 0;
+                  : (item.flatRent > 0 ? item.flatRent * 2 : 0);
 
               const hasAdvAmount = effectiveAdvAmount > 0;
               const isNotPaid =
@@ -2090,13 +2091,13 @@ export const MainLedger: React.FC<Props> = ({
                   const isMarkedPartial = rawAdvStatus.toLowerCase() === 'partially paid' || rawAdvStatus.toLowerCase() === 'partially_paid';
 
                   const effectiveAdvAmount =
-                    item.advancePayment !== undefined && item.advancePayment !== null
+                    item.advancePayment !== undefined && item.advancePayment !== null && Number(item.advancePayment) > 0
                       ? Number(item.advancePayment)
                       : (matchingAdv?.amountPaid && matchingAdv.amountPaid > 0)
                       ? matchingAdv.amountPaid
                       : (matchingAdv?.totalRequired && matchingAdv.totalRequired > 0)
                       ? matchingAdv.totalRequired
-                      : 0;
+                      : (item.flatRent > 0 ? item.flatRent * 2 : 0);
 
                   const hasAdvAmount = effectiveAdvAmount > 0;
                   const isNotPaid =
