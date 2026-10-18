@@ -28,6 +28,8 @@ import {
   User,
   ExternalLink,
   KeyRound,
+  ArrowLeft,
+  ArrowRight,
 } from 'lucide-react';
 import {
   AppDatabaseState,
@@ -112,6 +114,155 @@ export default function App() {
   const [currentView, setCurrentView] = useState<string>('dashboard');
   const [ledgerInitialBlock, setLedgerInitialBlock] = useState<string>('all');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Page Navigation History Stack (Back to previous page & Forward to current/next page across Mobile & PC)
+  const [navHistory, setNavHistory] = useState<{ view: string; block?: string }[]>([
+    { view: 'dashboard', block: 'all' },
+  ]);
+  const [historyIndex, setHistoryIndex] = useState<number>(0);
+
+  const canGoBack = historyIndex > 0;
+  const canGoForward = historyIndex < navHistory.length - 1;
+
+  const navigateTo = (view: string, block?: string) => {
+    const currentStep = navHistory[historyIndex];
+    if (currentStep && currentStep.view === view && (block === undefined || currentStep.block === block)) {
+      return;
+    }
+    const resolvedBlock = block !== undefined ? block : (view === 'monthly-ledger' ? ledgerInitialBlock : 'all');
+    if (block !== undefined) {
+      setLedgerInitialBlock(block);
+    }
+    setCurrentView(view);
+    setNavHistory((prev) => {
+      const trimmed = prev.slice(0, historyIndex + 1);
+      return [...trimmed, { view, block: resolvedBlock }];
+    });
+    setHistoryIndex((prev) => prev + 1);
+
+    try {
+      window.history.pushState(
+        { view, block: resolvedBlock, historyIndex: historyIndex + 1 },
+        '',
+        `?view=${view}`
+      );
+    } catch (e) {}
+  };
+
+  const handleGoBack = () => {
+    if (historyIndex > 0) {
+      const nextIdx = historyIndex - 1;
+      const prevStep = navHistory[nextIdx];
+      if (prevStep) {
+        setHistoryIndex(nextIdx);
+        setCurrentView(prevStep.view);
+        if (prevStep.block) {
+          setLedgerInitialBlock(prevStep.block);
+        }
+        try {
+          window.history.replaceState(
+            { view: prevStep.view, block: prevStep.block, historyIndex: nextIdx },
+            '',
+            `?view=${prevStep.view}`
+          );
+        } catch (e) {}
+      }
+    }
+  };
+
+  const handleGoForward = () => {
+    if (historyIndex < navHistory.length - 1) {
+      const nextIdx = historyIndex + 1;
+      const nextStep = navHistory[nextIdx];
+      if (nextStep) {
+        setHistoryIndex(nextIdx);
+        setCurrentView(nextStep.view);
+        if (nextStep.block) {
+          setLedgerInitialBlock(nextStep.block);
+        }
+        try {
+          window.history.replaceState(
+            { view: nextStep.view, block: nextStep.block, historyIndex: nextIdx },
+            '',
+            `?view=${nextStep.view}`
+          );
+        } catch (e) {}
+      }
+    }
+  };
+
+  const getFriendlyViewName = (viewId?: string): string => {
+    switch (viewId) {
+      case 'dashboard':
+        return currentUser?.role === 'tenant' ? 'Resident Portal' : currentUser?.role === 'owner' ? 'Owner Dashboard' : 'Dashboard';
+      case 'monthly-ledger':
+        return 'Monthly Ledger';
+      case 'advance-payments':
+        return 'Advance Accounts';
+      case 'electricity':
+        return 'Electricity & Meters';
+      case 'online-payments':
+        return 'Online Payments';
+      case 'units':
+        return 'Rental Units';
+      case 'complaints':
+        return 'Complaints & Requests';
+      case 'messages':
+        return 'Community Chat';
+      case 'passwords':
+        return 'Password Settings';
+      case 'users':
+        return 'User Management';
+      case 'audit-logs':
+        return 'Audit Logs';
+      default:
+        return viewId ? viewId.replace('-', ' ') : 'Page';
+    }
+  };
+
+  // Synchronize browser native back/forward buttons & swipe gestures with app state
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      if (e.state && typeof e.state.historyIndex === 'number') {
+        const targetIdx = e.state.historyIndex;
+        if (targetIdx >= 0 && targetIdx < navHistory.length) {
+          setHistoryIndex(targetIdx);
+          const step = navHistory[targetIdx];
+          if (step) {
+            setCurrentView(step.view);
+            if (step.block) setLedgerInitialBlock(step.block);
+          }
+          return;
+        }
+      }
+      if (e.state && e.state.view) {
+        setCurrentView(e.state.view);
+        if (e.state.block) setLedgerInitialBlock(e.state.block);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [navHistory]);
+
+  // Keyboard navigation shortcuts: Alt+ArrowLeft for Back, Alt+ArrowRight for Forward
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || target?.isContentEditable) {
+        return;
+      }
+      if (e.altKey && e.key === 'ArrowLeft') {
+        e.preventDefault();
+        handleGoBack();
+      } else if (e.altKey && e.key === 'ArrowRight') {
+        e.preventDefault();
+        handleGoForward();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [historyIndex, navHistory]);
 
   // Active user safe helpers for handlers
   const activeUserFullName = currentUser?.fullName || 'Manager Russell';
@@ -386,8 +537,7 @@ export default function App() {
     if (month && year && (month !== data.selectedMonth || year !== data.selectedYear)) {
       handleUpdateMonthYear(month, year);
     }
-    setLedgerInitialBlock(block);
-    setCurrentView('monthly-ledger');
+    navigateTo('monthly-ledger', block);
   };
 
   // Record Payment
@@ -2318,6 +2468,8 @@ export default function App() {
       console.error(e);
     }
     setCurrentView('dashboard');
+    setNavHistory([{ view: 'dashboard', block: 'all' }]);
+    setHistoryIndex(0);
   };
 
   const handleLogout = () => {
@@ -2329,6 +2481,8 @@ export default function App() {
     }
     setIsMobileMenuOpen(false);
     setCurrentView('dashboard');
+    setNavHistory([{ view: 'dashboard', block: 'all' }]);
+    setHistoryIndex(0);
   };
 
   // Navigation items based on role (Advance Payments, Rental Units, and Electricity tabs removed from left menubar)
@@ -2402,11 +2556,48 @@ export default function App() {
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 -ml-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
+              className="lg:hidden p-2 -ml-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition-colors cursor-pointer shrink-0"
               aria-label="Toggle navigation drawer"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5 text-blue-400" /> : <Menu className="w-5 h-5" />}
             </button>
+
+            {/* Back (Previous Page) & Forward (Next Page) Navigation Controls (Mobile & PC) */}
+            <div className="flex items-center gap-0.5 sm:gap-1 bg-slate-800/90 border border-slate-700/80 rounded-xl p-0.5 sm:p-1 shadow-xs shrink-0">
+              <button
+                type="button"
+                onClick={handleGoBack}
+                disabled={!canGoBack}
+                className={`min-h-[34px] min-w-[34px] sm:min-h-[36px] sm:min-w-[36px] p-1.5 sm:p-2 rounded-lg flex items-center justify-center transition-all ${
+                  canGoBack
+                    ? 'text-white bg-slate-700/80 hover:bg-blue-600 active:scale-95 cursor-pointer shadow-2xs'
+                    : 'text-slate-600 cursor-not-allowed opacity-35'
+                }`}
+                title={canGoBack ? `Go Back to ${getFriendlyViewName(navHistory[historyIndex - 1]?.view)} (Alt+Left)` : 'No previous page to go back to'}
+                aria-label="Go back to previous page"
+              >
+                <ArrowLeft className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+                <span className="hidden xl:inline text-[11px] font-bold ml-1">Back</span>
+              </button>
+
+              <div className="w-px h-3.5 bg-slate-700/80 my-auto"></div>
+
+              <button
+                type="button"
+                onClick={handleGoForward}
+                disabled={!canGoForward}
+                className={`min-h-[34px] min-w-[34px] sm:min-h-[36px] sm:min-w-[36px] p-1.5 sm:p-2 rounded-lg flex items-center justify-center transition-all ${
+                  canGoForward
+                    ? 'text-white bg-slate-700/80 hover:bg-blue-600 active:scale-95 cursor-pointer shadow-2xs'
+                    : 'text-slate-600 cursor-not-allowed opacity-35'
+                }`}
+                title={canGoForward ? `Go Forward to ${getFriendlyViewName(navHistory[historyIndex + 1]?.view)} (Alt+Right)` : 'No forward page to come back to'}
+                aria-label="Go forward to next page"
+              >
+                <ArrowRight className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+                <span className="hidden xl:inline text-[11px] font-bold ml-1">Forward</span>
+              </button>
+            </div>
 
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center font-black text-white text-xs sm:text-sm shadow-sm tracking-wider shrink-0 border border-blue-400/20">
@@ -2551,7 +2742,7 @@ export default function App() {
                 return (
                   <button
                     key={item.id}
-                    onClick={() => setCurrentView(item.id)}
+                    onClick={() => navigateTo(item.id)}
                     className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       isActive
                         ? 'bg-blue-600 text-white shadow-xs font-extrabold'
@@ -2685,6 +2876,45 @@ export default function App() {
                   </select>
                 </div>
 
+                {/* Mobile Drawer Back / Forward Quick Actions */}
+                <div className="flex items-center justify-between p-2 bg-slate-900 text-white rounded-xl mb-3 border border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleGoBack();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    disabled={!canGoBack}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      canGoBack
+                        ? 'bg-blue-600 text-white active:scale-95 cursor-pointer shadow-xs'
+                        : 'text-slate-500 opacity-40 cursor-not-allowed'
+                    }`}
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Back</span>
+                  </button>
+                  <span className="text-[10px] font-mono text-slate-400">
+                    Step {historyIndex + 1} of {navHistory.length}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleGoForward();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    disabled={!canGoForward}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      canGoForward
+                        ? 'bg-blue-600 text-white active:scale-95 cursor-pointer shadow-xs'
+                        : 'text-slate-500 opacity-40 cursor-not-allowed'
+                    }`}
+                  >
+                    <span>Forward</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
                 {/* Navigation Items */}
                 <div className="pt-2 space-y-1">
                   {navItems.map((item) => {
@@ -2694,7 +2924,7 @@ export default function App() {
                       <button
                         key={item.id}
                         onClick={() => {
-                          setCurrentView(item.id);
+                          navigateTo(item.id);
                           setIsMobileMenuOpen(false);
                         }}
                         className={`w-full min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
@@ -2748,7 +2978,7 @@ export default function App() {
           {currentUser.role === 'tenant' ? (
             <>
               <button
-                onClick={() => setCurrentView('dashboard')}
+                onClick={() => navigateTo('dashboard')}
                 className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
                   currentView === 'dashboard' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
                 }`}
@@ -2757,7 +2987,7 @@ export default function App() {
                 <span>Dashboard</span>
               </button>
               <button
-                onClick={() => setCurrentView('complaints')}
+                onClick={() => navigateTo('complaints')}
                 className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
                   currentView === 'complaints' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
                 }`}
@@ -2766,7 +2996,7 @@ export default function App() {
                 <span>Requests</span>
               </button>
               <button
-                onClick={() => setCurrentView('messages')}
+                onClick={() => navigateTo('messages')}
                 className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
                   currentView === 'messages' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
                 }`}
@@ -2785,7 +3015,7 @@ export default function App() {
           ) : currentUser.role === 'owner' ? (
             <>
               <button
-                onClick={() => setCurrentView('dashboard')}
+                onClick={() => navigateTo('dashboard')}
                 className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
                   currentView === 'dashboard' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
                 }`}
@@ -2794,7 +3024,7 @@ export default function App() {
                 <span>Dashboard</span>
               </button>
               <button
-                onClick={() => setCurrentView('monthly-ledger')}
+                onClick={() => navigateTo('monthly-ledger')}
                 className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
                   currentView === 'monthly-ledger' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
                 }`}
@@ -2803,7 +3033,7 @@ export default function App() {
                 <span>Ledger</span>
               </button>
               <button
-                onClick={() => setCurrentView('complaints')}
+                onClick={() => navigateTo('complaints')}
                 className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
                   currentView === 'complaints' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
                 }`}
@@ -2812,7 +3042,7 @@ export default function App() {
                 <span>Complaints</span>
               </button>
               <button
-                onClick={() => setCurrentView('messages')}
+                onClick={() => navigateTo('messages')}
                 className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
                   currentView === 'messages' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
                 }`}
@@ -2831,7 +3061,7 @@ export default function App() {
           ) : (
             <>
               <button
-                onClick={() => setCurrentView('dashboard')}
+                onClick={() => navigateTo('dashboard')}
                 className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
                   currentView === 'dashboard' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
                 }`}
@@ -2840,7 +3070,7 @@ export default function App() {
                 <span>Overview</span>
               </button>
               <button
-                onClick={() => setCurrentView('monthly-ledger')}
+                onClick={() => navigateTo('monthly-ledger')}
                 className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
                   currentView === 'monthly-ledger' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
                 }`}
@@ -2849,7 +3079,7 @@ export default function App() {
                 <span>Ledger</span>
               </button>
               <button
-                onClick={() => setCurrentView('online-payments')}
+                onClick={() => navigateTo('online-payments')}
                 className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
                   currentView === 'online-payments' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
                 }`}
@@ -2858,7 +3088,7 @@ export default function App() {
                 <span>Payments</span>
               </button>
               <button
-                onClick={() => setCurrentView('messages')}
+                onClick={() => navigateTo('messages')}
                 className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
                   currentView === 'messages' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
                 }`}
@@ -2889,7 +3119,7 @@ export default function App() {
                 onViewReceipt={setActiveReceipt}
                 onViewBill={setActiveBill}
                 onSubmitOnlinePayment={handleSubmitOnlinePayment}
-                onNavigateToView={setCurrentView}
+                onNavigateToView={navigateTo}
               />
             ) : currentView === 'complaints' ? (
               <ComplaintsManager
@@ -2982,7 +3212,7 @@ export default function App() {
               <ManagerDashboard
                 data={data}
                 onUpdateMonthYear={handleUpdateMonthYear}
-                onNavigateToView={setCurrentView}
+                onNavigateToView={navigateTo}
                 onOpenDbModal={() => setIsDbModalOpen(true)}
                 onAddUnit={handleAddUnit}
                 onNavigateToBlockLedger={handleNavigateToBlockLedger}
