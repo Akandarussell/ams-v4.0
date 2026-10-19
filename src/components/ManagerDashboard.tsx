@@ -23,10 +23,16 @@ import {
   Download,
 } from 'lucide-react';
 import { AppDatabaseState, MonthlyLedgerItem } from '../types';
-import { formatBDT, MONTH_NAMES, getMonthName } from '../lib/nescoTariff';
+import { formatBDT, MONTH_NAMES, getMonthName, getPostpaidElectricityPeriod } from '../lib/nescoTariff';
 import { COMPLEX_CONFIG } from '../lib/complexConfig';
 import { getSupabaseCredentials } from '../lib/supabase';
-import { getEffectiveRemainingAdvance, calculateItemTotalDue } from '../lib/storage';
+import {
+  getEffectiveRemainingAdvance,
+  calculateItemTotalDue,
+  calculateLedgerAdvancePaidDue,
+  calculateLedgerRentPaidDue,
+  calculateLedgerElectricityPaidDue,
+} from '../lib/storage';
 import { exportAllCredentialsToExcel } from '../lib/exportCredentials';
 import { CreateUnitModal, NewRentalUnitPayload } from './CreateUnitModal';
 
@@ -101,34 +107,21 @@ export const ManagerDashboard: React.FC<Props> = ({
   const vacantFlats = totalFlats - occupiedFlats;
   const totalTenants = data.tenants.filter((t) => t.status === 'active').length;
 
+  // Postpaid electricity billing period
+  const elecPeriod = getPostpaidElectricityPeriod(data.selectedMonth, data.selectedYear);
+
   // Collections and Dues
   const totalPayable = currentLedger.reduce((sum, item) => sum + item.totalPayable, 0);
   const totalCollection = currentLedger.reduce((sum, item) => sum + item.totalPaid, 0);
   const totalDues = currentLedger.reduce((sum, item) => sum + calculateItemTotalDue(item), 0);
 
-  // Category collections
-  const flatRentCollection = currentLedger
-    .filter((item) => item.paymentStatus === 'Paid' || item.paymentStatus === 'Partially Paid' || item.paymentStatus === 'Adjusted')
-    .reduce((sum, item) => sum + Math.min(item.totalPaid, item.flatRent), 0);
-
-  const electricityCollection = currentLedger
-    .filter((item) => item.paymentStatus === 'Paid' || item.paymentStatus === 'Partially Paid')
-    .reduce((sum, item) => sum + Math.min(item.electricityBill, Math.max(0, item.totalPaid - item.flatRent)), 0);
-
-  const parkingCollection = currentLedger
-    .filter((item) => item.parkingRent > 0 && item.totalPaid > 0)
-    .reduce((sum, item) => sum + item.parkingRent, 0);
-
-  const godownCollection = currentLedger
-    .filter((item) => item.godownRent > 0 && item.totalPaid > 0)
-    .reduce((sum, item) => sum + item.godownRent, 0);
-
+  // Escrow balance held across all accounts
   const advanceTotal = data.advanceAccounts.reduce(
     (sum, a) => sum + getEffectiveRemainingAdvance(a, data.ledgerItems),
     0
   );
 
-  // Block-wise statistics
+  // Block-wise statistics including month-specific Paid vs Due breakdown
   const blocks = ['Block A', 'Block B', 'Block C'] as const;
   const blockStats = blocks.map((blockName) => {
     const blockUnits = residentialFlats.filter((u) => u.blockName === blockName);
@@ -137,12 +130,17 @@ export const ManagerDashboard: React.FC<Props> = ({
     const blockPayable = blockLedger.reduce((sum, item) => sum + item.totalPayable, 0);
     const blockCollected = blockLedger.reduce((sum, item) => sum + item.totalPaid, 0);
     const blockDue = blockLedger.reduce((sum, item) => sum + calculateItemTotalDue(item), 0);
-    const blockAdvance = data.advanceAccounts
+    const blockAdvanceEscrow = data.advanceAccounts
       .filter((a) => {
         const u = data.units.find((unit) => unit.flatId === a.flatId);
         return u?.blockName === blockName;
       })
       .reduce((sum, a) => sum + getEffectiveRemainingAdvance(a, data.ledgerItems), 0);
+
+    // Exact month-specific Paid vs Due calculations (identical to the 3 KPI boxes)
+    const adv = calculateLedgerAdvancePaidDue(blockLedger, data.advanceAccounts);
+    const rent = calculateLedgerRentPaidDue(blockLedger);
+    const elec = calculateLedgerElectricityPaidDue(blockLedger);
 
     return {
       name: blockName,
@@ -153,10 +151,64 @@ export const ManagerDashboard: React.FC<Props> = ({
       payable: blockPayable,
       collected: blockCollected,
       due: blockDue,
-      advance: blockAdvance,
+      advanceEscrow: blockAdvanceEscrow,
+      // Month-specific Advance (Paid vs Due)
+      advancePaid: adv.paid,
+      advanceDue: adv.due,
+      advancePaidCount: adv.paidCount,
+      advanceDueCount: adv.dueCount,
+      advanceTotalRequired: adv.totalRequired,
+      // Month-specific Flat Rent (Paid vs Due)
+      rentPaid: rent.paid,
+      rentDue: rent.due,
+      rentPaidCount: rent.paidCount,
+      rentDueCount: rent.dueCount,
+      rentTotalRequired: rent.totalRequired,
+      // Month-specific Electricity Bill (Paid vs Due)
+      elecPaid: elec.paid,
+      elecDue: elec.due,
+      elecPaidCount: elec.paidCount,
+      elecDueCount: elec.dueCount,
+      elecTotalRequired: elec.totalRequired,
       collectionRate: blockPayable > 0 ? Math.round((blockCollected / blockPayable) * 100) : 0,
     };
   });
+
+  // All Blocks Summary Subtotals (Sum of Blocks A + B + C of the month)
+  const allBlocksSummary = {
+    // 1. Advance: Subtotal of Advance Payment & Dues across Blocks A+B+C
+    advancePaid: blockStats.reduce((sum, b) => sum + b.advancePaid, 0),
+    advanceDue: blockStats.reduce((sum, b) => sum + b.advanceDue, 0),
+    advancePaidCount: blockStats.reduce((sum, b) => sum + b.advancePaidCount, 0),
+    advanceDueCount: blockStats.reduce((sum, b) => sum + b.advanceDueCount, 0),
+    advanceTotalRequired: blockStats.reduce((sum, b) => sum + b.advanceTotalRequired, 0),
+
+    // 2. Monthly Flat Rent: Subtotal of Rent Paid & Dues across Blocks A+B+C
+    rentPaid: blockStats.reduce((sum, b) => sum + b.rentPaid, 0),
+    rentDue: blockStats.reduce((sum, b) => sum + b.rentDue, 0),
+    rentPaidCount: blockStats.reduce((sum, b) => sum + b.rentPaidCount, 0),
+    rentDueCount: blockStats.reduce((sum, b) => sum + b.rentDueCount, 0),
+    rentTotalRequired: blockStats.reduce((sum, b) => sum + b.rentTotalRequired, 0),
+
+    // 3. Electricity Bill: Subtotal of Bill Paid & Dues across Blocks A+B+C
+    elecPaid: blockStats.reduce((sum, b) => sum + b.elecPaid, 0),
+    elecDue: blockStats.reduce((sum, b) => sum + b.elecDue, 0),
+    elecPaidCount: blockStats.reduce((sum, b) => sum + b.elecPaidCount, 0),
+    elecDueCount: blockStats.reduce((sum, b) => sum + b.elecDueCount, 0),
+    elecTotalRequired: blockStats.reduce((sum, b) => sum + b.elecTotalRequired, 0),
+  };
+
+  // Category collections (synchronized with verified Paid subtotals)
+  const flatRentCollection = allBlocksSummary.rentPaid;
+  const electricityCollection = allBlocksSummary.elecPaid;
+
+  const parkingCollection = currentLedger
+    .filter((item) => item.parkingRent > 0 && item.totalPaid > 0)
+    .reduce((sum, item) => sum + item.parkingRent, 0);
+
+  const godownCollection = currentLedger
+    .filter((item) => item.godownRent > 0 && item.totalPaid > 0)
+    .reduce((sum, item) => sum + item.godownRent, 0);
 
   // Category breakdown percentages
   const categories = [
@@ -334,6 +386,7 @@ export const ManagerDashboard: React.FC<Props> = ({
           </div>
         </div>
 
+        {/* 4 PRIMARY SUMMARY BOXES: Block A, Block B, Block C, and All Blocks Summary */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Box 1: Block A Summary */}
           {(() => {
@@ -341,7 +394,7 @@ export const ManagerDashboard: React.FC<Props> = ({
             return (
               <div
                 onClick={() => handleBlockClick('Block A')}
-                className="bg-white rounded-2xl border border-slate-200/90 hover:border-blue-500 hover:shadow-md transition-all duration-200 p-5 flex flex-col justify-between cursor-pointer group relative overflow-hidden shadow-xs"
+                className="bg-white rounded-2xl border border-slate-200/90 hover:border-blue-500 hover:shadow-md transition-all duration-200 p-4 sm:p-5 flex flex-col justify-between cursor-pointer group relative overflow-hidden shadow-xs"
                 title={`Click to open Block A Monthly Ledger for ${getMonthName(data.selectedMonth)} ${data.selectedYear}`}
               >
                 <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-bl-full pointer-events-none group-hover:bg-blue-500/10 transition-colors"></div>
@@ -360,18 +413,44 @@ export const ManagerDashboard: React.FC<Props> = ({
                     <span className="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">{b.occupied}/{b.totalUnits} Units</span>
                   </div>
 
-                  <div className="mt-3 space-y-1.5 text-xs">
-                    <div className="flex justify-between py-0.5">
-                      <span className="text-slate-500">Collection:</span>
-                      <span className="font-black text-emerald-600 font-mono text-sm tabular-nums">{formatBDT(b.collected)}</span>
+                  <div className="mt-3 space-y-2 text-xs">
+                    {/* Line 1: Advance Paid vs Due */}
+                    <div className="flex justify-between items-center py-1.5 px-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                      <span className="flex items-center gap-1.5 font-bold text-slate-700">
+                        <Wallet className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                        <span>Advance:</span>
+                      </span>
+                      <span className="font-mono tabular-nums text-xs">
+                        <strong className="text-indigo-700 font-bold">{formatBDT(b.advancePaid)}</strong>
+                        <span className="text-slate-300 mx-1">/</span>
+                        <span className={b.advanceDue > 0 ? 'text-rose-600 font-bold' : 'text-slate-400'}>{formatBDT(b.advanceDue)}</span>
+                      </span>
                     </div>
-                    <div className="flex justify-between py-0.5">
-                      <span className="text-slate-500">Outstanding Due:</span>
-                      <span className={`font-bold font-mono tabular-nums ${b.due > 0 ? 'text-rose-600' : 'text-slate-700'}`}>{formatBDT(b.due)}</span>
+
+                    {/* Line 2: Flat Rent Paid vs Due */}
+                    <div className="flex justify-between items-center py-1.5 px-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                      <span className="flex items-center gap-1.5 font-bold text-slate-700">
+                        <TrendingUp className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <span>Flat Rent:</span>
+                      </span>
+                      <span className="font-mono tabular-nums text-xs">
+                        <strong className="text-emerald-700 font-bold">{formatBDT(b.rentPaid)}</strong>
+                        <span className="text-slate-300 mx-1">/</span>
+                        <span className={b.rentDue > 0 ? 'text-rose-600 font-bold' : 'text-slate-400'}>{formatBDT(b.rentDue)}</span>
+                      </span>
                     </div>
-                    <div className="flex justify-between py-0.5">
-                      <span className="text-slate-500">Advance Escrow:</span>
-                      <span className="font-bold text-indigo-700 font-mono tabular-nums">{formatBDT(b.advance)}</span>
+
+                    {/* Line 3: Electricity Bill Paid vs Due (Last Month) */}
+                    <div className="flex justify-between items-center py-1.5 px-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                      <span className="flex items-center gap-1.5 font-bold text-slate-700">
+                        <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />
+                        <span>Elec ({elecPeriod.monthName.slice(0, 3)}):</span>
+                      </span>
+                      <span className="font-mono tabular-nums text-xs">
+                        <strong className="text-emerald-700 font-bold">{formatBDT(b.elecPaid)}</strong>
+                        <span className="text-slate-300 mx-1">/</span>
+                        <span className={b.elecDue > 0 ? 'text-rose-600 font-bold' : 'text-slate-400'}>{formatBDT(b.elecDue)}</span>
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -402,7 +481,7 @@ export const ManagerDashboard: React.FC<Props> = ({
             return (
               <div
                 onClick={() => handleBlockClick('Block B')}
-                className="bg-white rounded-2xl border border-slate-200/90 hover:border-indigo-500 hover:shadow-md transition-all duration-200 p-5 flex flex-col justify-between cursor-pointer group relative overflow-hidden shadow-xs"
+                className="bg-white rounded-2xl border border-slate-200/90 hover:border-indigo-500 hover:shadow-md transition-all duration-200 p-4 sm:p-5 flex flex-col justify-between cursor-pointer group relative overflow-hidden shadow-xs"
                 title={`Click to open Block B Monthly Ledger for ${getMonthName(data.selectedMonth)} ${data.selectedYear}`}
               >
                 <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-bl-full pointer-events-none group-hover:bg-indigo-500/10 transition-colors"></div>
@@ -421,18 +500,44 @@ export const ManagerDashboard: React.FC<Props> = ({
                     <span className="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">{b.occupied}/{b.totalUnits} Units</span>
                   </div>
 
-                  <div className="mt-3 space-y-1.5 text-xs">
-                    <div className="flex justify-between py-0.5">
-                      <span className="text-slate-500">Collection:</span>
-                      <span className="font-black text-emerald-600 font-mono text-sm tabular-nums">{formatBDT(b.collected)}</span>
+                  <div className="mt-3 space-y-2 text-xs">
+                    {/* Line 1: Advance Paid vs Due */}
+                    <div className="flex justify-between items-center py-1.5 px-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                      <span className="flex items-center gap-1.5 font-bold text-slate-700">
+                        <Wallet className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                        <span>Advance:</span>
+                      </span>
+                      <span className="font-mono tabular-nums text-xs">
+                        <strong className="text-indigo-700 font-bold">{formatBDT(b.advancePaid)}</strong>
+                        <span className="text-slate-300 mx-1">/</span>
+                        <span className={b.advanceDue > 0 ? 'text-rose-600 font-bold' : 'text-slate-400'}>{formatBDT(b.advanceDue)}</span>
+                      </span>
                     </div>
-                    <div className="flex justify-between py-0.5">
-                      <span className="text-slate-500">Outstanding Due:</span>
-                      <span className={`font-bold font-mono tabular-nums ${b.due > 0 ? 'text-rose-600' : 'text-slate-700'}`}>{formatBDT(b.due)}</span>
+
+                    {/* Line 2: Flat Rent Paid vs Due */}
+                    <div className="flex justify-between items-center py-1.5 px-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                      <span className="flex items-center gap-1.5 font-bold text-slate-700">
+                        <TrendingUp className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <span>Flat Rent:</span>
+                      </span>
+                      <span className="font-mono tabular-nums text-xs">
+                        <strong className="text-emerald-700 font-bold">{formatBDT(b.rentPaid)}</strong>
+                        <span className="text-slate-300 mx-1">/</span>
+                        <span className={b.rentDue > 0 ? 'text-rose-600 font-bold' : 'text-slate-400'}>{formatBDT(b.rentDue)}</span>
+                      </span>
                     </div>
-                    <div className="flex justify-between py-0.5">
-                      <span className="text-slate-500">Advance Escrow:</span>
-                      <span className="font-bold text-indigo-700 font-mono tabular-nums">{formatBDT(b.advance)}</span>
+
+                    {/* Line 3: Electricity Bill Paid vs Due (Last Month) */}
+                    <div className="flex justify-between items-center py-1.5 px-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                      <span className="flex items-center gap-1.5 font-bold text-slate-700">
+                        <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />
+                        <span>Elec ({elecPeriod.monthName.slice(0, 3)}):</span>
+                      </span>
+                      <span className="font-mono tabular-nums text-xs">
+                        <strong className="text-emerald-700 font-bold">{formatBDT(b.elecPaid)}</strong>
+                        <span className="text-slate-300 mx-1">/</span>
+                        <span className={b.elecDue > 0 ? 'text-rose-600 font-bold' : 'text-slate-400'}>{formatBDT(b.elecDue)}</span>
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -463,7 +568,7 @@ export const ManagerDashboard: React.FC<Props> = ({
             return (
               <div
                 onClick={() => handleBlockClick('Block C')}
-                className="bg-white rounded-2xl border border-slate-200/90 hover:border-purple-500 hover:shadow-md transition-all duration-200 p-5 flex flex-col justify-between cursor-pointer group relative overflow-hidden shadow-xs"
+                className="bg-white rounded-2xl border border-slate-200/90 hover:border-purple-500 hover:shadow-md transition-all duration-200 p-4 sm:p-5 flex flex-col justify-between cursor-pointer group relative overflow-hidden shadow-xs"
                 title={`Click to open Block C Monthly Ledger for ${getMonthName(data.selectedMonth)} ${data.selectedYear}`}
               >
                 <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-bl-full pointer-events-none group-hover:bg-purple-500/10 transition-colors"></div>
@@ -482,18 +587,44 @@ export const ManagerDashboard: React.FC<Props> = ({
                     <span className="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">{b.occupied}/{b.totalUnits} Units</span>
                   </div>
 
-                  <div className="mt-3 space-y-1.5 text-xs">
-                    <div className="flex justify-between py-0.5">
-                      <span className="text-slate-500">Collection:</span>
-                      <span className="font-black text-emerald-600 font-mono text-sm tabular-nums">{formatBDT(b.collected)}</span>
+                  <div className="mt-3 space-y-2 text-xs">
+                    {/* Line 1: Advance Paid vs Due */}
+                    <div className="flex justify-between items-center py-1.5 px-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                      <span className="flex items-center gap-1.5 font-bold text-slate-700">
+                        <Wallet className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                        <span>Advance:</span>
+                      </span>
+                      <span className="font-mono tabular-nums text-xs">
+                        <strong className="text-indigo-700 font-bold">{formatBDT(b.advancePaid)}</strong>
+                        <span className="text-slate-300 mx-1">/</span>
+                        <span className={b.advanceDue > 0 ? 'text-rose-600 font-bold' : 'text-slate-400'}>{formatBDT(b.advanceDue)}</span>
+                      </span>
                     </div>
-                    <div className="flex justify-between py-0.5">
-                      <span className="text-slate-500">Outstanding Due:</span>
-                      <span className={`font-bold font-mono tabular-nums ${b.due > 0 ? 'text-rose-600' : 'text-slate-700'}`}>{formatBDT(b.due)}</span>
+
+                    {/* Line 2: Flat Rent Paid vs Due */}
+                    <div className="flex justify-between items-center py-1.5 px-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                      <span className="flex items-center gap-1.5 font-bold text-slate-700">
+                        <TrendingUp className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <span>Flat Rent:</span>
+                      </span>
+                      <span className="font-mono tabular-nums text-xs">
+                        <strong className="text-emerald-700 font-bold">{formatBDT(b.rentPaid)}</strong>
+                        <span className="text-slate-300 mx-1">/</span>
+                        <span className={b.rentDue > 0 ? 'text-rose-600 font-bold' : 'text-slate-400'}>{formatBDT(b.rentDue)}</span>
+                      </span>
                     </div>
-                    <div className="flex justify-between py-0.5">
-                      <span className="text-slate-500">Advance Escrow:</span>
-                      <span className="font-bold text-indigo-700 font-mono tabular-nums">{formatBDT(b.advance)}</span>
+
+                    {/* Line 3: Electricity Bill Paid vs Due (Last Month) */}
+                    <div className="flex justify-between items-center py-1.5 px-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                      <span className="flex items-center gap-1.5 font-bold text-slate-700">
+                        <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />
+                        <span>Elec ({elecPeriod.monthName.slice(0, 3)}):</span>
+                      </span>
+                      <span className="font-mono tabular-nums text-xs">
+                        <strong className="text-emerald-700 font-bold">{formatBDT(b.elecPaid)}</strong>
+                        <span className="text-slate-300 mx-1">/</span>
+                        <span className={b.elecDue > 0 ? 'text-rose-600 font-bold' : 'text-slate-400'}>{formatBDT(b.elecDue)}</span>
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -518,13 +649,13 @@ export const ManagerDashboard: React.FC<Props> = ({
             );
           })()}
 
-          {/* Box 4: All Blocks Month Summary */}
+          {/* Box 4: All Blocks Summary (All Box Summary) */}
           {(() => {
             const allCollectionRate = totalPayable > 0 ? Math.round((totalCollection / totalPayable) * 100) : 0;
             return (
               <div
                 onClick={() => handleBlockClick('all')}
-                className="bg-gradient-to-b from-white to-slate-50/70 rounded-2xl border-2 border-slate-800/80 hover:border-slate-900 hover:shadow-md transition-all duration-200 p-5 flex flex-col justify-between cursor-pointer group relative overflow-hidden shadow-xs"
+                className="bg-gradient-to-b from-white to-slate-50/70 rounded-2xl border-2 border-slate-800/80 hover:border-slate-900 hover:shadow-md transition-all duration-200 p-4 sm:p-5 flex flex-col justify-between cursor-pointer group relative overflow-hidden shadow-xs"
                 title={`Click to open All Blocks Unified Ledger for ${getMonthName(data.selectedMonth)} ${data.selectedYear}`}
               >
                 <div className="absolute top-0 right-0 w-24 h-24 bg-slate-900/5 rounded-bl-full pointer-events-none group-hover:bg-slate-900/10 transition-colors"></div>
@@ -543,18 +674,44 @@ export const ManagerDashboard: React.FC<Props> = ({
                     <span className="font-bold text-slate-800 bg-slate-200/70 px-2 py-0.5 rounded-md">{occupiedFlats}/{totalFlats} Units</span>
                   </div>
 
-                  <div className="mt-3 space-y-1.5 text-xs">
-                    <div className="flex justify-between py-0.5">
-                      <span className="text-slate-500">Total Collection:</span>
-                      <span className="font-black text-emerald-600 font-mono text-sm tabular-nums">{formatBDT(totalCollection)}</span>
+                  <div className="mt-3 space-y-2 text-xs">
+                    {/* Line 1: Advance Paid vs Due Subtotal */}
+                    <div className="flex justify-between items-center py-1.5 px-2.5 rounded-xl bg-indigo-50/70 border border-indigo-100">
+                      <span className="flex items-center gap-1.5 font-bold text-indigo-950">
+                        <Wallet className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                        <span>Advance Subtotal:</span>
+                      </span>
+                      <span className="font-mono tabular-nums text-xs">
+                        <strong className="text-indigo-800 font-black">{formatBDT(allBlocksSummary.advancePaid)}</strong>
+                        <span className="text-slate-300 mx-1">/</span>
+                        <span className={allBlocksSummary.advanceDue > 0 ? 'text-rose-600 font-black' : 'text-slate-400'}>{formatBDT(allBlocksSummary.advanceDue)}</span>
+                      </span>
                     </div>
-                    <div className="flex justify-between py-0.5">
-                      <span className="text-slate-500">Total Dues:</span>
-                      <span className={`font-bold font-mono tabular-nums ${totalDues > 0 ? 'text-rose-600' : 'text-slate-800'}`}>{formatBDT(totalDues)}</span>
+
+                    {/* Line 2: Flat Rent Paid vs Due Subtotal */}
+                    <div className="flex justify-between items-center py-1.5 px-2.5 rounded-xl bg-emerald-50/70 border border-emerald-100">
+                      <span className="flex items-center gap-1.5 font-bold text-emerald-950">
+                        <TrendingUp className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <span>Rent Subtotal:</span>
+                      </span>
+                      <span className="font-mono tabular-nums text-xs">
+                        <strong className="text-emerald-800 font-black">{formatBDT(allBlocksSummary.rentPaid)}</strong>
+                        <span className="text-slate-300 mx-1">/</span>
+                        <span className={allBlocksSummary.rentDue > 0 ? 'text-rose-600 font-black' : 'text-slate-400'}>{formatBDT(allBlocksSummary.rentDue)}</span>
+                      </span>
                     </div>
-                    <div className="flex justify-between py-0.5">
-                      <span className="text-slate-500">Total Advance Escrow:</span>
-                      <span className="font-bold text-indigo-700 font-mono tabular-nums">{formatBDT(advanceTotal)}</span>
+
+                    {/* Line 3: Electricity Bill Paid vs Due Subtotal of Last Month */}
+                    <div className="flex justify-between items-center py-1.5 px-2.5 rounded-xl bg-amber-50/70 border border-amber-100">
+                      <span className="flex items-center gap-1.5 font-bold text-amber-950">
+                        <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />
+                        <span>Elec ({elecPeriod.monthName.slice(0, 3)}) Subtotal:</span>
+                      </span>
+                      <span className="font-mono tabular-nums text-xs">
+                        <strong className="text-emerald-800 font-black">{formatBDT(allBlocksSummary.elecPaid)}</strong>
+                        <span className="text-slate-300 mx-1">/</span>
+                        <span className={allBlocksSummary.elecDue > 0 ? 'text-rose-600 font-black' : 'text-slate-400'}>{formatBDT(allBlocksSummary.elecDue)}</span>
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -579,6 +736,138 @@ export const ManagerDashboard: React.FC<Props> = ({
             );
           })()}
         </div>
+
+        {/* 3 Dedicated Monthly Accounting KPI Cards (Screenshot match: Advance, Flat Rent, Electricity of Last Month) */}
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          {/* Card 1: ADVANCE (PAID VS DUE) */}
+          <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
+                  <Wallet className="w-3.5 h-3.5 text-indigo-600" />
+                  ADVANCE (PAID VS DUE)
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/80">
+                  Paid vs Due
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 mt-2.5 pt-2 border-t border-slate-100">
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">ADVANCE PAID</span>
+                  <div className="text-base sm:text-lg font-black text-indigo-700 font-mono tabular-nums">
+                    {formatBDT(allBlocksSummary.advancePaid)}
+                  </div>
+                </div>
+                <div className="border-l border-slate-100 pl-2">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">ADVANCE DUE</span>
+                  <div className={`text-base sm:text-lg font-black font-mono tabular-nums ${allBlocksSummary.advanceDue > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
+                    {formatBDT(allBlocksSummary.advanceDue)}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center justify-between text-[11px] text-slate-500 mt-2">
+                <span>{allBlocksSummary.advancePaidCount} Paid &bull; {allBlocksSummary.advanceDueCount} Due</span>
+                <span className="font-mono text-slate-400 text-[10px]">Total: {formatBDT(allBlocksSummary.advanceTotalRequired)}</span>
+              </div>
+            </div>
+            <div className="mt-2.5 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden flex shadow-inner">
+              <div
+                className="bg-indigo-600 h-1.5 transition-all"
+                style={{ width: `${allBlocksSummary.advanceTotalRequired > 0 ? (allBlocksSummary.advancePaid / allBlocksSummary.advanceTotalRequired) * 100 : 100}%` }}
+              ></div>
+              <div
+                className="bg-rose-500 h-1.5 transition-all"
+                style={{ width: `${allBlocksSummary.advanceTotalRequired > 0 ? (allBlocksSummary.advanceDue / allBlocksSummary.advanceTotalRequired) * 100 : 0}%` }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Card 2: [MONTH] FLAT RENT */}
+          <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
+                  <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
+                  {getMonthName(data.selectedMonth).toUpperCase()} FLAT RENT
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                  Paid vs Due
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 mt-2.5 pt-2 border-t border-slate-100">
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">RENT PAID</span>
+                  <div className="text-base sm:text-lg font-black text-emerald-600 font-mono tabular-nums">
+                    {formatBDT(allBlocksSummary.rentPaid)}
+                  </div>
+                </div>
+                <div className="border-l border-slate-100 pl-2">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">RENT DUE</span>
+                  <div className={`text-base sm:text-lg font-black font-mono tabular-nums ${allBlocksSummary.rentDue > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
+                    {formatBDT(allBlocksSummary.rentDue)}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center justify-between text-[11px] text-slate-500 mt-2">
+                <span>{allBlocksSummary.rentPaidCount} Paid (incl. adj) &bull; {allBlocksSummary.rentDueCount} Due</span>
+                <span className="font-mono text-slate-400 text-[10px]">Req: {formatBDT(allBlocksSummary.rentTotalRequired)}</span>
+              </div>
+            </div>
+            <div className="mt-2.5 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden flex shadow-inner">
+              <div
+                className="bg-emerald-500 h-1.5 transition-all"
+                style={{ width: `${allBlocksSummary.rentTotalRequired > 0 ? (allBlocksSummary.rentPaid / allBlocksSummary.rentTotalRequired) * 100 : 100}%` }}
+              ></div>
+              <div
+                className="bg-rose-500 h-1.5 transition-all"
+                style={{ width: `${allBlocksSummary.rentTotalRequired > 0 ? (allBlocksSummary.rentDue / allBlocksSummary.rentTotalRequired) * 100 : 0}%` }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Card 3: [PREV_MONTH] ELECTRICITY */}
+          <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between sm:col-span-2 lg:col-span-1">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                  {elecPeriod.monthName.toUpperCase()} ELECTRICITY
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/80">
+                  Postpaid Bill
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 mt-2.5 pt-2 border-t border-slate-100">
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">BILL PAID</span>
+                  <div className="text-base sm:text-lg font-black text-emerald-600 font-mono tabular-nums">
+                    {formatBDT(allBlocksSummary.elecPaid)}
+                  </div>
+                </div>
+                <div className="border-l border-slate-100 pl-2">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">BILL DUE</span>
+                  <div className={`text-base sm:text-lg font-black font-mono tabular-nums ${allBlocksSummary.elecDue > 0 ? 'text-rose-600' : 'text-slate-400'}`}>
+                    {formatBDT(allBlocksSummary.elecDue)}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center justify-between text-[11px] text-slate-500 mt-2">
+                <span>{allBlocksSummary.elecPaidCount} Paid &bull; {allBlocksSummary.elecDueCount} Due</span>
+                <span className="font-mono text-slate-400 text-[10px]">Req: {formatBDT(allBlocksSummary.elecTotalRequired)}</span>
+              </div>
+            </div>
+            <div className="mt-2.5 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden flex shadow-inner">
+              <div
+                className="bg-emerald-500 h-1.5 transition-all"
+                style={{ width: `${allBlocksSummary.elecTotalRequired > 0 ? (allBlocksSummary.elecPaid / allBlocksSummary.elecTotalRequired) * 100 : 100}%` }}
+              ></div>
+              <div
+                className="bg-rose-500 h-1.5 transition-all"
+                style={{ width: `${allBlocksSummary.elecTotalRequired > 0 ? (allBlocksSummary.elecDue / allBlocksSummary.elecTotalRequired) * 100 : 0}%` }}
+              ></div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Category Breakdown Sub-Cards */}
@@ -587,8 +876,13 @@ export const ManagerDashboard: React.FC<Props> = ({
           <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl border border-blue-100 shrink-0">
             <Building2 className="w-5 h-5" />
           </div>
-          <div className="min-w-0">
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">Flat Rent</p>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-1">
+              <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">Flat Rent Paid</p>
+              <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${allBlocksSummary.rentDue > 0 ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-emerald-50 text-emerald-700'}`}>
+                {allBlocksSummary.rentDue > 0 ? `Due: ${formatBDT(allBlocksSummary.rentDue)}` : 'Cleared'}
+              </span>
+            </div>
             <p className="text-base font-bold text-slate-900 font-mono tabular-nums truncate">{formatBDT(flatRentCollection)}</p>
           </div>
         </div>
@@ -597,11 +891,11 @@ export const ManagerDashboard: React.FC<Props> = ({
           <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl border border-amber-100 shrink-0">
             <Zap className="w-5 h-5" />
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">Electricity</p>
-              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 shrink-0">
-                {data.units.filter((u) => (u.unitType === 'residential' || u.unitType === 'godown') && (u.isElectricityEnabled ?? (u.electricityBillingType === 'nesco_submeter')) && u.electricityBillingType !== 'none').length} ON
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-1">
+              <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">Electricity Paid</p>
+              <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${allBlocksSummary.elecDue > 0 ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-emerald-50 text-emerald-700'}`}>
+                {allBlocksSummary.elecDue > 0 ? `Due: ${formatBDT(allBlocksSummary.elecDue)}` : 'Cleared'}
               </span>
             </div>
             <p className="text-base font-bold text-slate-900 font-mono tabular-nums truncate">{formatBDT(electricityCollection)}</p>

@@ -1113,6 +1113,163 @@ export function getEffectiveRemainingAdvance(
   return Math.max(0, basePaid - totalAdjusted);
 }
 
+export interface AdvancePaidDueResult {
+  paid: number;
+  due: number;
+  paidCount: number;
+  dueCount: number;
+  totalRequired: number;
+}
+
+export interface RentPaidDueResult {
+  paid: number;
+  due: number;
+  paidCount: number;
+  dueCount: number;
+  totalRequired: number;
+}
+
+export interface ElectricityPaidDueResult {
+  paid: number;
+  due: number;
+  paidCount: number;
+  dueCount: number;
+  totalRequired: number;
+}
+
+/**
+ * Calculates month-specific Advance Paid and Advance Due for a given set of ledger items.
+ * Identical to the logic in the Advance (Paid vs Due) box.
+ */
+export function calculateLedgerAdvancePaidDue(
+  items: MonthlyLedgerItem[],
+  advanceAccounts: AdvanceAccount[]
+): AdvancePaidDueResult {
+  let paid = 0;
+  let due = 0;
+  let paidCount = 0;
+  let dueCount = 0;
+
+  items.forEach((item) => {
+    if (item.flatId.toLowerCase().includes('owner')) return;
+    const rawAdvStatus = (item.advanceStatus || '').trim().toLowerCase();
+    const matchingAdv = advanceAccounts.find(
+      (a) => a.flatId.toLowerCase().trim() === item.flatId.toLowerCase().trim()
+    );
+    const isMarkedPaid = rawAdvStatus === 'paid';
+    const isMarkedPartial = rawAdvStatus === 'partially paid' || rawAdvStatus === 'partially_paid';
+    const isNotPaid = rawAdvStatus === 'not paid' || rawAdvStatus === 'not_paid';
+
+    const effectiveAdvAmount =
+      item.advancePayment !== undefined && item.advancePayment !== null && Number(item.advancePayment) > 0
+        ? Number(item.advancePayment)
+        : (matchingAdv?.amountPaid && matchingAdv.amountPaid > 0)
+        ? matchingAdv.amountPaid
+        : (matchingAdv?.totalRequired && matchingAdv.totalRequired > 0)
+        ? matchingAdv.totalRequired
+        : (item.flatRent > 0 ? item.flatRent * 2 : 0);
+
+    const advStatus =
+      rawAdvStatus === 'n/a'
+        ? 'N/A'
+        : isNotPaid
+        ? 'Not Paid'
+        : isMarkedPaid
+        ? 'Paid'
+        : isMarkedPartial || matchingAdv?.status === 'partially_paid'
+        ? 'Partially Paid'
+        : rawAdvStatus === 'adjusted'
+        ? 'Adjusted'
+        : (matchingAdv?.status === 'paid' || (!rawAdvStatus && effectiveAdvAmount > 0))
+        ? 'Paid'
+        : 'Not Paid';
+
+    if (advStatus === 'Paid' || advStatus === 'Adjusted') {
+      paid += effectiveAdvAmount;
+      if (effectiveAdvAmount > 0) paidCount++;
+    } else if (advStatus === 'Not Paid') {
+      due += effectiveAdvAmount;
+      if (effectiveAdvAmount > 0) dueCount++;
+    } else if (advStatus === 'Partially Paid') {
+      const paidPart = (matchingAdv?.amountPaid && matchingAdv.amountPaid > 0)
+        ? Math.min(matchingAdv.amountPaid, effectiveAdvAmount)
+        : Math.round(effectiveAdvAmount / 2);
+      const duePart = Math.max(0, (matchingAdv?.totalRequired || effectiveAdvAmount) - paidPart);
+      paid += paidPart;
+      due += duePart;
+      if (paidPart > 0) paidCount++;
+      if (duePart > 0) dueCount++;
+    }
+  });
+
+  return { paid, due, paidCount, dueCount, totalRequired: paid + due };
+}
+
+/**
+ * Calculates month-specific Flat Rent Paid and Due for a given set of ledger items.
+ * Identical to the logic in the Flat Rent (Paid vs Due) box.
+ */
+export function calculateLedgerRentPaidDue(items: MonthlyLedgerItem[]): RentPaidDueResult {
+  const paid = items.reduce((sum, item) => {
+    if (item.rentStatus === 'Paid' || item.rentStatus === 'Adjusted') return sum + (item.flatRent || 0);
+    if (item.rentStatus === 'Partially Paid') {
+      const elecPaid = item.electricityStatus === 'Paid' ? (item.electricityBill || 0) : 0;
+      return sum + Math.max(0, (item.totalPaid || 0) - elecPaid);
+    }
+    if (item.paymentStatus === 'Paid' || item.paymentStatus === 'Adjusted') return sum + (item.flatRent || 0);
+    return sum;
+  }, 0);
+
+  const due = items.reduce((sum, item) => {
+    if (item.rentStatus === 'Adjusted' || item.rentStatus === 'Paid' || item.rentStatus === 'N/A') return sum;
+    if (item.paymentStatus === 'Adjusted' || item.paymentStatus === 'Paid' || item.paymentStatus === 'N/A') return sum;
+    if (item.rentStatus === 'Partially Paid') {
+      const elecPaid = item.electricityStatus === 'Paid' ? (item.electricityBill || 0) : 0;
+      const paidRent = Math.max(0, (item.totalPaid || 0) - elecPaid);
+      return sum + Math.max(0, (item.flatRent || 0) - paidRent);
+    }
+    return sum + (item.flatRent || 0);
+  }, 0);
+
+  const paidCount = items.filter(
+    (i) => i.rentStatus === 'Paid' || i.rentStatus === 'Adjusted' || (!i.rentStatus && (i.paymentStatus === 'Paid' || i.paymentStatus === 'Adjusted'))
+  ).length;
+
+  const dueCount = items.filter(
+    (i) => i.rentStatus !== 'Paid' && i.rentStatus !== 'Adjusted' && i.rentStatus !== 'N/A' && (i.flatRent || 0) > 0
+  ).length;
+
+  return { paid, due, paidCount, dueCount, totalRequired: paid + due };
+}
+
+/**
+ * Calculates month-specific Electricity Bill Paid and Due for a given set of ledger items.
+ * Identical to the logic in the Electricity Bill (Paid vs Due) box.
+ */
+export function calculateLedgerElectricityPaidDue(items: MonthlyLedgerItem[]): ElectricityPaidDueResult {
+  const paid = items.reduce((sum, item) => {
+    if (item.electricityStatus === 'Paid') return sum + (item.electricityBill || 0);
+    if (item.electricityStatus === 'Partially Paid') return sum + Math.round((item.electricityBill || 0) / 2);
+    return sum;
+  }, 0);
+
+  const due = items.reduce((sum, item) => {
+    if (item.electricityStatus === 'Paid' || item.electricityStatus === 'N/A') return sum;
+    if (item.electricityStatus === 'Partially Paid') return sum + Math.round((item.electricityBill || 0) / 2);
+    return sum + (item.electricityBill || 0);
+  }, 0);
+
+  const paidCount = items.filter(
+    (i) => i.electricityStatus === 'Paid' && (i.electricityBill || 0) > 0
+  ).length;
+
+  const dueCount = items.filter(
+    (i) => i.electricityStatus !== 'Paid' && i.electricityStatus !== 'N/A' && (i.electricityBill || 0) > 0
+  ).length;
+
+  return { paid, due, paidCount, dueCount, totalRequired: paid + due };
+}
+
 export function loadDatabaseState(): AppDatabaseState {
   if (typeof window === 'undefined') return getInitialDatabaseState();
   try {
