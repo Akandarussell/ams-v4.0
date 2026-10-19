@@ -78,9 +78,11 @@ export const OwnerDashboard: React.FC<Props> = ({
   const [mobileLayoutMode, setMobileLayoutMode] = useState<'cards' | 'table'>('cards');
 
   // Block MFS Gateway Configuration & Toggle
+  const mfsBlockKey: 'Block A' | 'Block B' | 'Block C' =
+    blockName === 'Basement' ? 'Block A' : blockName;
   const currentBlockConfig =
-    data.paymentSettings?.blockConfigs?.[blockName] ||
-    INITIAL_BLOCK_MFS_CONFIGS[blockName] ||
+    data.paymentSettings?.blockConfigs?.[mfsBlockKey] ||
+    INITIAL_BLOCK_MFS_CONFIGS[mfsBlockKey] ||
     INITIAL_BLOCK_MFS_CONFIGS['Block A'];
 
   const [isEditingMfs, setIsEditingMfs] = useState(false);

@@ -18,7 +18,7 @@ export interface UserProfile {
   fullName: string;
   phone: string;
   role: UserRole;
-  assignedBlock?: 'Block A' | 'Block B' | 'Block C';
+  assignedBlock?: 'Block A' | 'Block B' | 'Block C' | 'Basement';
   flatId?: string;
   avatarUrl?: string;
   isActive: boolean;
@@ -27,7 +27,7 @@ export interface UserProfile {
 
 export interface Block {
   id: string;
-  name: 'Block A' | 'Block B' | 'Block C';
+  name: 'Block A' | 'Block B' | 'Block C' | 'Basement';
   ownerId: string;
   ownerName: string;
   totalFloors: number;
@@ -39,9 +39,9 @@ export type NescoBillingSystem = 'regular_nesco' | 'fixed_unit_price' | 'fixed_p
 
 export interface Unit {
   id: string;
-  flatId: string; // e.g. "A1", "A5 Owner", "A5 Sublet", "B2", "P1", "G1"
+  flatId: string; // e.g. "A1", "A5 Owner", "A5 Sublet", "B2", "P1", "G1", "BS-1"
   blockId: string;
-  blockName: 'Block A' | 'Block B' | 'Block C';
+  blockName: 'Block A' | 'Block B' | 'Block C' | 'Basement';
   floor: number;
   unitType: UnitType;
   monthlyRent: number;
@@ -63,7 +63,7 @@ export interface Tenant {
   id: string;
   unitId: string;
   flatId: string;
-  blockName: 'Block A' | 'Block B' | 'Block C';
+  blockName: 'Block A' | 'Block B' | 'Block C' | 'Basement';
   fullName: string;
   phone: string;
   nidNumber: string;
@@ -109,8 +109,8 @@ export interface MonthlyLedgerItem {
   id: string;
   unitId: string;
   flatId: string;
-  blockName: 'Block A' | 'Block B' | 'Block C';
-  blockKey?: string; // 'blockA' | 'blockB' | 'blockC'
+  blockName: 'Block A' | 'Block B' | 'Block C' | 'Basement';
+  blockKey?: string; // 'blockA' | 'blockB' | 'blockC' | 'basement'
   tenantId: string;
   tenantName: string;
   tenantPhone: string;
@@ -264,7 +264,7 @@ export interface Complaint {
   tenantId: string;
   tenantName: string;
   flatId: string;
-  blockName: 'Block A' | 'Block B' | 'Block C';
+  blockName: 'Block A' | 'Block B' | 'Block C' | 'Basement';
   category: ComplaintCategory;
   subject: string;
   description: string;
@@ -282,6 +282,7 @@ export interface ChatMessage {
   senderName: string;
   senderRole: UserRole;
   recipientId: string;
+  recipientRole?: UserRole;
   message: string;
   timestamp: string;
   isRead: boolean;
@@ -311,7 +312,7 @@ export interface OnlinePaymentRequest {
   tenantId: string;
   tenantName: string;
   flatId: string;
-  blockName?: 'Block A' | 'Block B' | 'Block C';
+  blockName?: 'Block A' | 'Block B' | 'Block C' | 'Basement';
   month: number;
   year: number;
   category: string;

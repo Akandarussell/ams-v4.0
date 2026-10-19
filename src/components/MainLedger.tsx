@@ -1296,10 +1296,13 @@ export const MainLedger: React.FC<Props> = ({
                   onChange={(e) => setBlockFilter(e.target.value)}
                   className="bg-white border border-slate-300 text-xs font-semibold rounded-xl px-3 py-2 text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
                 >
-                  <option value="all">All Blocks (A, B, C)</option>
+                  <option value="all">All Blocks</option>
                   <option value="Block A">Block A (Rashed)</option>
                   <option value="Block B">Block B (Raju)</option>
                   <option value="Block C">Block C (Rony)</option>
+                  {userRole === 'manager' && (
+                    <option value="Basement">Basement (Manager)</option>
+                  )}
                 </select>
               </div>
             ) : (

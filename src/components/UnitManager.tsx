@@ -40,12 +40,12 @@ export const UnitManager: React.FC<Props> = ({
   // Add Unit Modal
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newFlatId, setNewFlatId] = useState('');
-  const [newBlock, setNewBlock] = useState<'Block A' | 'Block B' | 'Block C'>('Block A');
+  const [newBlock, setNewBlock] = useState<'Block A' | 'Block B' | 'Block C' | 'Basement'>('Block A');
   const [newFloor, setNewFloor] = useState(1);
   const [newType, setNewType] = useState<UnitType>('residential');
   const [newRentAmount, setNewRentAmount] = useState(25000);
   const [newElecType, setNewElecType] = useState<ElectricityBillingType>('nesco_submeter');
-  const [newBillingSystem, setNewBillingSystem] = useState<NescoBillingSystem>('regular_nesco');
+  const [newBillingSystem, setNewBillingSystem] = useState<NescoBillingSystem | 'none'>('regular_nesco');
   const [newFixedUnitRate, setNewFixedUnitRate] = useState<number>(15.01);
   const [newFixedBillAmount, setNewFixedBillAmount] = useState<number>(1500);
 
@@ -72,14 +72,21 @@ export const UnitManager: React.FC<Props> = ({
     if (!newFlatId.trim()) return;
     onAddUnit({
       flatId: newFlatId.trim(),
-      blockId: newBlock === 'Block A' ? 'block-a' : newBlock === 'Block B' ? 'block-b' : 'block-c',
+      blockId:
+        newBlock === 'Block A'
+          ? 'block-a'
+          : newBlock === 'Block B'
+          ? 'block-b'
+          : newBlock === 'Block C'
+          ? 'block-c'
+          : 'block-basement',
       blockName: newBlock,
       floor: newFloor,
       unitType: newType,
       monthlyRent: newRentAmount,
       isOccupied: false,
       electricityBillingType: newBillingSystem === 'fixed_price_bill' ? 'fixed' : newBillingSystem === 'none' ? 'none' : 'nesco_submeter',
-      billingSystem: newBillingSystem,
+      billingSystem: newBillingSystem === 'none' ? undefined : newBillingSystem,
       fixedUnitRate: newFixedUnitRate,
       fixedElectricityAmount: newFixedBillAmount,
       isElectricityEnabled: newBillingSystem !== 'none',
@@ -155,6 +162,7 @@ export const UnitManager: React.FC<Props> = ({
               <option value="Block A">Block A</option>
               <option value="Block B">Block B</option>
               <option value="Block C">Block C</option>
+              <option value="Basement">Basement</option>
             </select>
           </div>
         </div>
@@ -336,6 +344,7 @@ export const UnitManager: React.FC<Props> = ({
                     <option value="Block A">Block A</option>
                     <option value="Block B">Block B</option>
                     <option value="Block C">Block C</option>
+                    <option value="Basement">Basement</option>
                   </select>
                 </div>
               </div>
@@ -379,7 +388,7 @@ export const UnitManager: React.FC<Props> = ({
                 <select
                   value={newBillingSystem}
                   onChange={(e) => {
-                    const sys = e.target.value as NescoBillingSystem;
+                    const sys = e.target.value as NescoBillingSystem | 'none';
                     setNewBillingSystem(sys);
                     if (sys === 'fixed_price_bill') setNewElecType('fixed');
                     else if (sys === 'none') setNewElecType('none');

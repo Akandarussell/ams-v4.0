@@ -21,7 +21,7 @@ import { formatBDT } from '../lib/nescoTariff';
 
 export interface NewRentalUnitPayload {
   flatId: string;
-  blockName: 'Block A' | 'Block B' | 'Block C';
+  blockName: 'Block A' | 'Block B' | 'Block C' | 'Basement';
   floor: number;
   unitType: UnitType;
   monthlyRent: number;
@@ -60,7 +60,7 @@ export const CreateUnitModal: React.FC<Props> = ({
 
   // Form State
   const [flatId, setFlatId] = useState('');
-  const [blockName, setBlockName] = useState<'Block A' | 'Block B' | 'Block C'>('Block A');
+  const [blockName, setBlockName] = useState<'Block A' | 'Block B' | 'Block C' | 'Basement'>('Block A');
   const [floor, setFloor] = useState<number>(1);
   const [unitType, setUnitType] = useState<UnitType>('residential');
   const [monthlyRent, setMonthlyRent] = useState<number>(25000);
@@ -143,8 +143,21 @@ export const CreateUnitModal: React.FC<Props> = ({
   };
 
   // Quick helper to suggest next unit ID based on block
-  const suggestNextFlatId = (block: 'Block A' | 'Block B' | 'Block C') => {
+  const suggestNextFlatId = (block: 'Block A' | 'Block B' | 'Block C' | 'Basement') => {
     setBlockName(block);
+    if (block === 'Basement') {
+      const existing = data.units
+        .filter((u) => u.blockName === 'Basement' || u.flatId.startsWith('BS') || u.flatId.startsWith('B-'))
+        .map((u) => {
+          const num = parseInt(u.flatId.replace(/\D/g, ''), 10);
+          return isNaN(num) ? 0 : num;
+        });
+      const max = existing.length > 0 ? Math.max(...existing) : 0;
+      setFlatId(`BS-${max + 1}`);
+      setFloor(0);
+      setErrorMsg(null);
+      return;
+    }
     const prefix = block === 'Block A' ? 'A' : block === 'Block B' ? 'B' : 'C';
     const existing = data.units
       .filter((u) => u.flatId.startsWith(prefix))
@@ -206,7 +219,7 @@ export const CreateUnitModal: React.FC<Props> = ({
                 <Building2 className="w-4 h-4 text-blue-600" />
                 1. Unit Identification & Block Location
               </span>
-              <div className="flex items-center gap-1.5 text-[11px]">
+              <div className="flex items-center gap-1.5 text-[11px] flex-wrap">
                 <span className="text-slate-400">Suggest:</span>
                 <button
                   type="button"
@@ -229,6 +242,13 @@ export const CreateUnitModal: React.FC<Props> = ({
                 >
                   Block C
                 </button>
+                <button
+                  type="button"
+                  onClick={() => suggestNextFlatId('Basement')}
+                  className="px-2 py-0.5 bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200/60 rounded-md font-bold cursor-pointer"
+                >
+                  Basement
+                </button>
               </div>
             </div>
 
@@ -239,7 +259,7 @@ export const CreateUnitModal: React.FC<Props> = ({
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. A8, B7, C7, P2"
+                  placeholder="e.g. A8, B7, C7, BS-1, P2"
                   value={flatId}
                   onChange={(e) => {
                     setFlatId(e.target.value.toUpperCase());
@@ -269,6 +289,7 @@ export const CreateUnitModal: React.FC<Props> = ({
                   <option value="Block A">Block A (Owner Rashed)</option>
                   <option value="Block B">Block B (Owner Raju)</option>
                   <option value="Block C">Block C (Owner Rony)</option>
+                  <option value="Basement">Basement (Manager Managed)</option>
                 </select>
               </div>
 

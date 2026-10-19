@@ -194,9 +194,11 @@ export const RecordPaymentModal: React.FC<Props> = ({
   // Active unit & block details
   const currentUnit = data.units.find((u) => u.flatId.toLowerCase().trim() === flatId.toLowerCase().trim());
   const activeBlockName = initialItem?.blockName || currentUnit?.blockName || (flatId.startsWith('B') ? 'Block B' : flatId.startsWith('C') ? 'Block C' : 'Block A');
+  const mfsBlockKey: 'Block A' | 'Block B' | 'Block C' =
+    activeBlockName === 'Basement' ? 'Block A' : activeBlockName;
   const blockMfsConfig =
-    data.paymentSettings?.blockConfigs?.[activeBlockName] ||
-    INITIAL_BLOCK_MFS_CONFIGS[activeBlockName] ||
+    data.paymentSettings?.blockConfigs?.[mfsBlockKey] ||
+    INITIAL_BLOCK_MFS_CONFIGS[mfsBlockKey] ||
     INITIAL_BLOCK_MFS_CONFIGS['Block A'];
 
   // Calculate Duration

@@ -172,9 +172,11 @@ export const TenantPortal: React.FC<Props> = ({
   );
 
   // Block MFS Gateway Configuration & Availability
-  const tenantBlockName: 'Block A' | 'Block B' | 'Block C' =
+  const rawBlockName =
     unit?.blockName ||
     (flatId.toUpperCase().startsWith('B') ? 'Block B' : flatId.toUpperCase().startsWith('C') ? 'Block C' : 'Block A');
+  const tenantBlockName: 'Block A' | 'Block B' | 'Block C' =
+    rawBlockName === 'Basement' ? 'Block A' : rawBlockName;
 
   // Manager Contact Information (from data or config)
   const managerProfile = data.profiles.find((p) => p.role === 'manager');

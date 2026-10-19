@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { AppDatabaseState, ChatMessage, UserProfile } from '../types';
 import { COMPLEX_CONFIG } from '../lib/complexConfig';
-import { isSameTenantPerson } from '../lib/storage';
+import { isSameTenantPerson, isMessageAssociatedWithFlat } from '../lib/storage';
 
 interface Props {
   data: AppDatabaseState;

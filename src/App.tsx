@@ -2123,9 +2123,21 @@ export default function App() {
     const cleanFlatId = unitPayload.flatId.trim().toUpperCase();
     const blockName = unitPayload.blockName || 'Block A';
     const blockId =
-      blockName === 'Block A' ? 'block-a' : blockName === 'Block B' ? 'block-b' : 'block-c';
+      blockName === 'Block A'
+        ? 'block-a'
+        : blockName === 'Block B'
+        ? 'block-b'
+        : blockName === 'Block C'
+        ? 'block-c'
+        : 'block-basement';
     const blockKey =
-      blockName === 'Block A' ? 'blockA' : blockName === 'Block B' ? 'blockB' : 'blockC';
+      blockName === 'Block A'
+        ? 'blockA'
+        : blockName === 'Block B'
+        ? 'blockB'
+        : blockName === 'Block C'
+        ? 'blockC'
+        : 'basement';
     const newUnitId = `u-${cleanFlatId.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now().toString().slice(-4)}`;
 
     const isOccupied = Boolean(unitPayload.isOccupied || unitPayload.tenantName?.trim());

@@ -55,7 +55,7 @@ export const ManualLedgerEntryModal: React.FC<Props> = ({
   const [flatId, setFlatId] = useState<string>(
     itemToEdit?.flatId || (availableUnits[0]?.flatId ?? 'A1')
   );
-  const [blockName, setBlockName] = useState<'Block A' | 'Block B' | 'Block C'>(
+  const [blockName, setBlockName] = useState<'Block A' | 'Block B' | 'Block C' | 'Basement'>(
     itemToEdit?.blockName || (userRole === 'owner' && assignedBlock ? (assignedBlock as any) : 'Block A')
   );
   const [month, setMonth] = useState<number>(itemToEdit?.month || data.selectedMonth);
