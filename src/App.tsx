@@ -97,6 +97,7 @@ import { PrintableBillModal } from './components/PrintableBillModal';
 import { TariffSettingsModal } from './components/TariffSettingsModal';
 import { DatabaseSetupModal } from './components/DatabaseSetupModal';
 import { LoginPage } from './components/LoginPage';
+import { LogiKaalFooterBadge } from './components/LogiKaalFooterBadge';
 
 export default function App() {
   const [data, setData] = useState<AppDatabaseState>(() => loadDatabaseState());
@@ -3337,22 +3338,28 @@ export default function App() {
       </div>
 
       {/* Complex Permanent Footer */}
-      <footer className="no-print bg-white/90 backdrop-blur-md text-slate-600 border-t border-slate-200/80 py-6 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
-          <div className="text-center md:text-left">
-            <p className="font-extrabold text-slate-900 text-sm tracking-tight">
-              {COMPLEX_CONFIG.name.toUpperCase()}
-            </p>
-            <p className="text-slate-500 mt-0.5">
-              {COMPLEX_CONFIG.address}
-            </p>
-            <p className="text-slate-700 mt-1 font-medium">
-              Hotline Contacts: <a href="tel:01737-321998" className="text-teal-700 font-bold hover:underline">01737-321998 (Manager)</a>, <a href="tel:01913-858775" className="text-teal-700 font-bold hover:underline">01913-858775 (Raju)</a>
-            </p>
+      <footer className="no-print bg-white/90 backdrop-blur-md text-slate-600 border-t border-slate-200/80 py-6 pb-24 lg:pb-6 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col gap-5 text-xs">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="text-center md:text-left">
+              <p className="font-extrabold text-slate-900 text-sm tracking-tight">
+                {COMPLEX_CONFIG.name.toUpperCase()}
+              </p>
+              <p className="text-slate-500 mt-0.5">
+                {COMPLEX_CONFIG.address}
+              </p>
+              <p className="text-slate-700 mt-1 font-medium">
+                Hotline Contacts: <a href="tel:01737-321998" className="text-teal-700 font-bold hover:underline">01737-321998 (Manager)</a>, <a href="tel:01913-858775" className="text-teal-700 font-bold hover:underline">01913-858775 (Raju)</a>
+              </p>
+            </div>
+            <div className="text-center md:text-right text-[11px] text-slate-500">
+              <p className="font-semibold text-slate-700">Apartment Management ERP &bull; Residential Complex System</p>
+              <p className="mt-0.5">Currency: {COMPLEX_CONFIG.currency} &bull; Timezone: {COMPLEX_CONFIG.timezone}</p>
+            </div>
           </div>
-          <div className="text-center md:text-right text-[11px] text-slate-500">
-            <p className="font-semibold text-slate-700">Apartment Management ERP &bull; Residential Complex System</p>
-            <p className="mt-0.5">Currency: {COMPLEX_CONFIG.currency} &bull; Timezone: {COMPLEX_CONFIG.timezone}</p>
+
+          <div className="pt-4 border-t border-slate-200/70 flex items-center justify-center">
+            <LogiKaalFooterBadge variant="light" />
           </div>
         </div>
       </footer>

@@ -22,6 +22,7 @@ import { UserProfile, AppDatabaseState, SecurityCredentials } from '../types';
 import { COMPLEX_CONFIG } from '../lib/complexConfig';
 import { getMonthName } from '../lib/nescoTariff';
 import { getLast11Digits, compareFlatIdSerial, getCurrentActiveBillingPeriod } from '../lib/storage';
+import { LogiKaalFooterBadge } from './LogiKaalFooterBadge';
 
 interface Props {
   profiles: UserProfile[];
@@ -1116,14 +1117,20 @@ export const LoginPage: React.FC<Props> = ({
 
       {/* Complex Permanent Footer */}
       <footer className="p-4 sm:p-5 border-t border-white/10 bg-slate-950/80 backdrop-blur-md text-slate-400 text-xs relative z-10">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
-          <div>
-            <p className="font-bold text-slate-200">{COMPLEX_CONFIG.name}</p>
-            <p className="text-[11px] text-slate-400">{COMPLEX_CONFIG.address}</p>
+        <div className="max-w-6xl mx-auto flex flex-col gap-3">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+            <div>
+              <p className="font-bold text-slate-200">{COMPLEX_CONFIG.name}</p>
+              <p className="text-[11px] text-slate-400">{COMPLEX_CONFIG.address}</p>
+            </div>
+            <p className="text-[11px] text-slate-400">
+              Apartment ERP &bull; Secured with Role-Based Access Control
+            </p>
           </div>
-          <p className="text-[11px] text-slate-400">
-            Apartment ERP &bull; Secured with Role-Based Access Control
-          </p>
+
+          <div className="pt-3 border-t border-white/10 flex items-center justify-center">
+            <LogiKaalFooterBadge variant="dark" />
+          </div>
         </div>
       </footer>
     </div>
