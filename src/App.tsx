@@ -380,7 +380,7 @@ export default function App() {
 
     // 2. Storage event listener for cross-tab sync when localStorage changes
     const handleStorage = (e: StorageEvent) => {
-      if (e.key === 'mbd_apartment_db_v3_state' && e.newValue) {
+      if (e.key === 'ams_mbd_v4_database' && e.newValue) {
         try {
           const parsed: AppDatabaseState = JSON.parse(e.newValue);
           if (parsed?.chatMessages) {
@@ -1956,9 +1956,16 @@ export default function App() {
     const targetTenant = data.tenants.find(
       (t) => t.id === recipientId || t.flatId.toLowerCase() === recipientId.toLowerCase()
     );
+    const targetProfile = data.profiles.find((p) => p.id === recipientId);
+    const recipientRole = targetProfile?.role || (targetTenant ? ('tenant' as const) : undefined);
+
     const isSenderTenant = activeUserRole === 'tenant';
     const senderTenant = isSenderTenant
-      ? data.tenants.find((t) => t.id === activeUserId || (currentUser?.flatId && t.flatId === currentUser.flatId))
+      ? data.tenants.find(
+          (t) =>
+            t.id === activeUserId ||
+            Boolean(currentUser?.flatId && t.flatId.toLowerCase().trim() === currentUser.flatId.toLowerCase().trim())
+        )
       : undefined;
 
     const flatId = targetTenant?.flatId || senderTenant?.flatId || (isSenderTenant ? currentUser?.flatId : undefined);
@@ -1972,6 +1979,7 @@ export default function App() {
       senderName: activeUserFullName,
       senderRole: activeUserRole,
       recipientId,
+      recipientRole,
       message,
       timestamp: new Date().toISOString(),
       isRead: false,

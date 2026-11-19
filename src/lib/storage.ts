@@ -783,7 +783,7 @@ export function purgePreviousTenantChatMessages(
   // Map active tenants by flatId (uppercase)
   const activeTenantByFlat = new Map<string, Tenant>();
   (activeTenants || []).forEach((t) => {
-    if (t.flatId && t.status === 'active' && !t.flatId.toLowerCase().includes('owner')) {
+    if (t.flatId && t.status === 'active') {
       activeTenantByFlat.set(t.flatId.trim().toUpperCase(), t);
     }
   });

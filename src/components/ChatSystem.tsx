@@ -28,6 +28,10 @@ export const ChatSystem: React.FC<Props> = ({
   onSendMessage,
   onClearTenantMessages,
 }) => {
+  const [messageText, setMessageText] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
   // Eligible contact list based on user role
   const getContacts = () => {
     if (currentUser.role === 'manager') {
@@ -68,8 +72,13 @@ export const ChatSystem: React.FC<Props> = ({
     } else {
       // Tenant can chat with manager and their block owner
       const manager = data.profiles.find((p) => p.role === 'manager');
-      const unit = data.units.find((u) => u.flatId === currentUser.flatId);
-      const owner = data.profiles.find((p) => p.assignedBlock === unit?.blockName);
+      const cleanFlat = (currentUser.flatId || '').toLowerCase().trim();
+      const unit = data.units.find((u) => u.flatId.toLowerCase().trim() === cleanFlat);
+      const upperFlat = cleanFlat.toUpperCase();
+      const blockName =
+        unit?.blockName ||
+        (upperFlat.startsWith('B') ? 'Block B' : upperFlat.startsWith('C') ? 'Block C' : 'Block A');
+      const owner = data.profiles.find((p) => p.assignedBlock === blockName);
       const list: UserProfile[] = [];
       if (manager) list.push(manager);
       if (owner) list.push(owner);
@@ -77,7 +86,8 @@ export const ChatSystem: React.FC<Props> = ({
     }
   };
 
-  const contacts = getContacts().filter((c) =>
+  const allContacts = getContacts();
+  const contacts = allContacts.filter((c) =>
     c.fullName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -85,15 +95,10 @@ export const ChatSystem: React.FC<Props> = ({
     if (currentUser.role === 'tenant') {
       return 'user-manager-russell';
     }
-    const initialList = getContacts();
-    return initialList[0]?.id || 'user-manager-russell';
+    return allContacts[0]?.id || 'user-manager-russell';
   });
 
-  const [messageText, setMessageText] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const activeContact = contacts.find((c) => c.id === activeRecipientId) || contacts[0];
+  const activeContact = allContacts.find((c) => c.id === activeRecipientId) || contacts[0] || allContacts[0];
 
   // Keep activeRecipientId in sync whenever activeContact changes or contacts list updates
   useEffect(() => {
