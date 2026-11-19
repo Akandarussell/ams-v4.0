@@ -232,47 +232,60 @@ export const ChatSystem: React.FC<Props> = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden h-[650px] lg:h-[720px] xl:h-[780px] flex flex-col md:flex-row">
+    <div className="bg-white/95 backdrop-blur-md rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden h-[calc(100vh-11.5rem)] min-h-[540px] lg:h-[720px] xl:h-[760px] flex flex-col md:flex-row">
       {/* Contact List Sidebar */}
-      <div className="w-full md:w-80 border-b md:border-b-0 md:border-r border-slate-200 flex flex-col max-h-52 md:max-h-none md:h-full bg-slate-50/50 shrink-0">
-        <div className="p-3.5 sm:p-4 border-b border-slate-200">
-          <h2 className="font-bold text-slate-900 text-sm">Direct Messages</h2>
-          <p className="text-[11px] text-slate-500 mt-0.5">
-            Real-time chat with complex management & tenants
-          </p>
-          <div className="mt-2.5 relative">
+      <div className="w-full md:w-80 border-b md:border-b-0 md:border-r border-slate-200/80 flex flex-col md:h-full bg-slate-50/60 shrink-0">
+        <div className="p-3 sm:p-4 border-b border-slate-200/80">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <h2 className="font-extrabold text-slate-900 text-sm">Direct Messages</h2>
+              <p className="text-[11px] text-slate-500 mt-0.5 hidden sm:block">
+                Real-time chat with complex management &amp; tenants
+              </p>
+            </div>
+            <span className="md:hidden px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200/80 text-[10px] font-bold">
+              {contacts.length} Contacts
+            </span>
+          </div>
+          <div className="mt-2 sm:mt-2.5 relative">
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3.5" />
             <input
               type="text"
               placeholder="Search contacts..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full min-h-[44px] pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-base sm:text-xs focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
+              className="w-full min-h-[42px] pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-2xl text-base sm:text-xs focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-hidden"
             />
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
+        <div className="flex flex-row md:flex-col md:flex-1 overflow-x-auto md:overflow-y-auto md:divide-y md:divide-slate-100 gap-2 md:gap-0 p-2 md:p-0 no-scrollbar">
           {contacts.map((contact) => {
             const isSelected = contact.id === activeRecipientId;
             return (
               <button
                 key={contact.id}
                 onClick={() => setActiveRecipientId(contact.id)}
-                className={`w-full text-left p-3.5 flex items-center gap-3 transition-colors cursor-pointer ${
-                  isSelected ? 'bg-blue-50/80 border-l-4 border-blue-600' : 'hover:bg-slate-100/70'
+                className={`shrink-0 md:shrink w-auto md:w-full max-w-[220px] md:max-w-none text-left px-3 py-2 md:p-3.5 rounded-2xl md:rounded-none flex items-center gap-2.5 md:gap-3 border md:border-0 transition-all cursor-pointer ${
+                  isSelected
+                    ? 'bg-teal-50/90 border-teal-500 md:border-l-4 md:border-teal-600 shadow-2xs md:shadow-none'
+                    : 'bg-white md:bg-transparent border-slate-200/80 hover:bg-slate-100/70'
                 }`}
               >
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-700 to-indigo-900 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                <div className={`w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${
+                  isSelected
+                    ? 'bg-gradient-to-br from-teal-600 to-indigo-600 text-white shadow-xs'
+                    : 'bg-gradient-to-br from-slate-700 to-slate-900 text-white'
+                }`}>
                   {contact.fullName.charAt(0)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <p className="font-semibold text-slate-900 text-xs truncate">
+                    <p className={`font-semibold text-xs truncate ${isSelected ? 'text-teal-950' : 'text-slate-900'}`}>
                       {contact.fullName}
                     </p>
                   </div>
-                  <p className="text-[11px] text-slate-500 capitalize">
+                  <p className="text-[10px] md:text-[11px] text-slate-500 capitalize truncate">
                     {contact.role === 'manager' ? 'Super Admin / Manager' : contact.role === 'owner' ? 'Block Owner' : 'Flat Resident'}
                   </p>
                 </div>
@@ -281,38 +294,38 @@ export const ChatSystem: React.FC<Props> = ({
           })}
         </div>
 
-        <div className="p-3 border-t border-slate-200 bg-slate-50 text-[10px] text-slate-500">
+        <div className="hidden md:block p-3.5 border-t border-slate-200/80 bg-slate-50/80 text-[10px] text-slate-500">
           <p className="font-bold text-slate-800 leading-tight">{COMPLEX_CONFIG.name}</p>
           <p className="truncate text-slate-500 mt-0.5">{COMPLEX_CONFIG.address}</p>
-          <p className="text-blue-700 font-semibold mt-1">Hotline: {COMPLEX_CONFIG.contacts}</p>
+          <p className="text-teal-700 font-semibold mt-1">Hotline: {COMPLEX_CONFIG.contacts}</p>
         </div>
       </div>
 
       {/* Main Chat Panel */}
-      <div className="flex-1 flex flex-col h-full bg-white">
+      <div className="flex-1 min-h-0 flex flex-col h-full bg-white">
         {/* Chat Header */}
         {activeContact ? (
-          <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/30">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
+          <div className="p-3 sm:p-4 border-b border-slate-200/80 flex items-center justify-between gap-2 bg-slate-50/50 shrink-0">
+            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-teal-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
                 {activeContact.fullName.charAt(0)}
               </div>
-              <div>
-                <h3 className="font-bold text-slate-900 text-sm">
+              <div className="min-w-0">
+                <h3 className="font-bold text-slate-900 text-sm truncate">
                   {activeContact.fullName}
                 </h3>
-                <p className="text-[11px] text-emerald-600 font-medium flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
-                  <span>Active Now &bull; {COMPLEX_CONFIG.name}</span>
+                <p className="text-[11px] text-emerald-600 font-medium flex items-center gap-1.5 truncate">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block shrink-0"></span>
+                  <span className="truncate">Active Now &bull; {COMPLEX_CONFIG.name}</span>
                   {activeTenant?.entryDate && (
-                    <span className="text-[10px] text-slate-400 font-normal">
+                    <span className="text-[10px] text-slate-400 font-normal hidden sm:inline">
                       (Tenancy: {activeTenant.entryDate})
                     </span>
                   )}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               {onClearTenantMessages && activeContact.flatId && (
                 <button
                   type="button"
@@ -322,13 +335,13 @@ export const ChatSystem: React.FC<Props> = ({
                     }
                   }}
                   title="Purge previous tenant conversation history"
-                  className="px-2.5 py-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 rounded-lg transition-colors cursor-pointer text-[11px] flex items-center gap-1 font-medium"
+                  className="px-2.5 py-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 rounded-xl transition-colors cursor-pointer text-[11px] flex items-center gap-1 font-semibold"
                 >
-                  <Trash2 className="w-3 h-3 text-rose-500" />
+                  <Trash2 className="w-3.5 h-3.5 text-rose-500" />
                   <span className="hidden sm:inline">Clear Chat</span>
                 </button>
               )}
-              <span className="px-2.5 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase tracking-wider">
+              <span className="px-2.5 py-1 bg-teal-50 text-teal-800 border border-teal-200/70 rounded-full text-[10px] font-bold uppercase tracking-wider">
                 {activeContact.role}
               </span>
             </div>
@@ -336,12 +349,14 @@ export const ChatSystem: React.FC<Props> = ({
         ) : null}
 
         {/* Message Thread */}
-        <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50/20">
+        <div className="flex-1 min-h-0 p-3 sm:p-4 overflow-y-auto space-y-3 bg-gradient-to-b from-slate-50/40 to-white">
           {conversationMessages.length === 0 ? (
-            <div className="text-center py-16 text-slate-400 text-xs">
-              <MessageSquare className="w-8 h-8 mx-auto mb-2 text-slate-300" />
-              <p className="font-semibold text-slate-700">No messages yet in this conversation.</p>
-              <p className="text-[11px] text-slate-500 mt-1 max-w-sm mx-auto">
+            <div className="text-center py-12 sm:py-16 text-slate-400 text-xs">
+              <div className="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mx-auto mb-3 border border-teal-100">
+                <MessageSquare className="w-6 h-6" />
+              </div>
+              <p className="font-bold text-slate-700">No messages yet in this conversation.</p>
+              <p className="text-[11px] text-slate-500 mt-1 max-w-sm mx-auto px-4">
                 {activeContact?.role === 'tenant'
                   ? `Clean slate for current resident ${activeContact.fullName}. All previous tenant messages have been removed.`
                   : 'Send a message below to start chatting.'}
@@ -361,23 +376,23 @@ export const ChatSystem: React.FC<Props> = ({
                   className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-xs shadow-2xs ${
+                    className={`max-w-[82%] sm:max-w-[75%] rounded-2xl px-4 py-2.5 text-xs ${
                       isMine
-                        ? 'bg-blue-600 text-white rounded-br-xs'
-                        : 'bg-white border border-slate-200 text-slate-900 rounded-bl-xs'
+                        ? 'bg-gradient-to-br from-teal-600 to-indigo-600 text-white rounded-br-xs shadow-sm'
+                        : 'bg-white border border-slate-200/90 text-slate-900 rounded-bl-xs shadow-2xs'
                     }`}
                   >
                     {!isMine && (
-                      <p className="text-[10px] font-bold text-blue-700 mb-0.5">
+                      <p className="text-[10px] font-bold text-teal-700 mb-0.5">
                         {m.senderName}
                       </p>
                     )}
-                    <p className="leading-relaxed">{m.message}</p>
-                    <div className={`flex items-center justify-end gap-1 mt-1 text-[9px] ${isMine ? 'text-blue-100' : 'text-slate-400'}`}>
+                    <p className="leading-relaxed break-words">{m.message}</p>
+                    <div className={`flex items-center justify-end gap-1 mt-1 text-[9px] ${isMine ? 'text-teal-100' : 'text-slate-400'}`}>
                       <span>
                         {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
-                      {isMine && <CheckCheck className="w-3 h-3 text-blue-200" />}
+                      {isMine && <CheckCheck className="w-3 h-3 text-teal-100" />}
                     </div>
                   </div>
                 </div>
@@ -388,20 +403,20 @@ export const ChatSystem: React.FC<Props> = ({
         </div>
 
         {/* Input Bar */}
-        <form onSubmit={handleSend} className="p-3 border-t border-slate-200 bg-white flex items-center gap-2">
+        <form onSubmit={handleSend} className="p-2.5 sm:p-3 border-t border-slate-200/80 bg-white flex items-center gap-2 shrink-0">
           <input
             type="text"
             placeholder="Type your message..."
             value={messageText}
             onChange={(e) => setMessageText(e.target.value)}
-            className="flex-1 min-h-[44px] px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-base sm:text-xs focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-hidden"
+            className="flex-1 min-h-[44px] px-4 py-2 bg-slate-50 border border-slate-200 rounded-2xl text-base sm:text-xs focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:bg-white focus:outline-hidden"
           />
           <button
             type="submit"
-            className="min-h-[44px] px-5 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer shrink-0 shadow-sm"
+            className="min-h-[44px] px-4 sm:px-5 py-2 bg-gradient-to-r from-teal-600 to-indigo-600 hover:from-teal-700 hover:to-indigo-700 text-white rounded-2xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 shadow-md shadow-teal-600/20 active:scale-95"
           >
             <Send className="w-4 h-4" />
-            <span>Send</span>
+            <span className="hidden xs:inline sm:inline">Send</span>
           </button>
         </form>
       </div>

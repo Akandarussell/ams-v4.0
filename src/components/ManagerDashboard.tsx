@@ -238,28 +238,28 @@ export const ManagerDashboard: React.FC<Props> = ({
   return (
     <div className="space-y-6">
       {/* Month & Year Selection Header with ENTER Button */}
-      <div className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/90 shadow-xs flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div className="bg-white/95 backdrop-blur-md rounded-3xl p-4 sm:p-6 border border-slate-200/90 shadow-xs flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <span className="p-2.5 bg-blue-50 text-blue-600 rounded-xl border border-blue-100 shrink-0">
+            <span className="p-3 bg-gradient-to-tr from-teal-50 to-indigo-50 text-teal-700 rounded-2xl border border-teal-200/70 shrink-0 shadow-2xs">
               <Building2 className="w-5 h-5" />
             </span>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight truncate">
                 {COMPLEX_CONFIG.name.toUpperCase()}
               </h1>
               <p className="text-xs text-slate-600 font-medium mt-0.5">
                 {COMPLEX_CONFIG.address}
               </p>
               <p className="text-xs text-slate-500 mt-0.5">
-                Hotline: <a href="tel:01737-321998" className="font-bold text-blue-700 hover:underline">{COMPLEX_CONFIG.contacts}</a> &bull; Super Admin ERP
+                Hotline: <a href="tel:01737-321998" className="font-bold text-teal-700 hover:underline">{COMPLEX_CONFIG.contacts}</a> &bull; Super Admin ERP
               </p>
             </div>
           </div>
         </div>
 
         {/* Month, Year & Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2 bg-slate-50/80 p-2 rounded-2xl border border-slate-200/80">
+        <div className="flex flex-wrap items-center gap-2 bg-slate-50/90 p-2 rounded-2xl border border-slate-200/80 w-full lg:w-auto">
           <button
             onClick={handlePrevMonth}
             title="Previous Month"
@@ -269,12 +269,12 @@ export const ManagerDashboard: React.FC<Props> = ({
             <ChevronLeft className="w-5 h-5 sm:w-4 sm:h-4" />
           </button>
 
-          <div className="flex items-center gap-1.5 flex-1 sm:flex-initial">
-            <Calendar className="w-4 h-4 text-slate-400 shrink-0" />
+          <div className="flex items-center gap-1.5 flex-1 sm:flex-initial min-w-[120px]">
+            <Calendar className="w-4 h-4 text-teal-600 shrink-0" />
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(Number(e.target.value))}
-              className="min-h-[44px] w-full sm:w-auto bg-white border border-slate-300 text-slate-800 text-base sm:text-xs font-semibold rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-hidden cursor-pointer"
+              className="min-h-[44px] w-full sm:w-auto bg-white border border-slate-300 text-slate-800 text-base sm:text-xs font-semibold rounded-xl px-3 py-2 focus:ring-2 focus:ring-teal-500 focus:outline-hidden cursor-pointer"
             >
               {MONTH_NAMES.map((m, idx) => (
                 <option key={m} value={idx + 1}>
@@ -284,11 +284,11 @@ export const ManagerDashboard: React.FC<Props> = ({
             </select>
           </div>
 
-          <div className="flex-1 sm:flex-initial">
+          <div className="flex-1 sm:flex-initial min-w-[90px]">
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="min-h-[44px] w-full sm:w-auto bg-white border border-slate-300 text-slate-800 text-base sm:text-xs font-semibold rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-hidden cursor-pointer font-mono"
+              className="min-h-[44px] w-full sm:w-auto bg-white border border-slate-300 text-slate-800 text-base sm:text-xs font-semibold rounded-xl px-3 py-2 focus:ring-2 focus:ring-teal-500 focus:outline-hidden cursor-pointer font-mono"
             >
               {yearOptions.map((y) => (
                 <option key={y} value={y}>
@@ -309,7 +309,7 @@ export const ManagerDashboard: React.FC<Props> = ({
 
           <button
             onClick={() => handleApplyFilter(selectedMonth, selectedYear)}
-            className="min-h-[44px] px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 flex-1 sm:flex-initial"
+            className="min-h-[44px] px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 flex-1 sm:flex-initial"
           >
             <Filter className="w-4 h-4" />
             ENTER
@@ -318,7 +318,7 @@ export const ManagerDashboard: React.FC<Props> = ({
           <button
             type="button"
             onClick={() => setIsAddUnitModalOpen(true)}
-            className="min-h-[44px] px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 flex-1 sm:flex-initial"
+            className="min-h-[44px] px-4 py-2.5 bg-gradient-to-r from-teal-600 to-indigo-600 hover:from-teal-700 hover:to-indigo-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 flex-1 sm:flex-initial"
             title="Create New Rental Unit"
           >
             <PlusCircle className="w-4 h-4" />
@@ -328,27 +328,27 @@ export const ManagerDashboard: React.FC<Props> = ({
       </div>
 
       {/* Manager's Dedicated Supabase Database Live Connection Bar */}
-      <div className="bg-slate-900 text-white rounded-2xl p-4 sm:p-5 border border-slate-800 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="p-2.5 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20 shrink-0">
+      <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950 text-white rounded-3xl p-4 sm:p-6 border border-slate-800/80 shadow-md flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3.5 min-w-0">
+          <div className="p-2.5 bg-teal-500/15 text-teal-300 rounded-2xl border border-teal-500/25 shrink-0">
             <Database className="w-5 h-5" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-bold text-xs sm:text-sm text-white">
-                PostgreSQL & Supabase Database Live Connection
+                PostgreSQL &amp; Supabase Database Live Connection
               </span>
               <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1.5 ${
                 dbCreds.isConfigured
-                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                  : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                  : 'bg-teal-500/20 text-teal-200 border border-teal-500/30'
               }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${dbCreds.isConfigured ? 'bg-emerald-400 animate-pulse' : 'bg-blue-400'}`}></span>
+                <span className={`w-1.5 h-1.5 rounded-full ${dbCreds.isConfigured ? 'bg-emerald-400 animate-pulse' : 'bg-teal-400'}`}></span>
                 {dbCreds.isConfigured ? 'Supabase Live Connected' : 'Database Ready (Local / Cloud)'}
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 mt-0.5">
-              Manager Super Admin Console &bull; Real-time synchronization & escrow financial ledgers
+            <p className="text-[11px] text-slate-300 mt-0.5">
+              Manager Super Admin Console &bull; Real-time synchronization &amp; escrow financial ledgers
             </p>
           </div>
         </div>
@@ -367,7 +367,7 @@ export const ManagerDashboard: React.FC<Props> = ({
           <button
             type="button"
             onClick={() => setIsAddUnitModalOpen(true)}
-            className="min-h-[44px] flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 flex-1 sm:flex-initial"
+            className="min-h-[44px] flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-teal-600 to-indigo-600 hover:from-teal-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 flex-1 sm:flex-initial"
           >
             <PlusCircle className="w-4 h-4" />
             <span>Create Rental Unit</span>
@@ -376,10 +376,10 @@ export const ManagerDashboard: React.FC<Props> = ({
           {onOpenDbModal && (
             <button
               onClick={onOpenDbModal}
-              className="min-h-[44px] flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 flex-1 sm:flex-initial"
+              className="min-h-[44px] flex items-center justify-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/15 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 flex-1 sm:flex-initial"
             >
-              <Server className="w-4 h-4 text-blue-400" />
-              <span>Database Setup & SQL</span>
+              <Server className="w-4 h-4 text-teal-300" />
+              <span>Database Setup &amp; SQL</span>
             </button>
           )}
         </div>

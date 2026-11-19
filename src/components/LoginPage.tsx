@@ -443,40 +443,40 @@ export const LoginPage: React.FC<Props> = ({
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-blue-600 selection:text-white relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-slate-100 flex flex-col justify-between selection:bg-teal-500 selection:text-white relative overflow-hidden font-sans">
       {/* Dynamic Background Glows */}
-      <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 -right-40 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-40 left-1/3 w-96 h-96 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -top-40 -left-40 w-[28rem] h-[28rem] bg-teal-500/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 -right-40 w-[28rem] h-[28rem] bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-40 left-1/3 w-[26rem] h-[26rem] bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
 
       {/* Top Navbar */}
-      <header className="p-4 sm:p-5 border-b border-slate-800/80 bg-slate-900/80 backdrop-blur-md sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center font-black text-white text-sm shadow-md tracking-wider shrink-0 border border-blue-400/30">
+      <header className="p-3.5 sm:p-5 border-b border-white/10 bg-slate-900/70 backdrop-blur-xl sticky top-0 z-30">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-500 to-indigo-600 flex items-center justify-center font-black text-white text-sm shadow-lg shadow-teal-500/25 tracking-wider shrink-0 border border-white/25">
               MBD
             </div>
-            <div>
-              <span className="font-extrabold text-sm sm:text-base tracking-tight block text-white">
+            <div className="min-w-0">
+              <span className="font-extrabold text-sm sm:text-base tracking-tight block text-white truncate">
                 {COMPLEX_CONFIG.name.toUpperCase()}
               </span>
-              <span className="text-[11px] text-blue-300 block font-medium">
+              <span className="text-[11px] text-teal-300 block font-medium truncate">
                 {COMPLEX_CONFIG.address}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400">
-              <Phone className="w-3.5 h-3.5 text-blue-400" />
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="hidden sm:flex items-center gap-2 text-xs text-slate-300 bg-white/5 px-3 py-1.5 rounded-xl border border-white/10">
+              <Phone className="w-3.5 h-3.5 text-teal-400" />
               <span>Hotline: <strong className="text-white">{COMPLEX_CONFIG.contacts}</strong></span>
             </div>
 
             <button
               onClick={() => setShowHintModal(!showHintModal)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-xs text-slate-300 font-semibold border border-slate-700 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-white font-semibold border border-white/15 transition-colors cursor-pointer"
             >
-              <HelpCircle className="w-3.5 h-3.5 text-blue-400" />
+              <HelpCircle className="w-3.5 h-3.5 text-teal-300" />
               <span>Login Help</span>
             </button>
           </div>
@@ -486,14 +486,14 @@ export const LoginPage: React.FC<Props> = ({
       {/* FIRST-TIME MANAGER PASSWORD SETUP MODAL */}
       {isFirstTimeSetupOpen && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-slate-900 text-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-blue-500/30 space-y-5">
+          <div className="bg-slate-900 text-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-teal-500/30 space-y-5">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-blue-600/20 text-blue-400 rounded-2xl border border-blue-500/30">
+              <div className="p-3 bg-teal-500/20 text-teal-300 rounded-2xl border border-teal-500/30">
                 <Sparkles className="w-6 h-6" />
               </div>
               <div>
                 <h3 className="font-black text-lg text-white">First-Time Manager Setup</h3>
-                <p className="text-xs text-blue-300">Super Admin Security Initialization</p>
+                <p className="text-xs text-teal-300">Super Admin Security Initialization</p>
               </div>
             </div>
 
@@ -519,7 +519,7 @@ export const LoginPage: React.FC<Props> = ({
                     placeholder="Enter your master password"
                     value={firstTimeNewPass}
                     onChange={(e) => setFirstTimeNewPass(e.target.value)}
-                    className="w-full pl-10 pr-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs font-semibold text-white focus:ring-2 focus:ring-blue-500 focus:outline-hidden font-mono"
+                    className="w-full pl-10 pr-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs font-semibold text-white focus:ring-2 focus:ring-teal-500 focus:outline-hidden font-mono"
                     autoFocus
                   />
                 </div>
@@ -536,7 +536,7 @@ export const LoginPage: React.FC<Props> = ({
                     placeholder="Re-enter your master password"
                     value={firstTimeConfirmPass}
                     onChange={(e) => setFirstTimeConfirmPass(e.target.value)}
-                    className="w-full pl-10 pr-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs font-semibold text-white focus:ring-2 focus:ring-blue-500 focus:outline-hidden font-mono"
+                    className="w-full pl-10 pr-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs font-semibold text-white focus:ring-2 focus:ring-teal-500 focus:outline-hidden font-mono"
                   />
                 </div>
               </div>
@@ -551,7 +551,7 @@ export const LoginPage: React.FC<Props> = ({
                 </button>
                 <button
                   type="submit"
-                  className="w-2/3 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-2/3 py-2.5 bg-gradient-to-r from-teal-600 to-indigo-600 hover:from-teal-700 hover:to-indigo-700 text-white rounded-xl font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <ShieldCheck className="w-4 h-4" />
                   <span>Save & Sign In</span>
@@ -568,26 +568,26 @@ export const LoginPage: React.FC<Props> = ({
           <div className="bg-slate-900 text-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-700 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center gap-2">
-                <Info className="w-5 h-5 text-blue-400" />
+                <Info className="w-5 h-5 text-teal-400" />
                 <h3 className="font-extrabold text-base text-white">Login Instructions & Credential Guide</h3>
               </div>
               <button
                 onClick={() => setShowHintModal(false)}
-                className="text-slate-400 hover:text-white text-xs font-bold px-2 py-1 bg-slate-800 rounded-lg cursor-pointer"
+                className="text-slate-400 hover:text-white text-xs font-bold px-2.5 py-1.5 bg-slate-800 rounded-xl cursor-pointer"
               >
                 Close
               </button>
             </div>
 
             <div className="space-y-3 text-xs text-slate-300 leading-relaxed">
-              <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700 space-y-1">
-                <span className="font-extrabold text-blue-400 block">🏠 1. Tenant Login:</span>
+              <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-1">
+                <span className="font-extrabold text-teal-400 block">🏠 1. Tenant Login:</span>
                 <p>
                   Select your assigned Flat Number from the dropdown. Enter your default password, which is your <strong>registered mobile number</strong>.
                 </p>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700 space-y-1">
+              <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700 space-y-1">
                 <span className="font-extrabold text-emerald-400 block">🛡️ 2. Authority Login:</span>
                 <p>
                   Select your role from the dropdown:
@@ -600,12 +600,12 @@ export const LoginPage: React.FC<Props> = ({
                 </ul>
               </div>
 
-              <div className="p-3 rounded-xl bg-blue-950/40 border border-blue-800/40 space-y-1">
-                <span className="font-extrabold text-blue-300 block">⚡ Quick 1-Click Testing Presets:</span>
+              <div className="p-3.5 rounded-2xl bg-teal-950/40 border border-teal-800/40 space-y-1">
+                <span className="font-extrabold text-teal-300 block">⚡ Quick 1-Click Testing Presets:</span>
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   <button
                     onClick={() => { setShowHintModal(false); handleQuickDemo('manager'); }}
-                    className="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-[10px] cursor-pointer"
+                    className="px-2.5 py-1 bg-teal-600 hover:bg-teal-500 text-white rounded-lg font-bold text-[10px] cursor-pointer"
                   >
                     Russell (Manager)
                   </button>
@@ -647,15 +647,15 @@ export const LoginPage: React.FC<Props> = ({
       )}
 
       {/* Main Login Content */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-8 sm:py-12 flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-14 relative z-10">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 sm:py-12 flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-14 relative z-10">
         {/* Left Side: Apartment Complex Overview */}
-        <div className="flex-1 max-w-lg space-y-6 text-center lg:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold">
-            <ShieldCheck className="w-4 h-4 text-blue-400" />
+        <div className="flex-1 max-w-lg space-y-5 text-center lg:text-left">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-500/15 border border-teal-400/30 text-teal-300 text-xs font-semibold backdrop-blur-xs">
+            <ShieldCheck className="w-4 h-4 text-teal-400" />
             <span>Integrated Property ERP &bull; Rajshahi-6201</span>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight leading-tight">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
             Apartment Management System
           </h2>
 
@@ -665,48 +665,48 @@ export const LoginPage: React.FC<Props> = ({
             Sign in to access your tenant portal or authority management console.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-left text-xs">
-            <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1 backdrop-blur-xs">
-              <div className="font-bold text-blue-400 flex items-center gap-1.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-left text-xs">
+            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1 backdrop-blur-md">
+              <div className="font-bold text-teal-300 flex items-center gap-1.5">
                 <Building2 className="w-4 h-4" /> 3 Residential Wings
               </div>
-              <p className="text-slate-400 text-[11px]">
+              <p className="text-slate-300 text-[11px]">
                 Block A (Rashed), Block B (Raju), Block C (Rony)
               </p>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1 backdrop-blur-xs">
-              <div className="font-bold text-amber-400 flex items-center gap-1.5">
+            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1 backdrop-blur-md">
+              <div className="font-bold text-amber-300 flex items-center gap-1.5">
                 <Home className="w-4 h-4" /> 22 Units & Utilities
               </div>
-              <p className="text-slate-400 text-[11px]">
+              <p className="text-slate-300 text-[11px]">
                 NESCO submetering, Advance escrow & 14-Col Ledger
               </p>
             </div>
           </div>
 
           {/* Quick Hotline Contacts card */}
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-950/40 to-slate-900/60 border border-blue-900/50 text-xs text-slate-300 space-y-1.5">
-            <p className="font-bold text-white flex items-center gap-2">
-              <Phone className="w-4 h-4 text-blue-400" /> Emergency & Management Hotlines
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-teal-950/60 to-indigo-950/60 border border-teal-500/25 text-xs text-slate-300 space-y-1.5 backdrop-blur-md">
+            <p className="font-bold text-white flex items-center justify-center lg:justify-start gap-2">
+              <Phone className="w-4 h-4 text-teal-400" /> Emergency & Management Hotlines
             </p>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-[11px] text-slate-400">
-              <span>Manager Russell: <a href="tel:01737-321998" className="text-blue-400 font-bold hover:underline">01737-321998</a></span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-center lg:justify-start gap-2 text-[11px] text-slate-300">
+              <span>Manager Russell: <a href="tel:01737-321998" className="text-teal-300 font-bold hover:underline">01737-321998</a></span>
               <span className="hidden sm:inline">&bull;</span>
-              <span>Owner Raju: <a href="tel:01913-858775" className="text-blue-400 font-bold hover:underline">01913-858775</a></span>
+              <span>Owner Raju: <a href="tel:01913-858775" className="text-teal-300 font-bold hover:underline">01913-858775</a></span>
             </div>
           </div>
         </div>
 
         {/* Right Side: Tabbed Login Card */}
-        <div className="w-full max-w-md bg-white text-slate-900 rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-100 relative">
+        <div className="w-full max-w-md bg-white/98 backdrop-blur-xl text-slate-900 rounded-3xl p-5 sm:p-8 shadow-2xl border border-white/30 relative">
           {/* Card Top Title & Period info */}
           <div className="mb-5">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between mb-1 gap-2">
               <h3 className="text-xl font-black text-slate-900 tracking-tight">
                 Portal Authentication
               </h3>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 text-teal-800 border border-teal-200 shrink-0">
                 {getMonthName(data.selectedMonth)} {data.selectedYear}
               </span>
             </div>
@@ -725,7 +725,7 @@ export const LoginPage: React.FC<Props> = ({
               }}
               className={`min-h-[44px] py-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                 activeTab === 'tenant'
-                  ? 'bg-blue-700 text-white shadow-md'
+                  ? 'bg-gradient-to-r from-teal-600 to-indigo-600 text-white shadow-md shadow-teal-600/20'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -741,7 +741,7 @@ export const LoginPage: React.FC<Props> = ({
               }}
               className={`min-h-[44px] py-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                 activeTab === 'authority'
-                  ? 'bg-blue-700 text-white shadow-md'
+                  ? 'bg-gradient-to-r from-teal-600 to-indigo-600 text-white shadow-md shadow-teal-600/20'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -752,7 +752,7 @@ export const LoginPage: React.FC<Props> = ({
 
           {/* Error Message Alert */}
           {errorMsg && (
-            <div className="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs font-semibold flex items-start gap-2 animate-in fade-in">
+            <div className="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl text-xs font-semibold flex items-start gap-2 animate-in fade-in">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
               <span>{errorMsg}</span>
             </div>
@@ -773,7 +773,7 @@ export const LoginPage: React.FC<Props> = ({
                       setSelectedFlat(e.target.value);
                       setErrorMsg('');
                     }}
-                    className="w-full pl-3.5 pr-8 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-600 focus:outline-hidden cursor-pointer"
+                    className="w-full min-h-[44px] pl-3.5 pr-8 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-hidden cursor-pointer"
                   >
                     {/* Block A Units */}
                     <optgroup label="Block A (Premier Wing)">
@@ -855,21 +855,21 @@ export const LoginPage: React.FC<Props> = ({
 
               {/* Resident Card / Vacancy Warning */}
               {selectedFlatInfo.isEligibleForTenantLogin ? (
-                <div className="p-3 bg-blue-50/70 rounded-xl border border-blue-200/80 flex items-center justify-between text-xs">
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-blue-700 flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Current Active Resident ({getMonthName(data.selectedMonth)} {data.selectedYear})
+                <div className="p-3.5 bg-teal-50/70 rounded-2xl border border-teal-200/80 flex items-center justify-between text-xs gap-2">
+                  <div className="min-w-0">
+                    <span className="text-[10px] uppercase font-bold text-teal-700 flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" /> Current Active Resident ({getMonthName(data.selectedMonth)} {data.selectedYear})
                     </span>
-                    <span className="font-extrabold text-slate-900 text-sm">
+                    <span className="font-extrabold text-slate-900 text-sm block truncate mt-0.5">
                       {selectedFlatInfo.residentName}
                     </span>
                   </div>
-                  <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-bold rounded-lg text-[10px] uppercase tracking-wider border border-emerald-200/60">
+                  <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-bold rounded-lg text-[10px] uppercase tracking-wider border border-emerald-200/60 shrink-0">
                     Active Lease
                   </span>
                 </div>
               ) : selectedFlatInfo.isOwner ? (
-                <div className="p-3 bg-indigo-50 border border-indigo-200 text-indigo-900 rounded-xl text-xs space-y-1">
+                <div className="p-3.5 bg-indigo-50 border border-indigo-200 text-indigo-900 rounded-2xl text-xs space-y-1">
                   <div className="flex items-center gap-1.5 font-bold text-indigo-800">
                     <ShieldCheck className="w-4 h-4 shrink-0 text-indigo-600" />
                     <span>Flat {selectedFlat} is an Owner Residence</span>
@@ -879,7 +879,7 @@ export const LoginPage: React.FC<Props> = ({
                   </p>
                 </div>
               ) : (
-                <div className="p-3 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl text-xs space-y-1">
+                <div className="p-3.5 bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl text-xs space-y-1">
                   <div className="flex items-center gap-1.5 font-bold text-amber-800">
                     <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
                     <span>Flat {selectedFlat} Has No Active Tenancy</span>
@@ -904,7 +904,7 @@ export const LoginPage: React.FC<Props> = ({
                     value={tenantPassword}
                     onChange={(e) => setTenantPassword(e.target.value)}
                     disabled={!selectedFlatInfo.isEligibleForTenantLogin}
-                    className="min-h-[44px] w-full pl-10 pr-12 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-600 focus:outline-hidden disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="min-h-[44px] w-full pl-10 pr-12 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-hidden disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <button
                     type="button"
@@ -925,7 +925,7 @@ export const LoginPage: React.FC<Props> = ({
               <button
                 type="submit"
                 disabled={isLoading || !selectedFlatInfo.isEligibleForTenantLogin}
-                className="w-full min-h-[48px] py-3 bg-blue-700 hover:bg-blue-800 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer text-xs mt-2"
+                className="w-full min-h-[48px] py-3 bg-gradient-to-r from-teal-600 to-indigo-600 hover:from-teal-700 hover:to-indigo-700 disabled:from-slate-300 disabled:to-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed text-white rounded-xl font-bold shadow-lg shadow-teal-600/20 hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer text-xs mt-2 active:scale-[0.99]"
               >
                 {isLoading ? (
                   <span>Signing In as Tenant...</span>
@@ -956,7 +956,7 @@ export const LoginPage: React.FC<Props> = ({
                       setSelectedAuthority(e.target.value as any);
                       setErrorMsg('');
                     }}
-                    className="w-full pl-3.5 pr-8 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-600 focus:outline-hidden cursor-pointer"
+                    className="w-full min-h-[44px] pl-3.5 pr-8 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-hidden cursor-pointer"
                   >
                     {authorityOptions.map((opt) => (
                       <option key={opt.id} value={opt.id}>
@@ -971,17 +971,17 @@ export const LoginPage: React.FC<Props> = ({
               {(() => {
                 const opt = authorityOptions.find((o) => o.id === selectedAuthority)!;
                 return (
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs">
-                    <div>
+                  <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between text-xs gap-2">
+                    <div className="min-w-0">
                       <span className={`px-2 py-0.5 rounded-md text-[9px] font-black inline-block mb-1 ${opt.badgeColor}`}>
                         {opt.badge}
                       </span>
-                      <span className="font-bold text-slate-800 block text-xs">
+                      <span className="font-bold text-slate-800 block text-xs truncate">
                         {opt.name}
                       </span>
-                      <span className="text-[10px] text-slate-500">{opt.email}</span>
+                      <span className="text-[10px] text-slate-500 truncate block">{opt.email}</span>
                     </div>
-                    <div className="text-right text-[11px] text-slate-600 font-medium">
+                    <div className="text-right text-[11px] text-slate-600 font-medium shrink-0">
                       <span>{opt.phone}</span>
                     </div>
                   </div>
@@ -990,7 +990,7 @@ export const LoginPage: React.FC<Props> = ({
 
               {/* First-time Manager Setup Banner if not initialized */}
               {selectedAuthority === 'manager' && !isManagerPasswordSet && (
-                <div className="p-3 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl text-xs space-y-1.5">
+                <div className="p-3.5 bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl text-xs space-y-1.5">
                   <div className="flex items-center gap-1.5 font-bold text-amber-800">
                     <Sparkles className="w-4 h-4 text-amber-600" />
                     <span>First-Time Setup Required</span>
@@ -1001,7 +1001,7 @@ export const LoginPage: React.FC<Props> = ({
                   <button
                     type="button"
                     onClick={() => setIsFirstTimeSetupOpen(true)}
-                    className="w-full py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-xs cursor-pointer shadow-xs"
+                    className="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-xs cursor-pointer shadow-xs"
                   >
                     Set Master Password Now
                   </button>
@@ -1027,7 +1027,7 @@ export const LoginPage: React.FC<Props> = ({
                       placeholder="Enter authority password"
                       value={authorityPassword}
                       onChange={(e) => setAuthorityPassword(e.target.value)}
-                      className="min-h-[44px] w-full pl-10 pr-12 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-600 focus:outline-hidden font-mono"
+                      className="min-h-[44px] w-full pl-10 pr-12 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-900 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 focus:outline-hidden font-mono"
                     />
                     <button
                       type="button"
@@ -1046,7 +1046,7 @@ export const LoginPage: React.FC<Props> = ({
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full min-h-[48px] py-3 bg-blue-700 hover:bg-blue-800 disabled:bg-blue-400 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer text-xs mt-2"
+                  className="w-full min-h-[48px] py-3 bg-gradient-to-r from-teal-600 to-indigo-600 hover:from-teal-700 hover:to-indigo-700 disabled:opacity-60 text-white rounded-xl font-bold shadow-lg shadow-teal-600/20 hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer text-xs mt-2 active:scale-[0.99]"
                 >
                   {isLoading ? (
                     <span>Verifying Authority...</span>
@@ -1065,13 +1065,13 @@ export const LoginPage: React.FC<Props> = ({
           <div className="mt-5 pt-4 border-t border-slate-100">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                <Sparkles className="w-3.5 h-3.5 text-teal-600" />
                 Quick Role Demo Access:
               </span>
               <button
                 type="button"
                 onClick={() => setShowHintModal(true)}
-                className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 cursor-pointer"
+                className="text-[11px] font-semibold text-teal-700 hover:text-teal-900 cursor-pointer"
               >
                 Help & Passwords
               </button>
@@ -1080,7 +1080,7 @@ export const LoginPage: React.FC<Props> = ({
               <button
                 type="button"
                 onClick={() => handleQuickDemo('manager')}
-                className="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-lg text-[10px] transition-colors border border-blue-200/60 truncate cursor-pointer"
+                className="px-2.5 py-2 bg-teal-50 hover:bg-teal-100 text-teal-800 font-bold rounded-xl text-[10px] transition-colors border border-teal-200/70 truncate cursor-pointer"
                 title="Sign in as Manager Russell (Super Admin)"
               >
                 Super Admin
@@ -1088,7 +1088,7 @@ export const LoginPage: React.FC<Props> = ({
               <button
                 type="button"
                 onClick={() => handleQuickDemo('ownerA')}
-                className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-lg text-[10px] transition-colors border border-emerald-200/60 truncate cursor-pointer"
+                className="px-2.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl text-[10px] transition-colors border border-emerald-200/70 truncate cursor-pointer"
                 title="Sign in as Block A Owner Rashed"
               >
                 Block A Owner
@@ -1096,7 +1096,7 @@ export const LoginPage: React.FC<Props> = ({
               <button
                 type="button"
                 onClick={() => handleQuickDemo('ownerB')}
-                className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg text-[10px] transition-colors border border-indigo-200/60 truncate cursor-pointer"
+                className="px-2.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-[10px] transition-colors border border-indigo-200/70 truncate cursor-pointer"
                 title="Sign in as Block B Owner Raju"
               >
                 Block B Owner
@@ -1104,7 +1104,7 @@ export const LoginPage: React.FC<Props> = ({
               <button
                 type="button"
                 onClick={() => handleQuickDemo('A1')}
-                className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-[10px] transition-colors border border-slate-200 truncate cursor-pointer"
+                className="px-2.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-[10px] transition-colors border border-slate-200 truncate cursor-pointer"
                 title="Sign in as Resident of Flat A1"
               >
                 Resident A1
@@ -1115,13 +1115,13 @@ export const LoginPage: React.FC<Props> = ({
       </main>
 
       {/* Complex Permanent Footer */}
-      <footer className="p-4 sm:p-5 border-t border-slate-800/80 bg-slate-950 text-slate-400 text-xs relative z-10">
+      <footer className="p-4 sm:p-5 border-t border-white/10 bg-slate-950/80 backdrop-blur-md text-slate-400 text-xs relative z-10">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
           <div>
             <p className="font-bold text-slate-200">{COMPLEX_CONFIG.name}</p>
-            <p className="text-[11px] text-slate-500">{COMPLEX_CONFIG.address}</p>
+            <p className="text-[11px] text-slate-400">{COMPLEX_CONFIG.address}</p>
           </div>
-          <p className="text-[11px] text-slate-500">
+          <p className="text-[11px] text-slate-400">
             Apartment ERP &bull; Secured with Role-Based Access Control
           </p>
         </div>

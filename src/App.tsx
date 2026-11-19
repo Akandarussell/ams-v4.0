@@ -2573,30 +2573,31 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
-      {/* Top Complex Bar - Modern SaaS Header */}
-      <header className="no-print bg-slate-900 text-white sticky top-0 z-40 border-b border-slate-800/90 shadow-xs backdrop-blur-md bg-slate-900/95">
+    <div className="min-h-screen flex flex-col font-sans selection:bg-teal-600 selection:text-white">
+      {/* Top Complex Bar - Modern Frosted-Glass Header */}
+      <header className="no-print sticky top-0 z-40 bg-white/90 backdrop-blur-xl text-slate-900 border-b border-slate-200/80 shadow-xs">
+        <div className="h-[3px] w-full bg-gradient-to-r from-teal-500 via-indigo-500 to-cyan-500"></div>
         <div className="max-w-[1680px] mx-auto px-3 sm:px-6 lg:px-8 xl:px-10 h-16 flex items-center justify-between gap-2 sm:gap-4">
           {/* Logo & Complex Identity */}
-          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 -ml-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition-colors cursor-pointer shrink-0"
+              className="lg:hidden min-w-[40px] min-h-[40px] flex items-center justify-center p-2 -ml-1 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer shrink-0"
               aria-label="Toggle navigation drawer"
             >
-              {isMobileMenuOpen ? <X className="w-5 h-5 text-blue-400" /> : <Menu className="w-5 h-5" />}
+              {isMobileMenuOpen ? <X className="w-5 h-5 text-teal-600" /> : <Menu className="w-5 h-5" />}
             </button>
 
             {/* Back (Previous Page) & Forward (Next Page) Navigation Controls (Mobile & PC) */}
-            <div className="flex items-center gap-0.5 sm:gap-1 bg-slate-800/90 border border-slate-700/80 rounded-xl p-0.5 sm:p-1 shadow-xs shrink-0">
+            <div className="flex items-center gap-0.5 sm:gap-1 bg-slate-100/90 border border-slate-200/90 rounded-xl p-0.5 sm:p-1 shadow-2xs shrink-0">
               <button
                 type="button"
                 onClick={handleGoBack}
                 disabled={!canGoBack}
                 className={`min-h-[34px] min-w-[34px] sm:min-h-[36px] sm:min-w-[36px] p-1.5 sm:p-2 rounded-lg flex items-center justify-center transition-all ${
                   canGoBack
-                    ? 'text-white bg-slate-700/80 hover:bg-blue-600 active:scale-95 cursor-pointer shadow-2xs'
-                    : 'text-slate-600 cursor-not-allowed opacity-35'
+                    ? 'text-slate-700 bg-white hover:bg-teal-600 hover:text-white active:scale-95 cursor-pointer shadow-2xs'
+                    : 'text-slate-300 cursor-not-allowed opacity-50'
                 }`}
                 title={canGoBack ? `Go Back to ${getFriendlyViewName(navHistory[historyIndex - 1]?.view)} (Alt+Left)` : 'No previous page to go back to'}
                 aria-label="Go back to previous page"
@@ -2605,7 +2606,7 @@ export default function App() {
                 <span className="hidden xl:inline text-[11px] font-bold ml-1">Back</span>
               </button>
 
-              <div className="w-px h-3.5 bg-slate-700/80 my-auto"></div>
+              <div className="w-px h-3.5 bg-slate-200 my-auto"></div>
 
               <button
                 type="button"
@@ -2613,8 +2614,8 @@ export default function App() {
                 disabled={!canGoForward}
                 className={`min-h-[34px] min-w-[34px] sm:min-h-[36px] sm:min-w-[36px] p-1.5 sm:p-2 rounded-lg flex items-center justify-center transition-all ${
                   canGoForward
-                    ? 'text-white bg-slate-700/80 hover:bg-blue-600 active:scale-95 cursor-pointer shadow-2xs'
-                    : 'text-slate-600 cursor-not-allowed opacity-35'
+                    ? 'text-slate-700 bg-white hover:bg-teal-600 hover:text-white active:scale-95 cursor-pointer shadow-2xs'
+                    : 'text-slate-300 cursor-not-allowed opacity-50'
                 }`}
                 title={canGoForward ? `Go Forward to ${getFriendlyViewName(navHistory[historyIndex + 1]?.view)} (Alt+Right)` : 'No forward page to come back to'}
                 aria-label="Go forward to next page"
@@ -2625,17 +2626,17 @@ export default function App() {
             </div>
 
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center font-black text-white text-xs sm:text-sm shadow-sm tracking-wider shrink-0 border border-blue-400/20">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-teal-600 to-indigo-600 flex items-center justify-center font-black text-white text-xs sm:text-sm shadow-md shadow-teal-600/20 tracking-wider shrink-0 border border-white/30">
                 MBD
               </div>
               <div className="min-w-0">
-                <span className="font-extrabold text-xs sm:text-sm md:text-base tracking-tight block truncate text-white">
+                <span className="font-extrabold text-xs sm:text-sm md:text-base tracking-tight block truncate text-slate-900">
                   {COMPLEX_CONFIG.name.toUpperCase()}
                 </span>
-                <span className="text-[10px] sm:text-[11px] text-slate-400 hidden sm:block font-medium truncate max-w-xs sm:max-w-md lg:max-w-xl">
-                  {COMPLEX_CONFIG.address} &bull; Hotline: <a href="tel:01737-321998" className="font-bold text-blue-300 hover:underline">{COMPLEX_CONFIG.contacts}</a>
+                <span className="text-[10px] sm:text-[11px] text-slate-500 hidden sm:block font-medium truncate max-w-xs sm:max-w-md lg:max-w-xl">
+                  {COMPLEX_CONFIG.address} &bull; Hotline: <a href="tel:01737-321998" className="font-bold text-teal-700 hover:underline">{COMPLEX_CONFIG.contacts}</a>
                 </span>
-                <span className="text-[10px] text-blue-300 sm:hidden block font-medium truncate">
+                <span className="text-[10px] text-teal-700 sm:hidden block font-semibold truncate">
                   Rajshahi-6201 &bull; ERP
                 </span>
               </div>
@@ -2643,22 +2644,22 @@ export default function App() {
           </div>
 
           {/* Current Period & Database Status & User Profile */}
-          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             {/* Database indicator - ONLY DISPLAY ON MANAGER'S DASHBOARD */}
             {currentUser.role === 'manager' && currentView === 'dashboard' && (
               <button
                 onClick={() => setIsDbModalOpen(true)}
-                className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 transition-colors border border-slate-700/80 cursor-pointer shadow-xs"
+                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-teal-50 text-xs font-semibold text-slate-700 hover:text-teal-800 transition-colors border border-slate-200/90 hover:border-teal-300 cursor-pointer shadow-2xs"
                 title="Supabase Database Configuration"
               >
-                <Database className="w-3.5 h-3.5 text-blue-400" />
+                <Database className="w-3.5 h-3.5 text-teal-600" />
                 <span>{dbCreds.isConfigured ? 'Supabase Live' : 'Database'}</span>
-                <span className={`w-2 h-2 rounded-full ${dbCreds.isConfigured ? 'bg-emerald-400 animate-pulse' : 'bg-blue-400'}`}></span>
+                <span className={`w-2 h-2 rounded-full ${dbCreds.isConfigured ? 'bg-emerald-500 animate-pulse' : 'bg-teal-500'}`}></span>
               </button>
             )}
 
             {/* Header Billing Period Dropdown (Strict YYYY-MM Scoping) */}
-            <div className="flex items-center gap-0.5 sm:gap-1 bg-slate-800/90 border border-slate-700/80 rounded-xl p-1 text-xs shadow-xs">
+            <div className="flex items-center gap-0.5 sm:gap-1 bg-slate-100/90 border border-slate-200/90 rounded-xl p-0.5 sm:p-1 text-xs shadow-2xs">
               <button
                 onClick={() => {
                   let newM = data.selectedMonth - 1;
@@ -2670,25 +2671,25 @@ export default function App() {
                   handleUpdateMonthYear(newM, newY);
                 }}
                 title="Previous Billing Period"
-                className="p-1 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 sm:p-1 hover:bg-white text-slate-500 hover:text-slate-900 rounded-lg transition-colors cursor-pointer"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
 
               <div className="flex items-center gap-1 px-1 font-mono">
-                <Calendar className="w-3.5 h-3.5 text-blue-400 shrink-0 hidden sm:inline" />
-                <span className="text-[10px] text-slate-400 font-sans hidden xl:inline">Period:</span>
+                <Calendar className="w-3.5 h-3.5 text-teal-600 shrink-0 hidden sm:inline" />
+                <span className="text-[10px] text-slate-500 font-sans hidden xl:inline">Period:</span>
                 <select
                   value={formatBillingPeriod(data.selectedMonth, data.selectedYear)}
                   onChange={(e) => {
                     const { month, year } = parseBillingPeriod(e.target.value);
                     handleUpdateMonthYear(month, year);
                   }}
-                  className="bg-transparent text-blue-300 hover:text-white font-bold text-xs focus:outline-hidden cursor-pointer py-0.5 border-none font-mono max-w-[105px] sm:max-w-none"
+                  className="bg-transparent text-slate-800 hover:text-teal-700 font-bold text-xs focus:outline-hidden cursor-pointer py-0.5 border-none font-mono max-w-[94px] sm:max-w-none"
                   title="Select Billing Period (strict YYYY-MM format)"
                 >
                   {headerBillingPeriods.map((bp) => (
-                    <option key={bp.period} value={bp.period} className="bg-slate-900 text-white font-mono">
+                    <option key={bp.period} value={bp.period} className="bg-white text-slate-900 font-mono">
                       {bp.label}
                     </option>
                   ))}
@@ -2706,19 +2707,19 @@ export default function App() {
                   handleUpdateMonthYear(newM, newY);
                 }}
                 title="Next Billing Period"
-                className="p-1 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 sm:p-1 hover:bg-white text-slate-500 hover:text-slate-900 rounded-lg transition-colors cursor-pointer"
               >
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
             {/* Active Logged-in User Display */}
-            <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 py-1.5 bg-slate-800/90 border border-slate-700/80 rounded-xl text-xs shadow-xs">
-              <UserCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400 shrink-0" />
-              <span className="font-bold max-w-[90px] sm:max-w-[150px] truncate text-white">
+            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 bg-slate-100/80 border border-slate-200/90 rounded-xl text-xs shadow-2xs">
+              <UserCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-teal-600 shrink-0" />
+              <span className="font-bold max-w-[110px] md:max-w-[150px] truncate text-slate-800">
                 {currentUser.fullName}
               </span>
-              <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-md bg-blue-900/60 text-blue-300 font-bold uppercase tracking-wider border border-blue-700/50 hidden md:inline">
+              <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-md bg-gradient-to-r from-teal-50 to-indigo-50 text-teal-800 font-bold uppercase tracking-wider border border-teal-200/80 hidden md:inline">
                 {currentUser.role}
               </span>
             </div>
@@ -2726,10 +2727,10 @@ export default function App() {
             {/* Direct Logout Button in Header */}
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-slate-800 hover:bg-rose-900/60 hover:text-rose-200 text-slate-300 rounded-xl text-xs font-bold transition-all border border-slate-700/80 cursor-pointer shadow-xs active:scale-95"
+              className="min-h-[38px] flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white rounded-xl text-xs font-bold transition-all border border-rose-200/80 cursor-pointer shadow-2xs active:scale-95"
               title="Sign out of your account"
             >
-              <LogOut className="w-3.5 h-3.5 text-rose-400" />
+              <LogOut className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Logout</span>
             </button>
           </div>
@@ -2746,17 +2747,25 @@ export default function App() {
       >
         {/* Left Sidebar Navigation (Desktop Fixed & Clean, Laptop Viewport Scrollable) */}
         <aside className="no-print hidden lg:block w-64 xl:w-72 shrink-0">
-          <nav className="bg-white rounded-2xl border border-slate-200/90 p-3.5 shadow-xs space-y-1.5 sticky top-20 max-h-[calc(100vh-5.5rem)] overflow-y-auto no-scrollbar">
+          <nav className="bg-white/95 backdrop-blur-md rounded-3xl border border-slate-200/85 p-4 shadow-sm space-y-2 sticky top-20 max-h-[calc(100vh-5.5rem)] overflow-y-auto no-scrollbar">
             {/* Role Header Chip */}
-            <div className="px-3 py-2 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between mb-2">
-              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
-                {currentUser.role === 'manager'
-                  ? 'Super Admin ERP'
-                  : currentUser.role === 'owner'
-                  ? `${currentUser.assignedBlock} Owner`
-                  : 'Resident Portal'}
-              </span>
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <div className="px-3.5 py-3 bg-gradient-to-br from-teal-50/80 to-indigo-50/70 rounded-2xl border border-teal-100/80 flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-teal-600 to-indigo-600 text-white font-black flex items-center justify-center text-xs shrink-0 shadow-xs">
+                  {currentUser.fullName.charAt(0)}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-extrabold text-slate-900 truncate">{currentUser.fullName}</p>
+                  <span className="text-[10px] font-bold text-teal-700 uppercase tracking-wider block">
+                    {currentUser.role === 'manager'
+                      ? 'Super Admin ERP'
+                      : currentUser.role === 'owner'
+                      ? `${currentUser.assignedBlock} Owner`
+                      : 'Resident Portal'}
+                  </span>
+                </div>
+              </div>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
             </div>
 
             {/* Nav Links */}
@@ -2768,9 +2777,9 @@ export default function App() {
                   <button
                     key={item.id}
                     onClick={() => navigateTo(item.id)}
-                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs transition-all cursor-pointer ${
                       isActive
-                        ? 'bg-blue-600 text-white shadow-xs font-extrabold'
+                        ? 'bg-gradient-to-r from-teal-600 to-indigo-600 text-white shadow-md shadow-indigo-600/15 font-extrabold'
                         : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 font-semibold'
                     }`}
                   >
@@ -2785,26 +2794,26 @@ export default function App() {
               {currentUser.role === 'manager' && currentView === 'dashboard' && (
                 <button
                   onClick={() => setIsDbModalOpen(true)}
-                  className="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition-colors cursor-pointer border border-transparent hover:border-blue-200"
+                  className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold text-slate-600 hover:bg-teal-50 hover:text-teal-800 transition-colors cursor-pointer border border-transparent hover:border-teal-200"
                 >
-                  <Database className="w-4 h-4 text-blue-600" />
+                  <Database className="w-4 h-4 text-teal-600" />
                   <span>Supabase & SQL</span>
                 </button>
               )}
 
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
               >
                 <LogOut className="w-4 h-4" />
                 <span>Sign Out</span>
               </button>
 
               {/* Complex Emergency Contacts Widget */}
-              <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-200/80 text-[11px]">
+              <div className="p-3.5 bg-slate-50/90 rounded-2xl border border-slate-200/80 text-[11px]">
                 <p className="font-extrabold text-slate-800 leading-tight">{COMPLEX_CONFIG.name}</p>
                 <p className="text-slate-500 text-[10px] mt-0.5 leading-normal">{COMPLEX_CONFIG.address}</p>
-                <div className="mt-2 pt-2 border-t border-slate-200/80 flex flex-col gap-1 text-[10px]">
+                <div className="mt-2.5 pt-2 border-t border-slate-200/80 flex flex-col gap-1.5 text-[10px]">
                   {currentUser.role === 'tenant' ? (() => {
                     const tUnit = data.units.find(u => u.flatId.toLowerCase() === (currentUser.flatId || '').toLowerCase());
                     const bName = tUnit?.blockName || (currentUser.flatId?.toUpperCase().startsWith('B') ? 'Block B' : currentUser.flatId?.toUpperCase().startsWith('C') ? 'Block C' : 'Block A');
@@ -2817,11 +2826,11 @@ export default function App() {
                       <>
                         <div className="flex items-center justify-between text-slate-600">
                           <span>Manager:</span>
-                          <a href="tel:01737-321998" className="font-bold text-blue-700 hover:underline">01737-321998</a>
+                          <a href="tel:01737-321998" className="font-bold text-teal-700 hover:underline">01737-321998</a>
                         </div>
                         <div className="flex items-center justify-between text-slate-600">
                           <span>{bOwner.name} ({bName}):</span>
-                          <a href={`tel:${bOwner.phone}`} className="font-bold text-blue-700 hover:underline">{bOwner.phone}</a>
+                          <a href={`tel:${bOwner.phone}`} className="font-bold text-teal-700 hover:underline">{bOwner.phone}</a>
                         </div>
                       </>
                     );
@@ -2829,11 +2838,11 @@ export default function App() {
                     <>
                       <div className="flex items-center justify-between text-slate-600">
                         <span>Manager:</span>
-                        <a href="tel:01737-321998" className="font-bold text-blue-700 hover:underline">01737-321998</a>
+                        <a href="tel:01737-321998" className="font-bold text-teal-700 hover:underline">01737-321998</a>
                       </div>
                       <div className="flex items-center justify-between text-slate-600">
                         <span>Raju:</span>
-                        <a href="tel:01913-858775" className="font-bold text-blue-700 hover:underline">01913-858775</a>
+                        <a href="tel:01913-858775" className="font-bold text-teal-700 hover:underline">01913-858775</a>
                       </div>
                     </>
                   )}
@@ -2845,17 +2854,17 @@ export default function App() {
 
         {/* Mobile Navigation Drawer */}
         {isMobileMenuOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden bg-slate-950/70 backdrop-blur-sm flex">
-            <div className="w-80 max-w-[85vw] bg-white h-full p-4 sm:p-5 flex flex-col justify-between overflow-y-auto shadow-2xl">
-              <div className="space-y-2">
+          <div className="fixed inset-0 z-50 lg:hidden bg-slate-950/50 backdrop-blur-sm flex">
+            <div className="w-80 max-w-[85vw] bg-white h-full p-4 sm:p-5 flex flex-col justify-between overflow-y-auto shadow-2xl rounded-r-3xl">
+              <div className="space-y-2.5">
                 <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-blue-600 text-white font-black flex items-center justify-center text-xs">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-teal-600 to-indigo-600 text-white font-black flex items-center justify-center text-xs shadow-sm">
                       MBD
                     </div>
                     <div>
                       <span className="font-extrabold text-slate-900 text-xs block leading-tight">{COMPLEX_CONFIG.name}</span>
-                      <span className="text-[10px] text-slate-500">Rajshahi-6201 &bull; ERP</span>
+                      <span className="text-[10px] text-teal-700 font-semibold">Rajshahi-6201 &bull; ERP</span>
                     </div>
                   </div>
                   <button
@@ -2868,20 +2877,20 @@ export default function App() {
                 </div>
 
                 {/* Mobile User Profile Header */}
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 my-2 flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-xs shrink-0">
+                <div className="p-3 bg-gradient-to-br from-teal-50/80 to-indigo-50/70 rounded-2xl border border-teal-100/80 my-2 flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-teal-600 to-indigo-600 text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-xs">
                     {currentUser.fullName.charAt(0)}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="font-bold text-xs text-slate-900 truncate">{currentUser.fullName}</p>
-                    <p className="text-[10px] text-slate-500 uppercase font-semibold">{currentUser.role} {currentUser.flatId ? `(${currentUser.flatId})` : ''}</p>
+                    <p className="text-[10px] text-teal-700 uppercase font-bold">{currentUser.role} {currentUser.flatId ? `(${currentUser.flatId})` : ''}</p>
                   </div>
                 </div>
 
                 {/* Mobile Billing Period Selector */}
-                <div className="p-3 bg-slate-900 text-white rounded-xl my-2 shadow-xs">
-                  <div className="text-[10px] uppercase font-bold text-slate-400 mb-1.5 flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-blue-400" />
+                <div className="p-3.5 bg-gradient-to-r from-teal-700 to-indigo-700 text-white rounded-2xl my-2 shadow-sm">
+                  <div className="text-[10px] uppercase font-bold text-teal-100 mb-1.5 flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-teal-200" />
                     <span>Billing Period (Monthly Scoping)</span>
                   </div>
                   <select
@@ -2891,10 +2900,10 @@ export default function App() {
                       handleUpdateMonthYear(month, year);
                       setIsMobileMenuOpen(false);
                     }}
-                    className="w-full bg-slate-800 text-blue-300 font-mono text-xs rounded-lg px-2.5 py-2 font-bold border border-slate-700 focus:outline-hidden"
+                    className="w-full bg-white/15 text-white font-mono text-xs rounded-xl px-3 py-2 font-bold border border-white/25 focus:outline-hidden"
                   >
                     {headerBillingPeriods.map((bp) => (
-                      <option key={bp.period} value={bp.period} className="bg-slate-900 text-white">
+                      <option key={bp.period} value={bp.period} className="bg-white text-slate-900">
                         {bp.label}
                       </option>
                     ))}
@@ -2902,7 +2911,7 @@ export default function App() {
                 </div>
 
                 {/* Mobile Drawer Back / Forward Quick Actions */}
-                <div className="flex items-center justify-between p-2 bg-slate-900 text-white rounded-xl mb-3 border border-slate-800">
+                <div className="flex items-center justify-between p-2 bg-slate-100/90 text-slate-700 rounded-2xl mb-3 border border-slate-200/80">
                   <button
                     type="button"
                     onClick={() => {
@@ -2910,16 +2919,16 @@ export default function App() {
                       setIsMobileMenuOpen(false);
                     }}
                     disabled={!canGoBack}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                       canGoBack
-                        ? 'bg-blue-600 text-white active:scale-95 cursor-pointer shadow-xs'
-                        : 'text-slate-500 opacity-40 cursor-not-allowed'
+                        ? 'bg-gradient-to-r from-teal-600 to-indigo-600 text-white active:scale-95 cursor-pointer shadow-xs'
+                        : 'text-slate-400 opacity-50 cursor-not-allowed'
                     }`}
                   >
                     <ArrowLeft className="w-3.5 h-3.5" />
                     <span>Back</span>
                   </button>
-                  <span className="text-[10px] font-mono text-slate-400">
+                  <span className="text-[10px] font-mono text-slate-500 font-semibold">
                     Step {historyIndex + 1} of {navHistory.length}
                   </span>
                   <button
@@ -2929,10 +2938,10 @@ export default function App() {
                       setIsMobileMenuOpen(false);
                     }}
                     disabled={!canGoForward}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                       canGoForward
-                        ? 'bg-blue-600 text-white active:scale-95 cursor-pointer shadow-xs'
-                        : 'text-slate-500 opacity-40 cursor-not-allowed'
+                        ? 'bg-gradient-to-r from-teal-600 to-indigo-600 text-white active:scale-95 cursor-pointer shadow-xs'
+                        : 'text-slate-400 opacity-50 cursor-not-allowed'
                     }`}
                   >
                     <span>Forward</span>
@@ -2941,7 +2950,7 @@ export default function App() {
                 </div>
 
                 {/* Navigation Items */}
-                <div className="pt-2 space-y-1">
+                <div className="pt-1 space-y-1">
                   {navItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = currentView === item.id;
@@ -2952,9 +2961,9 @@ export default function App() {
                           navigateTo(item.id);
                           setIsMobileMenuOpen(false);
                         }}
-                        className={`w-full min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+                        className={`w-full min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
                           isActive
-                            ? 'bg-blue-600 text-white shadow-xs'
+                            ? 'bg-gradient-to-r from-teal-600 to-indigo-600 text-white shadow-md shadow-indigo-600/15'
                             : 'text-slate-700 hover:bg-slate-100'
                         }`}
                       >
@@ -2974,21 +2983,21 @@ export default function App() {
                       setIsDbModalOpen(true);
                       setIsMobileMenuOpen(false);
                     }}
-                    className="w-full min-h-[44px] py-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700 transition-colors cursor-pointer"
+                    className="w-full min-h-[44px] py-2.5 bg-teal-50 hover:bg-teal-100 rounded-2xl text-xs font-bold text-teal-800 border border-teal-200/80 transition-colors cursor-pointer"
                   >
                     Database Setup & SQL
                   </button>
                 )}
                 <button
                   onClick={handleLogout}
-                  className="w-full min-h-[44px] py-2.5 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  className="w-full min-h-[44px] py-2.5 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   <span>Sign Out</span>
                 </button>
-                <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-[10px] text-slate-600">
+                <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 text-[10px] text-slate-600">
                   <p className="font-bold text-slate-800">{COMPLEX_CONFIG.address}</p>
-                  <p className="mt-1 font-semibold text-blue-700">
+                  <p className="mt-1 font-semibold text-teal-700">
                     Hotline: <a href="tel:01737-321998">{COMPLEX_CONFIG.contacts}</a>
                   </p>
                 </div>
@@ -2999,13 +3008,13 @@ export default function App() {
         )}
 
         {/* Mobile Sticky Bottom Navigation Bar (Smartphones) */}
-        <div className="no-print lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-lg px-1.5 py-1 flex items-center justify-around safe-pb">
+        <div className="no-print lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-xl border-t border-slate-200/80 shadow-[0_-8px_24px_-6px_rgba(15,23,42,0.08)] px-2 py-1.5 flex items-center justify-around gap-1 safe-pb">
           {currentUser.role === 'tenant' ? (
             <>
               <button
                 onClick={() => navigateTo('dashboard')}
-                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
-                  currentView === 'dashboard' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
+                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-2xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
+                  currentView === 'dashboard' ? 'bg-teal-50 text-teal-700 shadow-2xs' : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 <LayoutDashboard className="w-4 h-4" />
@@ -3013,8 +3022,8 @@ export default function App() {
               </button>
               <button
                 onClick={() => navigateTo('complaints')}
-                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
-                  currentView === 'complaints' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
+                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-2xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
+                  currentView === 'complaints' ? 'bg-teal-50 text-teal-700 shadow-2xs' : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 <AlertCircle className="w-4 h-4" />
@@ -3022,8 +3031,8 @@ export default function App() {
               </button>
               <button
                 onClick={() => navigateTo('messages')}
-                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
-                  currentView === 'messages' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
+                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-2xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
+                  currentView === 'messages' ? 'bg-teal-50 text-teal-700 shadow-2xs' : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 <MessageSquare className="w-4 h-4" />
@@ -3031,7 +3040,7 @@ export default function App() {
               </button>
               <button
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold text-slate-500 hover:text-slate-900 active:scale-95 cursor-pointer"
+                className="min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-2xl text-[10px] font-bold text-slate-500 hover:text-slate-900 active:scale-95 cursor-pointer"
               >
                 <Menu className="w-4 h-4" />
                 <span>More</span>
@@ -3041,8 +3050,8 @@ export default function App() {
             <>
               <button
                 onClick={() => navigateTo('dashboard')}
-                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
-                  currentView === 'dashboard' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
+                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-2xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
+                  currentView === 'dashboard' ? 'bg-teal-50 text-teal-700 shadow-2xs' : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 <LayoutDashboard className="w-4 h-4" />
@@ -3050,8 +3059,8 @@ export default function App() {
               </button>
               <button
                 onClick={() => navigateTo('monthly-ledger')}
-                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
-                  currentView === 'monthly-ledger' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
+                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-2xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
+                  currentView === 'monthly-ledger' ? 'bg-teal-50 text-teal-700 shadow-2xs' : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 <FileSpreadsheet className="w-4 h-4" />
@@ -3059,8 +3068,8 @@ export default function App() {
               </button>
               <button
                 onClick={() => navigateTo('complaints')}
-                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
-                  currentView === 'complaints' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
+                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-2xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
+                  currentView === 'complaints' ? 'bg-teal-50 text-teal-700 shadow-2xs' : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 <AlertCircle className="w-4 h-4" />
@@ -3068,8 +3077,8 @@ export default function App() {
               </button>
               <button
                 onClick={() => navigateTo('messages')}
-                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
-                  currentView === 'messages' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
+                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-2xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
+                  currentView === 'messages' ? 'bg-teal-50 text-teal-700 shadow-2xs' : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 <MessageSquare className="w-4 h-4" />
@@ -3077,7 +3086,7 @@ export default function App() {
               </button>
               <button
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold text-slate-500 hover:text-slate-900 active:scale-95 cursor-pointer"
+                className="min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-2xl text-[10px] font-bold text-slate-500 hover:text-slate-900 active:scale-95 cursor-pointer"
               >
                 <Menu className="w-4 h-4" />
                 <span>More</span>
@@ -3087,8 +3096,8 @@ export default function App() {
             <>
               <button
                 onClick={() => navigateTo('dashboard')}
-                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
-                  currentView === 'dashboard' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
+                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-2xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
+                  currentView === 'dashboard' ? 'bg-teal-50 text-teal-700 shadow-2xs' : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 <LayoutDashboard className="w-4 h-4" />
@@ -3096,8 +3105,8 @@ export default function App() {
               </button>
               <button
                 onClick={() => navigateTo('monthly-ledger')}
-                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
-                  currentView === 'monthly-ledger' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
+                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-2xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
+                  currentView === 'monthly-ledger' ? 'bg-teal-50 text-teal-700 shadow-2xs' : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 <FileSpreadsheet className="w-4 h-4" />
@@ -3105,8 +3114,8 @@ export default function App() {
               </button>
               <button
                 onClick={() => navigateTo('online-payments')}
-                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
-                  currentView === 'online-payments' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
+                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-2xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
+                  currentView === 'online-payments' ? 'bg-teal-50 text-teal-700 shadow-2xs' : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 <CreditCard className="w-4 h-4" />
@@ -3114,8 +3123,8 @@ export default function App() {
               </button>
               <button
                 onClick={() => navigateTo('messages')}
-                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
-                  currentView === 'messages' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
+                className={`min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-2xl text-[10px] font-bold transition-all active:scale-95 cursor-pointer ${
+                  currentView === 'messages' ? 'bg-teal-50 text-teal-700 shadow-2xs' : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 <MessageSquare className="w-4 h-4" />
@@ -3123,7 +3132,7 @@ export default function App() {
               </button>
               <button
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-bold text-slate-500 hover:text-slate-900 active:scale-95 cursor-pointer"
+                className="min-h-[48px] flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 rounded-2xl text-[10px] font-bold text-slate-500 hover:text-slate-900 active:scale-95 cursor-pointer"
               >
                 <Menu className="w-4 h-4" />
                 <span>Menu</span>
@@ -3328,21 +3337,21 @@ export default function App() {
       </div>
 
       {/* Complex Permanent Footer */}
-      <footer className="no-print bg-slate-900 text-slate-400 border-t border-slate-800 py-6 mt-auto">
+      <footer className="no-print bg-white/90 backdrop-blur-md text-slate-600 border-t border-slate-200/80 py-6 mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
           <div className="text-center md:text-left">
-            <p className="font-extrabold text-white text-sm tracking-tight">
+            <p className="font-extrabold text-slate-900 text-sm tracking-tight">
               {COMPLEX_CONFIG.name.toUpperCase()}
             </p>
-            <p className="text-slate-400 mt-0.5">
+            <p className="text-slate-500 mt-0.5">
               {COMPLEX_CONFIG.address}
             </p>
-            <p className="text-slate-300 mt-1 font-medium">
-              Hotline Contacts: <a href="tel:01737-321998" className="text-blue-400 font-bold hover:underline">01737-321998 (Manager)</a>, <a href="tel:01913-858775" className="text-blue-400 font-bold hover:underline">01913-858775 (Raju)</a>
+            <p className="text-slate-700 mt-1 font-medium">
+              Hotline Contacts: <a href="tel:01737-321998" className="text-teal-700 font-bold hover:underline">01737-321998 (Manager)</a>, <a href="tel:01913-858775" className="text-teal-700 font-bold hover:underline">01913-858775 (Raju)</a>
             </p>
           </div>
           <div className="text-center md:text-right text-[11px] text-slate-500">
-            <p>Apartment Management ERP &bull; Residential Complex System</p>
+            <p className="font-semibold text-slate-700">Apartment Management ERP &bull; Residential Complex System</p>
             <p className="mt-0.5">Currency: {COMPLEX_CONFIG.currency} &bull; Timezone: {COMPLEX_CONFIG.timezone}</p>
           </div>
         </div>

@@ -516,50 +516,50 @@ export const OwnerDashboard: React.FC<Props> = ({
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-blue-900 to-indigo-950 text-white rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="bg-gradient-to-r from-teal-800 via-teal-900 to-indigo-950 text-white rounded-3xl p-5 sm:p-7 shadow-lg flex flex-col md:flex-row md:items-center md:justify-between gap-4 border border-white/10">
         <div>
           <div className="flex flex-wrap items-center gap-2 mb-2">
-            <span className="px-3 py-1 bg-blue-700/60 border border-blue-400/30 rounded-full text-xs font-bold uppercase tracking-wider">
+            <span className="px-3 py-1 bg-white/15 border border-white/25 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-xs">
               {blockName} Owner Portal
             </span>
-            <span className="text-xs text-blue-200">
+            <span className="text-xs text-teal-100">
               {COMPLEX_CONFIG.name}
             </span>
           </div>
-          <h1 className="text-2xl font-extrabold mt-1">
+          <h1 className="text-2xl font-extrabold mt-1 tracking-tight">
             Welcome, {currentUser.fullName}
           </h1>
-          <p className="text-xs text-blue-200 mt-1">
+          <p className="text-xs text-teal-100/90 mt-1">
             {COMPLEX_CONFIG.address}
           </p>
-          <p className="text-xs text-blue-300 mt-0.5">
+          <p className="text-xs text-teal-200 mt-0.5">
             Hotline: <strong>{COMPLEX_CONFIG.contacts}</strong> &bull; Scoped to {blockName} for <span className="font-extrabold text-white underline underline-offset-2">{getMonthName(data.selectedMonth)} {data.selectedYear}</span>
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           {/* Bold Active Billing Month Display */}
-          <div className="flex items-center gap-2.5 px-4 py-2 bg-white/15 border border-white/25 rounded-xl backdrop-blur-md shadow-inner">
+          <div className="flex items-center gap-2.5 px-4 py-2.5 bg-white/15 border border-white/25 rounded-2xl backdrop-blur-md shadow-inner">
             <Calendar className="w-5 h-5 text-amber-300 shrink-0" />
             <div className="text-left">
-              <div className="text-[10px] uppercase tracking-wider font-extrabold text-blue-200">Active Month</div>
+              <div className="text-[10px] uppercase tracking-wider font-extrabold text-teal-100">Active Month</div>
               <div className="text-lg sm:text-xl font-black text-white tracking-tight">
                 {getMonthName(data.selectedMonth)} {data.selectedYear}
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <button
               onClick={() => window.print()}
-              className="min-h-[44px] flex items-center gap-1.5 px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-xl backdrop-blur-xs transition-colors cursor-pointer"
+              className="min-h-[44px] flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 bg-white/12 hover:bg-white/20 text-white text-xs font-semibold rounded-xl backdrop-blur-xs border border-white/15 transition-colors cursor-pointer"
             >
               <Printer className="w-4 h-4" />
               Print Report
             </button>
             <button
               onClick={handleExportCSV}
-              className="min-h-[44px] flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl shadow-sm transition-colors cursor-pointer"
+              className="min-h-[44px] flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 bg-gradient-to-r from-teal-500 to-indigo-500 hover:from-teal-400 hover:to-indigo-400 text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer"
             >
               <Download className="w-4 h-4" />
               Export CSV

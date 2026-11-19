@@ -228,7 +228,9 @@ export const TenantPortal: React.FC<Props> = ({
   const [payTrxId, setPayTrxId] = useState<string>('');
   const [paySuccessMsg, setPaySuccessMsg] = useState<string>('');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
-  const [historyLayoutMode, setHistoryLayoutMode] = useState<'table' | 'cards'>('table');
+  const [historyLayoutMode, setHistoryLayoutMode] = useState<'table' | 'cards'>(() =>
+    typeof window !== 'undefined' && window.innerWidth < 768 ? 'cards' : 'table'
+  );
 
   useEffect(() => {
     if (currentLedgerItem) {
@@ -622,40 +624,40 @@ export const TenantPortal: React.FC<Props> = ({
   return (
     <div className="space-y-6">
       {/* Top Welcome Profile Card */}
-      <div className="bg-gradient-to-r from-slate-900 to-blue-950 text-white rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/20 border border-blue-400/30 rounded-full text-xs font-semibold text-blue-300 mb-3">
-            <Building2 className="w-3.5 h-3.5" />
-            Resident of {COMPLEX_CONFIG.name} &bull; {unit?.blockName || 'Block A'} &bull; Flat {flatId}
+      <div className="bg-gradient-to-r from-teal-700 via-teal-800 to-indigo-900 text-white rounded-3xl p-5 sm:p-8 shadow-lg flex flex-col md:flex-row md:items-center md:justify-between gap-6 border border-white/10">
+        <div className="min-w-0">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/15 border border-white/25 rounded-full text-xs font-semibold text-teal-100 mb-3 backdrop-blur-xs">
+            <Building2 className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Resident of {COMPLEX_CONFIG.name} &bull; {unit?.blockName || 'Block A'} &bull; Flat {flatId}</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
             Welcome, {tenant?.fullName || currentUser.fullName}
           </h1>
-          <p className="text-xs text-slate-300 mt-1">
+          <p className="text-xs text-teal-100/90 mt-1">
             {COMPLEX_CONFIG.address}
           </p>
-          <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-slate-300">
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-teal-100">
             <span>Mobile: <strong className="text-white">{tenant?.phone || currentUser.phone}</strong></span>
-            <span>&bull;</span>
-            <span>Manager: <strong className="text-blue-300 font-mono">{managerPhone}</strong></span>
-            <span>&bull;</span>
+            <span className="hidden sm:inline">&bull;</span>
+            <span>Manager: <strong className="text-white font-mono">{managerPhone}</strong></span>
+            <span className="hidden sm:inline">&bull;</span>
             <span>{tenantBlockName} Owner ({currentBlockOwnerName}): <strong className="text-emerald-300 font-mono">{currentBlockOwnerPhone}</strong></span>
-            <span>&bull;</span>
-            <span>Monthly Rent: <strong className="text-emerald-400 font-mono">{formatBDT(currentFlatRent)}</strong></span>
+            <span className="hidden sm:inline">&bull;</span>
+            <span>Monthly Rent: <strong className="text-emerald-300 font-mono">{formatBDT(currentFlatRent)}</strong></span>
           </div>
         </div>
 
         {/* Quick Outstanding Due Pill */}
-        <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/15 text-right min-w-[200px]">
-          <span className="text-xs text-slate-300 font-medium">Current Month Due</span>
-          <div className="text-2xl font-black font-mono mt-1 text-white">
+        <div className="bg-white/12 backdrop-blur-md p-4 sm:p-5 rounded-2xl border border-white/20 text-left md:text-right min-w-[200px] shadow-inner shrink-0">
+          <span className="text-xs text-teal-100 font-medium">Current Month Due</span>
+          <div className="text-2xl sm:text-3xl font-black font-mono mt-1 text-white tabular-nums">
             {formatBDT(currentLedgerItem?.totalDue ?? calculateItemTotalDue(currentLedgerItem || ({} as any)))}
           </div>
           <span
-            className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+            className={`inline-block mt-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
               currentLedgerItem?.paymentStatus === 'Paid'
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                ? 'bg-emerald-500/25 text-emerald-200 border border-emerald-400/40'
+                : 'bg-rose-500/25 text-rose-200 border border-rose-400/40'
             }`}
           >
             Status: {currentLedgerItem?.paymentStatus || 'Not Paid'}
@@ -1695,34 +1697,34 @@ export const TenantPortal: React.FC<Props> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <button
           onClick={() => onNavigateToView('complaints')}
-          className="p-5 bg-white hover:bg-blue-50/50 border border-slate-200 rounded-2xl shadow-xs text-left transition-colors flex items-center justify-between cursor-pointer"
+          className="group p-5 bg-white/95 hover:bg-white border border-slate-200/90 hover:border-teal-300 rounded-3xl shadow-xs hover:shadow-md text-left transition-all flex items-center justify-between gap-3 cursor-pointer"
         >
-          <div className="flex items-center gap-3">
-            <span className="p-3 bg-rose-50 text-rose-600 rounded-xl">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <span className="p-3 bg-gradient-to-br from-rose-50 to-orange-50 text-rose-600 rounded-2xl border border-rose-100 shrink-0">
               <AlertCircle className="w-6 h-6" />
             </span>
-            <div>
+            <div className="min-w-0">
               <h4 className="font-bold text-slate-900 text-sm">Submit Maintenance Complaint</h4>
-              <p className="text-xs text-slate-500">Report plumbing, electricity, lift, or cleaning issues</p>
+              <p className="text-xs text-slate-500 truncate">Report plumbing, electricity, lift, or cleaning issues</p>
             </div>
           </div>
-          <ArrowRight className="w-5 h-5 text-slate-400" />
+          <ArrowRight className="w-5 h-5 text-slate-400 group-hover:text-teal-600 group-hover:translate-x-1 transition-all shrink-0" />
         </button>
 
         <button
           onClick={() => onNavigateToView('messages')}
-          className="p-5 bg-white hover:bg-blue-50/50 border border-slate-200 rounded-2xl shadow-xs text-left transition-colors flex items-center justify-between cursor-pointer"
+          className="group p-5 bg-white/95 hover:bg-white border border-slate-200/90 hover:border-teal-300 rounded-3xl shadow-xs hover:shadow-md text-left transition-all flex items-center justify-between gap-3 cursor-pointer"
         >
-          <div className="flex items-center gap-3">
-            <span className="p-3 bg-blue-50 text-blue-600 rounded-xl">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <span className="p-3 bg-gradient-to-br from-teal-50 to-indigo-50 text-teal-700 rounded-2xl border border-teal-100 shrink-0">
               <MessageSquare className="w-6 h-6" />
             </span>
-            <div>
+            <div className="min-w-0">
               <h4 className="font-bold text-slate-900 text-sm">Chat with Management</h4>
-              <p className="text-xs text-slate-500">Direct message with Manager or {tenantBlockName} Owner ({currentBlockOwnerName})</p>
+              <p className="text-xs text-slate-500 truncate">Direct message with Manager or {tenantBlockName} Owner ({currentBlockOwnerName})</p>
             </div>
           </div>
-          <ArrowRight className="w-5 h-5 text-slate-400" />
+          <ArrowRight className="w-5 h-5 text-slate-400 group-hover:text-teal-600 group-hover:translate-x-1 transition-all shrink-0" />
         </button>
       </div>
     </div>
